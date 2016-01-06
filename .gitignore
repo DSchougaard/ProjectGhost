@@ -1,5 +1,6 @@
 # Ghost Specific items
 crypto
+*.sqlite
 
 # Logs
 logs
