@@ -2,6 +2,9 @@
 crypto
 *.sqlite
 
+# Bower
+components
+
 # Logs
 logs
 *.log
