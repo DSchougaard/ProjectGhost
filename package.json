@@ -1,0 +1,35 @@
+{
+  "name": "project-ghost",
+  "version": "0.0.1",
+  "description": "Implementation of Ghost system, for master thesis 2016.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dasch42/ProjectGhost.git"
+  },
+  "keywords": [
+    "password",
+    "manager",
+    "passwordmanager",
+    "password manager",
+    "security"
+  ],
+  "author": "Daniel Schougaard",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Dasch42/ProjectGhost/issues"
+  },
+  "homepage": "https://github.com/Dasch42/ProjectGhost#readme",
+  "devDependencies": {
+    "mocha": "^2.3.4"
+  },
+  "dependencies": {
+    "knex": "^0.9.0",
+    "restify": "^4.0.3",
+    "sqlite3": "^3.1.1",
+    "validator": "^4.5.0"
+  }
+}
