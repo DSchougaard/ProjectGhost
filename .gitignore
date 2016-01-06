@@ -1,6 +1,7 @@
 # Ghost Specific items
 crypto
 *.sqlite
+notes
 
 # Bower
 components
