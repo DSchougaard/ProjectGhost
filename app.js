@@ -11,8 +11,8 @@ const users 	= require(__base + 'routes/users.js');
 
 
 var server = restify.createServer({
-	certificate: fs.readFileSync('crypto/ssl/ghost-cert.pem'),
-	key: fs.readFileSync('crypto/ssl/ghost-key.pem'),
+	certificate: fs.readFileSync('crypto/ssl2/ghost.crt'),
+	key: fs.readFileSync('crypto/ssl2/ghost.key'),
 	name: "Project Ghost"
 });
 

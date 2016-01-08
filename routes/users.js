@@ -8,7 +8,7 @@ module.exports = function(server, knex){
 		console.log("POST /user %j", req.body);		
 
 		if( !validator.isAlphanumeric(req.body.username) )
-			next(new restify.)
+			//next(new restify.)
 
 
 
