@@ -24,9 +24,14 @@
   },
   "homepage": "https://github.com/Dasch42/ProjectGhost#readme",
   "devDependencies": {
-    "mocha": "^2.3.4"
+    "hippie": "^0.4.0",
+    "mocha": "^2.3.4",
+    "request": "^2.67.0",
+    "supertest": "^1.1.0"
   },
   "dependencies": {
+    "bcrypt": "^0.8.5",
+    "bunyan": "^1.5.1",
     "knex": "^0.9.0",
     "restify": "^4.0.3",
     "sqlite3": "^3.1.1",

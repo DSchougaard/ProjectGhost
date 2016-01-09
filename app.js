@@ -11,8 +11,8 @@ const users 	= require(__base + 'routes/users.js');
 
 
 var server = restify.createServer({
-	certificate: fs.readFileSync('crypto/ssl2/ghost.crt'),
-	key: fs.readFileSync('crypto/ssl2/ghost.key'),
+	certificate: fs.readFileSync('crypto/ssl/ghost.crt'),
+	key: fs.readFileSync('crypto/ssl/ghost.key'),
 	name: "Project Ghost"
 });
 
@@ -40,6 +40,7 @@ knex.schema.createTableIfNotExists('users', function(table){
 	console.log("The table 'users' already existed in the database.");
 })
 
+
 knex('users').insert({
 	username:"daniel", 
 	salt:"", 
@@ -52,15 +53,6 @@ knex('users').insert({
 })
 
 // Routes
-server.get('/', restify.serveStatic({
-  directory: __dirname+'/public',
-  default: '/views/index.html'
-}));
-
-server.get(/^\/?.*/, restify.serveStatic({
-    directory: __dirname + '/public',
-    default: 'index.html'
-}));
 
 server.get('/api/ping', function(req, res, next){
 	res.send(200, 'OK');
@@ -78,3 +70,13 @@ server.get('/error', function(req, res, next){
 
 
 users(server, knex);
+
+server.get('/', restify.serveStatic({
+  directory: __dirname+'/public',
+  default: '/views/index.html'
+}));
+
+server.get(/^\/?.*/, restify.serveStatic({
+    directory: __dirname + '/public',
+    default: 'index.html'
+}));

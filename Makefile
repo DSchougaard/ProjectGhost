@@ -1,6 +1,6 @@
 SSL_SUBJ = "/C=DK/ST=NA/L=Copenhagen/O=Schougaard Technologies/CN=localhost"
 NAME = ghost
-DIR=crypto/ssl2
+DIR=crypto/ssl
 
 cert:
 	mkdir -p $(DIR)
@@ -10,4 +10,5 @@ cert:
 
 
 cert2:
+	mkdir -p $(DIR)
 	openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:4096 -keyout $(DIR)/$(NAME).key -subj $(SSL_SUBJ) -out $(DIR)/$(NAME).crt
