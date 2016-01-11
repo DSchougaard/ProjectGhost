@@ -1,59 +1,56 @@
 // Define Base Path
-global.__base = __dirname + '/';
+global.__base 		= __dirname + '/';
 
 
 // Libraries
-const restify 	= require('restify');
-const fs		= require('fs');
+const restify 			= require('restify');
+const fs				= require('fs');
 
 // Routes
-const users 	= require(__base + 'routes/users.js');
+const users 			= require(__base + 'routes/users.js');
+const auth 				= require(__base + 'routes/auth.js');
 
-// Command Line parameters
-var Ghost = require('commander');
-Ghost
-	.version('0.0.1')
-	.option('-db, --database', "Path to DB file.")
-	.parse(process.argv);
+//Helpers
+const authHelpers 		= require(__base + 'helpers/authHelpers.js');
 
-var dbfile = "";
+// Load config file
+const config 			= require(__base + 'config.json');
 
-Ghost.database? dbfile = Ghost.database : dbfile = "./ghost.sqlite";
-dbfile = "unittest.sqlite"
+/*
+	Options for Project Ghost
+*/
+var opts = {
+	name 			: typeof config.name 		!== undefined 	? config.name 		: 'Project Ghost',
+	database 		: typeof config.database 	!== undefined 	? config.database 	: 'sqlite',
+	port 			: typeof config.port 		!== undefined 	? config.port 		: 8080,
+	ssl_key			: typeof config.ssl_key 	!== undefined 	? config.ssl_key 	: 'crypto/ssl/ghost.key',
+	ssl_cert 		: typeof config.ssl_key 	!== undefined 	? config.ssl_cert 	: 'crypto/ssl/ghost.key'
+};
 
+// Override for DB connection objects
+if( config.database === 'sqlite' ){
+	opts.connection = config.sqlite_connection;
+}
 
-console.log("Ghost boots using %s as database file.", dbfile);
+// Unittest Override
+if( false ){
+	opts.connection.file = './unittest.sql';
+}
 
-
-var port = 8080;
-
-
-
-
-
-
-
-
-
-
+console.log("Bootstrapping Project Ghost with the following options:\n%j", opts);
 
 var server = restify.createServer({
-	certificate: fs.readFileSync('crypto/ssl/ghost.crt'),
-	key: fs.readFileSync('crypto/ssl/ghost.key'),
+	certificate: fs.readFileSync( opts.ssl_cert ),
+	key: fs.readFileSync( opts.ssl_key ),
 	name: "Project Ghost"
 });
-
-
-server.listen(port);
+server.listen(opts.port);
 server.use(restify.bodyParser());
 
 // Database through Knex
 const knex = require('knex')({
-	client: 'sqlite3',
-	connection:{
-		filename: dbfile,
-		debug:true
-	}
+	client: opts.database,
+	connection: opts.connection
 });
 
 // Create table USERS if it doesn't exist
@@ -66,40 +63,31 @@ knex.schema.createTableIfNotExists('users', function(table){
 	table.binary("publickey");
 })
 .catch(function(error){
-	//console.log("The table 'users' already existed in the database.");
 })
 
 // Routes
-
 server.get('/api/ping', function(req, res, next){
 	res.send(200, 'OK');
 	return next();
 });
 
-server.get('/error', function(req, res, next){
-	fs.readFile('filedoesnotexist', function(err, data){
-		if(err)
-			console.log("%j.", err);
-		next.ifError(err);
-
-	});
-})
-
 // Routes
 users(server, knex);
+auth(server, knex);
 
+// test for authentication
+server.get('/api/auth_test', authHelpers.ensureAuthenticated, function(req, res, next){
+	console.log("This should only be printed if authenticated. %s.", req.user);
+	res.send(200, 'Congratulations! You are authorized, ' + req.user);
+	return next();
+});
 
 // Finally catch all routes for static content.
 server.get('/', restify.serveStatic({
   directory: __dirname+'/public',
   default: '/views/index.html'
 }));
-
 server.get(/^\/?.*/, restify.serveStatic({
     directory: __dirname + '/public',
     default: 'index.html'
 }));
-
-console.log('Project Ghost started on port %d', port );
-
-module.exports.getServer = server;
