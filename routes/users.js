@@ -3,6 +3,7 @@ const restify = require('restify');
 const validator = require('validator');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
+const argon2 = require('argon2');
 
 module.exports = function(server, knex){
 	server.get('/api/users', function(req, res, next){
@@ -38,18 +39,22 @@ module.exports = function(server, knex){
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing password"));
 		}
 
-
-
+		// Generating a secure salt
 		bcrypt.genSalt(function(err, salt){
 			if(err){
 				console.log("POST /api/user Error generating salt: %s.", err);
 				next(new restify.errors.InternalServerError("Error generating salt."));
 			}
 
-			console.log("Salt created = %s", salt);
-
+			// Hashing the password
 			bcrypt.hash(req.body.password, salt, function(err, hash){
-				console.log("Hashed password = %s", hash);
+				req.body.password = '';
+
+				if(err){
+					console.log("POST /api/user Error in producing hash of input.");
+					return next(new restify.errors.InternalServerError("Error in crypto libraries."));
+				}
+
 				knex('users').insert({username: req.body.username, password: hash, salt: salt})
 				.then(function(rows){
 					console.log("POST /api/user DB insert: %s", rows);
@@ -68,14 +73,40 @@ module.exports = function(server, knex){
 					return next();
 				});
 			});
-		})
-	})
+		});
+	});
 
-	server.put('/user', function(req, res, next){
+	server.put('/api/user', function(req, res, next){
 		next(new restify.errors.NotImplementedError("Later..."));
-	})
+	});
 
-	server.del('/user', function(req, res, next){
-		next(new restify.error.shtNtotImplementedError("Later..."));
-	})
+	server.del('/api/user', function(req, res, next){
+		console.log("DEL /api/user")
+		/*
+			Request Content
+			Username: String
+		*/	
+
+		if( req.body.username === undefined || req.body.username === '' || !validator.isAlphanumeric(req.body.username) ){
+			return next(new restify.errors.BadRequestError("Incomplete request: Missing username"));
+		}
+
+		knex('users').where({'username': req.body.username}).del()
+		.then(function(rows){
+			if( rows === 0 ){
+				// No user was found to be deleted
+				console.log("DEL /api/user client supplied non-existant username.");
+				res.send(400, 'username not found');
+				return next();
+			}
+
+			console.log("Deleted user with username = %s.", req.body.username);
+			res.send(200, 'OK');
+			return next();
+		})
+		.catch(function(err){
+			console.log(err);
+			next(err);
+		});
+	});
 };
