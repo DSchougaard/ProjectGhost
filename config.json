@@ -1,9 +1,10 @@
 {
+	"name" 			: "Project Ghost",
 	"database"		: "sqlite",
 	"sqlite_connection": {
-		"file": 	"ghost.sqlite"
+		"filename": 	"./ghost.sqlite"
 	},
-	"ssl_port"		: 8080,
-	"ssl_key"		: "crypto/ssl/ghost-key.pem",
-	"ssl_cert" 		: "crypto/ssl/ghost-cert.pem,
+	"port"			: 8080,
+	"ssl_key"		: "crypto/ssl/ghost.key",
+	"ssl_cert" 		: "crypto/ssl/ghost.crt"
 }
