@@ -130,13 +130,21 @@ describe("API /user/", function(){
 			server
 			.del('/api/user')
 			.field('username', 'DoesNotExist')
-			.expect(400, done);
+			.expect(400)
+			.end(function(err,res){
+				if(err) return done(err);
+				done();
+			})
 		})
 		it('should successfully delete a user', function(done){
 			server
 			.del('/api/user')
 			.field('username', 'User3')
-			.expect(200, done);
+			.expect(200)
+			.end(function(err,res){
+				if(err) return done(err);
+				done();
+			})
 		});
 
 		it('should return one less user', function(done){
@@ -146,7 +154,8 @@ describe("API /user/", function(){
 			.end(function(err, res){
 				if(err) return done();
 				(res.body).should.have.length(2);
-				(res.body).should.deepEqual([{'username':'User1', 'username':'User2'}]);
+				(res.body).should.deepEqual([{'username':'User1'}, {'username':'User2'}]);
+				done();
 			})
 		});
 	})
