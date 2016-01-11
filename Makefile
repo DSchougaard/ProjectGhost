@@ -12,3 +12,7 @@ cert:
 cert2:
 	mkdir -p $(DIR)
 	openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:4096 -keyout $(DIR)/$(NAME).key -subj $(SSL_SUBJ) -out $(DIR)/$(NAME).crt
+
+wipe:
+	rm unittest.sqlite
+	cp unittest.sqlite.orig unittest.sqlite

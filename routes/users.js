@@ -28,12 +28,14 @@ module.exports = function(server, knex){
 			Password: String
 		*/	
 
-		if( req.body.username === '' || !validator.isAlphanumeric(req.body.username) ){
-			return next(new restify.errors.BadRequestError("Malformed Username"));
+		if( req.body.username === undefined || req.body.username === '' || !validator.isAlphanumeric(req.body.username) ){
+			console.log("POST /api/user Missing username");
+			return next(new restify.errors.BadRequestError("Incomplete request: Missing username"));
 		}
 
-		if( req.body.password === '' ){
-			return next(new restify.errors.BadRequestError("Password was empty"));
+		if( req.body.password === undefined || req.body.password === '' ){
+			console.log("POST /api/user Missing password");
+			return next(new restify.errors.BadRequestError("Incomplete request: Missing password"));
 		}
 
 
@@ -51,7 +53,7 @@ module.exports = function(server, knex){
 				knex('users').insert({username: req.body.username, password: hash, salt: salt})
 				.then(function(rows){
 					console.log("POST /api/user DB insert: %s", rows);
-					res.send(200, 'User ' + req.body.username + ' added.');
+					res.send(200, 'OK');
 					return next();
 				})
 				.catch(function(error){

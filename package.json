@@ -24,9 +24,12 @@
   },
   "homepage": "https://github.com/Dasch42/ProjectGhost#readme",
   "devDependencies": {
+    "fs-extra": "^0.26.4",
     "hippie": "^0.4.0",
+    "istanbul": "^0.4.2",
     "mocha": "^2.3.4",
     "request": "^2.67.0",
+    "should": "^8.0.2",
     "supertest": "^1.1.0"
   },
   "dependencies": {
