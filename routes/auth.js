@@ -9,15 +9,16 @@ const validator			= require('validator');
 const authHelpers 		= require(__base + '/helpers/authHelpers.js');
 
 
-
 module.exports = function(server, knex){
 	server.post('/api/auth/login', function(req, res, next){
 
+		// Filter bad requests based on the username
 		if( req.body.username === undefined || req.body.username === '' || !validator.isAlphanumeric(req.body.username) ){
 			console.log("POST /api/auth/login Missing username");
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing username"));
 		}
 
+		// Filter bad requests based on the password
 		if( req.body.password === undefined || req.body.password === '' ){
 			console.log("POST /api/auth/login Missing password");
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing password"));
@@ -35,7 +36,6 @@ module.exports = function(server, knex){
 				return next(new restify.errors.InternalServerError("Error during authentication."));
 			}
 
-			//argon2.encrypt(req.body.password, rows[0].salt, {argon2d: false}, function(err, hash){
 			bcrypt.hash(req.body.password, rows[0].salt, function(err, hash){
 				if(err){
 					console.log("POST /api/auth/login BCrypt error.");
