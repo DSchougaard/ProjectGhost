@@ -117,7 +117,7 @@ describe("API /user/", function(){
 			.get('/api/users')
 			.expect(200)
 			.end(function(err,res){
-				if(err) return done();
+				if(err) return done(err);
 				(res.body).should.have.length(3);
 				(res.body).should.deepEqual([{'username':'User1'},{'username':'User2'},{'username':'User3'}]);
 				done();
@@ -152,7 +152,7 @@ describe("API /user/", function(){
 			.get('/api/users')
 			.expect(200)
 			.end(function(err, res){
-				if(err) return done();
+				if(err) return done(err);
 				(res.body).should.have.length(2);
 				(res.body).should.deepEqual([{'username':'User1'}, {'username':'User2'}]);
 				done();
