@@ -35,7 +35,7 @@ if( config.database === 'sqlite' ){
 }
 
 // Unittest Override
-if( false ){
+if( true ){
 	opts.connection.filename = './unittest.sqlite';
 }
 

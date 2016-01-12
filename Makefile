@@ -16,6 +16,10 @@ cert2:
 jwt:
 	openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:4096 -keyout crypto/jwt/ghost-jwt.key -subj $(SSL_SUBJ) -out crypto/jwt/ghost-jwt.crt	
 
+unit:
+	openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:4096 -keyout test/unittest-test.key -subj $(SSL_SUBJ) -out test/unittest-test.crt	
+
+
 wipe:
 	rm unittest.sqlite
 	cp unittest.sqlite.orig unittest.sqlite

@@ -1,15 +1,17 @@
-const fs = require('fs');
-const restify = require('restify');
-const validator = require('validator');
-const crypto = require('crypto');
-const bcrypt = require('bcrypt');
-const argon2 = require('argon2');
+const fs 			= require('fs');
+const restify 		= require('restify');
+const validator 	= require('validator');
+const crypto 		= require('crypto');
+const bcrypt 		= require('bcrypt');
+const argon2 		= require('argon2');
+
+//const validate 		= require(__base + 'helpers/validate.js');
 
 module.exports = function(server, knex){
 	server.get('/api/users', function(req, res, next){
 		console.log("GET /api/users");
 
-		knex.select('username').from('users')
+		knex.select('username', 'publickey').from('users')
 		.then(function(rows){
 			res.send(200, rows);
 			return next();
@@ -21,22 +23,56 @@ module.exports = function(server, knex){
 		})
 	});
 
+	server.get('/api/user/:id', function(req, res, next){
+		console.log('GET /api/user/'+req.params.id);
+
+		knex.select('username', 'publickey').from('users').where('id', req.params.id)
+		.then(function(rows){
+			if(rows.length == 0){
+				console.log('GET /api/user/%d found no user in the database.', req.params.id);
+				return next( new restify.errors.NotFoundError('Username not found'));
+			}
+
+			if( rows.length > 1 ){
+				console.log('GET /api/user/%d found several users. Catastrophic error.', req.params.id);
+				return next( new restify.errors.InternalServerError('Catastropic internal server error.'));
+			}
+
+			res.send(200, rows[0]);
+			return next();
+		});
+	})
+
 	server.post('/api/user', function(req, res, next){
-		console.log("POST /api/user %j", req.body);	
+		console.log("POST /api/user %j", req.body.username);	
 		/*
 			Request Content
 			Username: String
 			Password: String
+			PrivateKey: Binary
+			PublicKey: String
 		*/	
 
+		// Validate Input
 		if( req.body.username === undefined || req.body.username === '' || !validator.isAlphanumeric(req.body.username) ){
 			console.log("POST /api/user Missing username");
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing username"));
+
 		}
 
 		if( req.body.password === undefined || req.body.password === '' ){
 			console.log("POST /api/user Missing password");
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing password"));
+		}
+
+		if( req.body.privatekey === undefined || req.body.privatekey === '' ){
+			console.log("POST /api/user Missing private key");
+			return next(new restify.errors.BadRequestError("Incomplete request: Missing private key"));
+		}
+
+		if( req.body.publickey === undefined || req.body.publickey === '' ){
+			console.log("POST /api/user Missing public key");
+			return next(new restify.errors.BadRequestError("Incomplete request: Missing public key"));
 		}
 
 		// Generating a secure salt
@@ -55,7 +91,7 @@ module.exports = function(server, knex){
 					return next(new restify.errors.InternalServerError("Error in crypto libraries."));
 				}
 
-				knex('users').insert({username: req.body.username, password: hash, salt: salt})
+				knex('users').insert({username: req.body.username, password: hash, salt: salt, privatekey: req.body.privatekey, publickey: req.body.publickey})
 				.then(function(rows){
 					console.log("POST /api/user DB insert: %s", rows);
 					res.send(200, 'OK');
@@ -64,7 +100,10 @@ module.exports = function(server, knex){
 				.catch(function(error){
 					// SQLite 3 Username Exists error
 					// DB Error: Error: insert into "users" ("password", "salt", "username") values ('password', '', 'daniel') - SQLITE_CONSTRAINT: UNIQUE constraint failed: users.username.
-					if( JSON.stringify(error).match(/SQLITE_CONSTRAINT: UNIQUE constraint failed: users.username/ig) ){
+					console.log("%j", error);
+					console.log("-------------")
+					console.log(JSON.stringify(error));
+					if( error.errno == 19 && error.code === 'SQLITE_CONSTRAINT' ){
 						res.send(400, "Username already exists.");
 						return next();
 					}
@@ -109,4 +148,8 @@ module.exports = function(server, knex){
 			next(err);
 		});
 	});
+
+	server.get('/api/user/:id/publickey', function(req, res, next){
+		next(new restify.errors.NotImplementedError("API endpoint not implemented yet."));
+	})
 };
