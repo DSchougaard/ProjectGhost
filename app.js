@@ -9,6 +9,8 @@ const fs				= require('fs');
 // Routes
 const users 			= require(__base + 'routes/users.js');
 const auth 				= require(__base + 'routes/auth.js');
+const passwords			= require(__base + 'routes/password.js');
+
 
 //Helpers
 const authHelpers 		= require(__base + 'helpers/authHelpers.js');
@@ -24,7 +26,7 @@ var opts = {
 	database 		: typeof config.database 	!== undefined 	? config.database 	: 'sqlite',
 	port 			: typeof config.port 		!== undefined 	? config.port 		: 8080,
 	ssl_key			: typeof config.ssl_key 	!== undefined 	? config.ssl_key 	: 'crypto/ssl/ghost.key',
-	ssl_cert 		: typeof config.ssl_key 	!== undefined 	? config.ssl_cert 	: 'crypto/ssl/ghost.key'
+	ssl_cert 		: typeof config.ssl_cert	!== undefined 	? config.ssl_cert 	: 'crypto/ssl/ghost.crt'
 };
 
 // Override for DB connection objects
@@ -34,7 +36,7 @@ if( config.database === 'sqlite' ){
 
 // Unittest Override
 if( false ){
-	opts.connection.file = './unittest.sql';
+	opts.connection.filename = './unittest.sqlite';
 }
 
 console.log("Bootstrapping Project Ghost with the following options:\n%j", opts);
@@ -55,15 +57,48 @@ const knex = require('knex')({
 
 // Create table USERS if it doesn't exist
 knex.schema.createTableIfNotExists('users', function(table){
-	table.increments();
-	table.string("username").unique();
-	table.string("salt");
-	table.string("password");
-	table.string("privatekey");
-	table.binary("publickey");
+	table.increments().primary();
+	table.string("username").unique().notNullable();
+	table.string("salt").notNullable();
+	table.string("password").notNullable();
+	table.binary("privatekey").notNullable();
+	table.binary("publickey").notNullable();
 })
 .catch(function(error){
 })
+
+knex.schema.createTableIfNotExists('passwords', function(table){
+	table.increments().primary();
+	table.integer('owner').references('id').inTable('users').notNullable();
+	talbe.string('title').notNullable();
+	table.string('password').notNullable();
+	table.string('username').nullable();
+	table.string('note').nullable();
+})
+
+/*
+	Passwords Table
+	---------------------------
+	int: 	ID
+	int: 	ownerID
+	string: title
+	blob: 	username
+	string: password
+	string: note
+*/
+
+/*
+	Shared Passwords Table
+	---------------------------
+	int: 	ID
+	int: 	orignalPasswordID
+	string: title
+	blob: 	username
+	string: password
+	string: note
+
+*/
+
 
 // Routes
 server.get('/api/ping', function(req, res, next){
@@ -74,6 +109,7 @@ server.get('/api/ping', function(req, res, next){
 // Routes
 users(server, knex);
 auth(server, knex);
+passwords(server, knex);
 
 // test for authentication
 server.get('/api/auth_test', authHelpers.ensureAuthenticated, function(req, res, next){
