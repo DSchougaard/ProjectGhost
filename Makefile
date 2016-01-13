@@ -20,9 +20,15 @@ unit:
 	openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:4096 -keyout test/unittest-test.key -subj $(SSL_SUBJ) -out test/unittest-test.crt	
 
 unittestdb:
+	echo 'Resetting unittest DB'
 	cp ghost.sqlite unittest.sqlite
 	cp ghost.sqlite unittest.sqlite.orig
 
 wipe:
 	rm unittest.sqlite
 	cp unittest.sqlite.orig unittest.sqlite
+
+test: wipe
+	NODE_ENV=test mocha
+
+.PHONY: test

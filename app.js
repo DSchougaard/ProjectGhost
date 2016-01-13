@@ -18,6 +18,7 @@ const authHelpers 		= require(__base + 'helpers/authHelpers.js');
 // Load config file
 const config 			= require(__base + 'config.json');
 
+
 /*
 	Options for Project Ghost
 */
@@ -34,8 +35,8 @@ if( config.database === 'sqlite' ){
 	opts.connection = config.sqlite_connection;
 }
 
-// Unittest Override
-if( true ){
+// Unittest DB Override
+if( process.env.NODE_ENV === 'test' ){
 	opts.connection.filename = './unittest.sqlite';
 }
 
@@ -46,11 +47,10 @@ var server = restify.createServer({
 	key: fs.readFileSync( opts.ssl_key ),
 	name: "Project Ghost"
 });
-server.listen(opts.port);
 server.use(restify.bodyParser());
 
 // Database through Knex
-const knex = require('knex')({
+var knex = require('knex')({
 	client: opts.database,
 	connection: opts.connection
 });
@@ -76,6 +76,9 @@ knex.schema.createTableIfNotExists('passwords', function(table){
 	table.string('username').nullable();
 	table.string('note').nullable();
 })
+.catch(function(error){
+
+});
 
 /*
 	Passwords Table
@@ -128,3 +131,9 @@ server.get(/^\/?.*/, restify.serveStatic({
     directory: __dirname + '/public',
     default: 'index.html'
 }));
+
+if( process.env.NODE_ENV === 'test' ){
+	module.exports = server;
+}else{
+	server.listen(opts.port);
+}
