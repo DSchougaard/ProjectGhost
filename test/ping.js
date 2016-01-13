@@ -5,14 +5,14 @@ var request = require('supertest');
 var should = require('should');
 
 
+var server = request(require('../app.js').server);
 
 
 describe("Ping", function(){
 	//var server = require("../app").getServer;
 	var wrongServer = request.agent("http://localhost:8080");
-	var server 		= request.agent("https://localhost:8080");
 
-	it("Timeout without https for ping", function(done){
+	it.skip("Timeout without https for ping", function(done){
 		wrongServer
 		.get("/api/ping")
 		.end(function(err,res){
