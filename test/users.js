@@ -81,8 +81,6 @@ describe("API /user/", function(){
 			.field('publickey', testUser.publickey)
 		*/
 
-
-
 		it('should fail when a password is not supplied', function(done){
 			server
 			.post('/api/user')
@@ -189,7 +187,7 @@ describe("API /user/", function(){
 			.expect(200)
 			.end(function(err,res){
 				if(err) return done(err);
-				//(res.body).should.have.length(3);
+				(res.body).should.have.length(3);
 				(res.body).should.deepEqual([{'username':'User1', 'publickey': testUser.base64.publickey},{'username':'User2', 'publickey': testUser.base64.publickey},{'username':'User3', 'publickey': testUser.base64.publickey}]);
 				done();
 			});
