@@ -196,7 +196,7 @@ describe("API /user/", function(){
 		});
 	})
 	
-	describe.skip("DELETE: Delete a user", function(){
+	describe("DELETE: Delete a user", function(){
 		it('should fail on deleting non-existant user', function(done){
 			server
 			.del('/api/user')
