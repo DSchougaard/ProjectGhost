@@ -29,27 +29,27 @@ module.exports = function(server, knex){
 			if( rows.length == 0 ){
 				// No user was found with that username.
 				console.log("POST /api/auth/login Wrong Username");
-				return next(new restify.errors.UnauthorizedError());
+				return next(new restify.errors.UnauthorizedError('Wrong login credentials'));
 			}
 			if( rows.length > 1 ){
 				console.log("POST /api/auth/login Something went horribly wrong...");
-				return next(new restify.errors.InternalServerError("Error during authentication."));
+				return next(new restify.errors.InternalServerError());
 			}
 
 			bcrypt.hash(req.body.password, rows[0].salt, function(err, hash){
 				if(err){
 					console.log("POST /api/auth/login BCrypt error.");
-					return next( new restify.errors.InternalServerError("Error in crypto librari.") );
+					return next( new restify.errors.InternalServerError() );
 				}
 				req.body.password = '';
 
 				if(err){
 					console.log("POST /api/auth/login Argon2 encryption error.\n%j", err);
-					return next(new restify.errors.InternalServerError("Error during authentication."));
+					return next(new restify.errors.InternalServerError());
 				}
 				if( hash !== rows[0].password ){
 					// Login failed
-					return next(new restify.errors.UnauthorizedError());
+					return next(new restify.errors.UnauthorizedError('Wrong login credentials'));
 				}
 
 				console.log('Authenticated user %s.', rows[0].username);
@@ -58,5 +58,10 @@ module.exports = function(server, knex){
 				res.send(200, {token: authHelpers.createJWT(rows[0]) });
 			});
 		});
+	});
+
+	server.get('/api/auth/ping', authHelpers.ensureAuthenticated, function(req, res, next){
+		res.send(200, 'OK');
+		return next();
 	});
 }
