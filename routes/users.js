@@ -96,7 +96,7 @@ module.exports = function(server, knex){
 					publickey : base64.encode(req.body.publickey)
 				}
 
-				knex('users').insert({username: req.body.username, password: hash, salt: salt, privatekey: req.body.privatekey, publickey: base64encoded.publickey})
+				knex('users').insert({username: req.body.username, password: hash, salt: salt, privatekey: req.body.privatekey, publickey: req.body.publickey})
 				.then(function(rows){
 					console.log("POST /api/user DB insert: %s", rows);
 					res.send(200, 'OK');
