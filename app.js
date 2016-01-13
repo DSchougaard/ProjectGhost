@@ -115,13 +115,6 @@ users(server, knex);
 auth(server, knex);
 passwords(server, knex);
 
-// test for authentication
-server.get('/api/auth_test', authHelpers.ensureAuthenticated, function(req, res, next){
-	console.log("This should only be printed if authenticated. %s.", req.user);
-	res.send(200, 'Congratulations! You are authorized, ' + req.user);
-	return next();
-});
-
 // Finally catch all routes for static content.
 server.get('/', restify.serveStatic({
   directory: __dirname+'/public',

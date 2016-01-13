@@ -31,4 +31,8 @@ wipe:
 test: wipe
 	NODE_ENV=test mocha
 
-.PHONY: test
+cov: wipe
+	@NODE_ENV=test istanbul cover _mocha -- -R spec
+
+
+.PHONY: test cov
