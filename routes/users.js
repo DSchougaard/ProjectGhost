@@ -6,6 +6,7 @@ const bcrypt 		= require('bcrypt');
 const argon2 		= require('argon2');
 
 //const validate 		= require(__base + 'helpers/validate.js');
+const base64 = require(__base + 'helpers/base64.js');
 
 module.exports = function(server, knex){
 	server.get('/api/users', function(req, res, next){
@@ -91,18 +92,18 @@ module.exports = function(server, knex){
 					return next(new restify.errors.InternalServerError("Error in crypto libraries."));
 				}
 
-				knex('users').insert({username: req.body.username, password: hash, salt: salt, privatekey: req.body.privatekey, publickey: req.body.publickey})
+				var base64encoded = {
+					publickey : base64.encode(req.body.publickey)
+				}
+
+				knex('users').insert({username: req.body.username, password: hash, salt: salt, privatekey: req.body.privatekey, publickey: base64encoded.publickey})
 				.then(function(rows){
 					console.log("POST /api/user DB insert: %s", rows);
 					res.send(200, 'OK');
 					return next();
 				})
 				.catch(function(error){
-					// SQLite 3 Username Exists error
-					// DB Error: Error: insert into "users" ("password", "salt", "username") values ('password', '', 'daniel') - SQLITE_CONSTRAINT: UNIQUE constraint failed: users.username.
-					console.log("%j", error);
-					console.log("-------------")
-					console.log(JSON.stringify(error));
+					// SQLite Username Exists error
 					if( error.errno == 19 && error.code === 'SQLITE_CONSTRAINT' ){
 						res.send(400, "Username already exists.");
 						return next();
