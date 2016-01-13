@@ -10,7 +10,7 @@ const publicKey 		= fs.readFileSync(__base + '/crypto/jwt/ghost-jwt.crt');
 
 exports.createJWT = function(user) {
 	var payload = {
-		sub: user.id,
+		uid: user.id,
 		iat: moment().unix(),
 		exp: moment().add(14, 'days').unix()
 	};
@@ -29,13 +29,16 @@ exports.ensureAuthenticated = function(req, res, next) {
 			// Wrong token!
 			return next(new restify.errors.UnauthorizedError(err));
 		}
-
+		
+		// The token has expired
 		if( decoded.exp <= moment().unix() ){
-			// The token has expired
-			console.log('User %s tried to authorize using an expired token.', decoded.sub);
+			console.log('User %s tried to authorize using an expired token.', decoded.uid);
 			return next(new restify.errors.UnauthorizedError('Token has expired'));
 		}
-		req.user = decoded.sub;
+
+		// Append user ID to request
+		req.user = decoded.uid;
+		// Pass on the request
 		return next();
 	});
 };
