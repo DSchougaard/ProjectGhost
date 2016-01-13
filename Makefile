@@ -19,6 +19,9 @@ jwt:
 unit:
 	openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:4096 -keyout test/unittest-test.key -subj $(SSL_SUBJ) -out test/unittest-test.crt	
 
+unittestdb:
+	cp ghost.sqlite unittest.sqlite
+	cp ghost.sqlite unittest.sqlite.orig
 
 wipe:
 	rm unittest.sqlite
