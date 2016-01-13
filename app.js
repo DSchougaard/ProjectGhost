@@ -57,7 +57,7 @@ const knex = require('knex')({
 
 // Create table USERS if it doesn't exist
 knex.schema.createTableIfNotExists('users', function(table){
-	table.increments().primary();
+	table.increments('id').primary();
 	table.string("username").unique().notNullable();
 	table.string("salt").notNullable();
 	table.string("password").notNullable();
@@ -68,10 +68,11 @@ knex.schema.createTableIfNotExists('users', function(table){
 })
 
 knex.schema.createTableIfNotExists('passwords', function(table){
-	table.increments().primary();
+	table.increments('id').primary();
 	table.integer('owner').references('id').inTable('users').notNullable();
 	talbe.string('title').notNullable();
 	table.string('password').notNullable();
+	table.binary('iv', 16).notNullable();
 	table.string('username').nullable();
 	table.string('note').nullable();
 })
