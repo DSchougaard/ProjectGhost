@@ -11,7 +11,6 @@ var fse = require('fs-extra');
 var rsa = require('node-rsa');
 
 var crypto = require('crypto');
-var encrypt = require(__base + '../helpers/encrypt.js');
 
 var base64 = require('../helpers/base64.js');
 var restifyInstance = require('../app.js');
@@ -23,11 +22,11 @@ var testUser = {
 	password: 				'password',
 	privatekey: 			fs.readFileSync('test/unittest-test.key').toString('utf8'),
 	publickey: 				fs.readFileSync('test/unittest-test.crt').toString('utf8'),
-	
+
 };
 testUser.base64 = {
 		publickey: base64.encode(testUser.publickey)
-	}
+}
 //var IV = encrypt.generateIV();
 //var ciphertext = encrypt.encrypt()
 
@@ -86,7 +85,7 @@ describe("API /user/", function(){
 			.post('/api/user')
 			.field('username', testUser.username)
 			.field('privatekey', testUser.privatekey)
-			.field('publickey', testUser.publickey)
+			.field('publickey', testUser.base64.publickey)
 			.expect(400)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -100,7 +99,7 @@ describe("API /user/", function(){
 			.post('/api/user')
 			.field('password', testUser.password)
 			.field('privatekey', testUser.privatekey)
-			.field('publickey', testUser.publickey)
+			.field('publickey', testUser.base64.publickey)
 			.expect(400)
 			.end(function(err,res){
 				if(err) return done(err);
@@ -114,7 +113,7 @@ describe("API /user/", function(){
 			.post('/api/user')
 			.field('username', testUser.username)
 			.field('password', testUser.password)
-			.field('publickey', testUser.publickey)
+			.field('publickey', testUser.base64.publickey)
 			.expect(400)
 			.end(function(err,res){
 				if(err) return done(err);
@@ -143,7 +142,7 @@ describe("API /user/", function(){
 			.field('username', 'User1')
 			.field('password', testUser.password)
 			.field('privatekey', testUser.privatekey)
-			.field('publickey', testUser.publickey)
+			.field('publickey', testUser.base64.publickey)
 			.expect(400)
 			.end(function(err, res){
 				if(err){
@@ -178,7 +177,7 @@ describe("API /user/", function(){
 
 				newChecksum.should.not.equal(originalChecksum);
 				return done();
-			})
+			});
 		});
 
 		it("Get all users should now return one more user", function(done) {
@@ -203,7 +202,7 @@ describe("API /user/", function(){
 			.end(function(err,res){
 				if(err) return done(err);
 				done();
-			})
+			});
 		})
 		it('should successfully delete a user', function(done){
 			server
@@ -213,7 +212,7 @@ describe("API /user/", function(){
 			.end(function(err,res){
 				if(err) return done(err);
 				done();
-			})
+			});
 		});
 
 		it('should return one less user', function(done){
@@ -225,7 +224,7 @@ describe("API /user/", function(){
 				(res.body).should.have.length(2);
 				(res.body).should.deepEqual( [{'username':'User1', 'publickey': testUser.base64.publickey}, {'username':'User2', 'publickey': testUser.base64.publickey}] );
 				done();
-			})
+			});
 		});
 	})
 	
