@@ -5,7 +5,7 @@ const crypto 		= require('crypto');
 const bcrypt 		= require('bcrypt');
 const argon2 		= require('argon2');
 
-//const validate 		= require(__base + 'helpers/validate.js');
+const validate 		= require(__base + 'helpers/validate.js');
 const base64 = require(__base + 'helpers/base64.js');
 
 module.exports = function(server, knex){
@@ -55,17 +55,19 @@ module.exports = function(server, knex){
 		*/	
 
 		// Validate Input
-		if( req.body.username === undefined || req.body.username === '' || !validator.isAlphanumeric(req.body.username) ){
+		if( !validate.username(req.body.username) ){
 			console.log("POST /api/user Missing username");
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing username"));
 		}
 
-		if( req.body.password === undefined || req.body.password === '' ){
+		//if( req.body.password === undefined || req.body.password === '' ){
+		if( !validate.password(req.body.password) ){
 			console.log("POST /api/user Missing password");
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing password"));
 		}
 
-		if( req.body.privatekey === undefined || req.body.privatekey === '' ){
+		//if( req.body.privatekey === undefined || req.body.privatekey === '' ){
+		if( !validate.privateKey(req.body.privatekey) ){
 			console.log("POST /api/user Missing private key");
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing private key"));
 		}
