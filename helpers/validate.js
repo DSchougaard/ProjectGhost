@@ -9,7 +9,7 @@ exports.password = function(password){
 }
 
 exports.privateKey = function(privateKey){
-	return ( privateKey !== undefined && privateKey !== '' && this.base64(privateKey) );
+	return ( privateKey !== undefined && privateKey !== ''  );
 }
 
 exports.publicKey = function(publicKey){
@@ -17,5 +17,5 @@ exports.publicKey = function(publicKey){
 }
 
 exports.base64 = function(base64){
-	return !base64.match(/^([A-Za-z0-9+\/]{4})*([A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}==)$/);
+	return base64.match(/^([A-Za-z0-9+\/]{4})*([A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}==)$/);
 }
