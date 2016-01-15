@@ -54,6 +54,11 @@ var knex = require('knex')({
 	client: opts.database,
 	connection: opts.connection
 });
+// FOR SOME FUCKING REASON SQLITE DOES NOT HAVE FOREIGN KEYS ENABLED PER DEFAULT
+// SO IT HAS TO BE ENABLED MANUALLY.....
+knex.raw('PRAGMA foreign_keys = ON')
+.then(function(resp){ });
+
 
 // Create table USERS if it doesn't exist
 knex.schema.createTableIfNotExists('users', function(table){
@@ -69,16 +74,17 @@ knex.schema.createTableIfNotExists('users', function(table){
 
 knex.schema.createTableIfNotExists('passwords', function(table){
 	table.increments('id').primary();
-	table.integer('owner').references('id').inTable('users').notNullable();
-	talbe.string('title').notNullable();
+	table.integer('owner').unsigned().references('id').inTable('users');
+	table.integer('parent').unsigned().references('id').inTable('passwords');
+	table.string('title').notNullable();
 	table.string('password').notNullable();
 	table.binary('iv', 16).notNullable();
 	table.string('username').nullable();
 	table.string('note').nullable();
 })
 .catch(function(error){
-
 });
+
 
 /*
 	Passwords Table
