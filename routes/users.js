@@ -72,7 +72,7 @@ module.exports = function(server, knex){
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing private key"));
 		}
 
-		if( req.body.publickey === undefined || req.body.publickey === '' ){
+		if( !validate.publicKey(req.body.publickey) ){
 			console.log("POST /api/user Missing public key");
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing public key"));
 		}
@@ -128,7 +128,8 @@ module.exports = function(server, knex){
 			Username: String
 		*/	
 
-		if( req.body.username === undefined || req.body.username === '' || !validator.isAlphanumeric(req.body.username) ){
+		//if( req.body.username === undefined || req.body.username === '' || !validator.isAlphanumeric(req.body.username) ){
+		if( !validate.username(req.body.username) ){
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing username"));
 		}
 
