@@ -5,6 +5,7 @@ global.__base 		= __dirname + '/';
 // Libraries
 const restify 			= require('restify');
 const fs				= require('fs');
+const bunyan 			= require('bunyan');
 
 // Routes
 const users 			= require(__base + 'routes/users.js');
@@ -17,6 +18,22 @@ const authHelpers 		= require(__base + 'helpers/authHelpers.js');
 
 // Load config file
 const config 			= require(__base + 'config.json');
+
+// Configure Loggers
+var log = bunyan.createLogger({
+    name: 'Ghost',
+    streams: [{
+    	level: 'info',
+        path: __base + 'logs/ghost.info.log',
+        // `type: 'file'` is implied
+    },{
+    	level: 'fatal',
+    	path: __base + 'logs/ghost.fatal.log',
+    },{
+    	level: 'error',
+    	path: __base +'logs/ghost.error.log'
+    }]
+});
 
 
 /*
@@ -39,13 +56,14 @@ if( config.database === 'sqlite' ){
 if( process.env.NODE_ENV === 'test' ){
 	opts.connection.filename = './unittest.sqlite';
 }
+log.info("Bootstrapping Project Ghost with the following options:\n%j", opts);
 
-console.log("Bootstrapping Project Ghost with the following options:\n%j", opts);
 
 var server = restify.createServer({
 	certificate: fs.readFileSync( opts.ssl_cert ),
 	key: fs.readFileSync( opts.ssl_key ),
-	name: "Project Ghost"
+	name: "Project Ghost",
+	log: log
 });
 server.use(restify.bodyParser());
 
@@ -56,11 +74,12 @@ var knex = require('knex')({
 });
 // FOR SOME FUCKING REASON SQLITE DOES NOT HAVE FOREIGN KEYS ENABLED PER DEFAULT
 // SO IT HAS TO BE ENABLED MANUALLY.....
-knex.raw('PRAGMA foreign_keys = ON')
-.then(function(resp){ });
+knex.raw('PRAGMA foreign_keys = ON').then(function(resp){ });
 
 
-// Create table USERS if it doesn't exist
+/*
+	Database Table Create
+*/
 knex.schema.createTableIfNotExists('users', function(table){
 	table.increments('id').primary();
 	table.string("username").unique().notNullable();
@@ -72,10 +91,19 @@ knex.schema.createTableIfNotExists('users', function(table){
 .catch(function(error){
 })
 
+knex.schema.createTableIfNotExists('structures', function(table){
+	table.increments('id').primary();
+	table.integer('owner').unsigned().references('id').inTable('users').notNullable();
+	table.integer('parent').unsigned().references('id').inTable('structures');
+	table.string('title');
+})
+.catch(function(error){
+})
+
 knex.schema.createTableIfNotExists('passwords', function(table){
 	table.increments('id').primary();
 	table.integer('owner').unsigned().references('id').inTable('users');
-	table.integer('parent').unsigned().references('id').inTable('passwords');
+	table.integer('parent').unsigned().references('id').inTable('structures');
 	table.string('title').notNullable();
 	table.string('password').notNullable();
 	table.binary('iv', 16).notNullable();
