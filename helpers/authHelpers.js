@@ -16,14 +16,7 @@ exports.createJWT = function(user) {
 	};
 	return jwt.sign(payload, privateKey, {algorithm: 'RS256'});
 }
-exports.createExpiredJWT = function(user) {
-	var payload = {
-		uid: user.id,
-		iat: 0,
-		exp: 20000
-	};
-	return jwt.sign(payload, privateKey, {algorithm: 'RS256'});
-}
+
 exports.ensureAuthenticated = function(req, res, next) {
 	if (!req.headers.authorization) {
 		return next(new restify.errors.UnauthorizedError('No Authorization header was found'));
