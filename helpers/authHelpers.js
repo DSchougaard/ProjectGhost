@@ -16,24 +16,35 @@ exports.createJWT = function(user) {
 	};
 	return jwt.sign(payload, privateKey, {algorithm: 'RS256'});
 }
-
+exports.createExpiredJWT = function(user) {
+	var payload = {
+		uid: user.id,
+		iat: 0,
+		exp: 20000
+	};
+	return jwt.sign(payload, privateKey, {algorithm: 'RS256'});
+}
 exports.ensureAuthenticated = function(req, res, next) {
 	if (!req.headers.authorization) {
-		return next(new restify.errors.UnauthorizedError('No Authorization header was found.'));
+		return next(new restify.errors.UnauthorizedError('No Authorization header was found'));
 	}
 	// Extract token from the request headers
 	var token = req.headers.authorization.split(' ')[1];
 
 	jwt.verify(token, publicKey, function(err, decoded){
 		if(err){
-			// Wrong token!
-			return next(new restify.errors.UnauthorizedError(err));
-		}
-		
-		// The token has expired
-		if( decoded.exp <= moment().unix() ){
-			console.log('User %s tried to authorize using an expired token.', decoded.uid);
-			return next(new restify.errors.UnauthorizedError('Token has expired'));
+			// Cue Error Handling
+			if( err.name === 'JsonWebTokenError' ){
+				// Invalid Signature
+				return next(new restify.errors.UnauthorizedError('Invalid auth token'));
+			}else if( err.name === 'TokenExpiredError' ){
+				// The token was expired
+				console.log('User tried to authorize using an expired token');
+				return next(new restify.errors.UnauthorizedError('Token has expired'));	
+			}else{
+				console.log('Undefined error in verifying JWT');
+				return next(new restify.UnauthorizedError('Unknown failure during JWT verification'));
+			}
 		}
 
 		// Append user ID to request
