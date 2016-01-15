@@ -1,0 +1,8 @@
+{	
+	"database": {
+		"tableNames": {
+			"users": "users",
+			"passwords": "passwords"
+		}
+	}
+}
