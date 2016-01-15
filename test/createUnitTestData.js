@@ -47,6 +47,15 @@ knex.schema.createTableIfNotExists('users', function(table){
 .catch(function(error){
 })
 
+knex.schema.createTableIfNotExists('structures', function(table){
+	table.increments('id').primary();
+	table.integer('owner').unsigned().references('id').inTable('users').notNullable();
+	table.integer('parent').unsigned().references('id').inTable('structures');
+	table.string('title');
+})
+.catch(function(error){
+})
+
 knex.schema.createTableIfNotExists('passwords', function(table){
 	table.increments('id').primary();
 	table.integer('owner').unsigned().references('id').inTable('users');
