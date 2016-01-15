@@ -6,18 +6,13 @@ var knex = require('knex')({
 	client: 'sqlite3',
 	connection: {
 		filename: './unittest.sqlite'
-	}/*,
-	pool: {
-		afterCreate: (conn, cb) ->
-			conn.run('PRAGMA foreign_keys = ON', cb);
-	}*/
-
-})
+	}
+});
 
 knex.raw('PRAGMA foreign_keys = ON')
 .then(function(resp){
 	console.log("Pragma enabled. "+ resp);
-})
+});
 
 
 /*var knex = require('knex')({
@@ -30,8 +25,13 @@ knex.raw('PRAGMA foreign_keys = ON')
 	}
 });*/
 
-knex.schema.dropTableIfExists('users');
-knex.schema.dropTableIfExists('passwords');
+//knex.schema.dropTableIfExists('users');
+//knex.schema.dropTableIfExists('passwords');
+//knex.schema.dropTableIfExists('structures');
+
+
+
+
 
 console.log('Creating unittest data');
 
@@ -47,6 +47,7 @@ knex.schema.createTableIfNotExists('users', function(table){
 .catch(function(error){
 })
 
+
 knex.schema.createTableIfNotExists('structures', function(table){
 	table.increments('id').primary();
 	table.integer('owner').unsigned().references('id').inTable('users').notNullable();
@@ -59,7 +60,7 @@ knex.schema.createTableIfNotExists('structures', function(table){
 knex.schema.createTableIfNotExists('passwords', function(table){
 	table.increments('id').primary();
 	table.integer('owner').unsigned().references('id').inTable('users');
-	table.integer('parent').unsigned().references('id').inTable('passwords');
+	table.integer('parent').unsigned().references('id').inTable('structures');
 	table.string('title').notNullable();
 	table.string('password').notNullable();
 	table.binary('iv', 16).notNullable();
@@ -67,7 +68,6 @@ knex.schema.createTableIfNotExists('passwords', function(table){
 	table.string('note').nullable();
 })
 .catch(function(error){
-	console.log(error);
 });
 
 var privateKey = fs.readFileSync('test/unittest-test.key');
@@ -137,7 +137,39 @@ var passwordData = [
 		iv 			: '1111111111111111',
 		note 		: 'Oh no... Not again...' 
 	}
-]
+];
+
+
+var structuresData = [
+	{
+		owner: 1,
+		parent: null,
+		title: 'How To Sith'
+	},
+	{
+		owner: 1,
+		parent: 1,
+		title: 'How To Train Your Apprentice'
+	},
+	{
+		owner: 1,
+		parent: 1,
+		title: 'Space and Star Destroyers'
+	},
+	{
+		owner: 2,
+		parent: null,
+		title: 'Fear Is the Path to the Dark Side'
+	}
+];
+
+
+
+
+
+
+
+
 
 
 knex('users').insert(userData)
@@ -147,6 +179,21 @@ knex('users').insert(userData)
 .catch(function(err){
 	console.log('Error inserting userData: ' + err);
 });
+
+
+
+
+knex('structures').insert(structuresData)
+.then(function(rows){
+	console.log('structuresData succesfully inserted');
+})
+.catch(function(err){
+	console.log('Error inserting structuresData: ' + err);
+})
+
+
+
+
 
 
 knex('passwords').insert(passwordData)
