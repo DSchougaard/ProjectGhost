@@ -58,7 +58,6 @@ module.exports = function(server, knex){
 		if( req.body.username === undefined || req.body.username === '' || !validator.isAlphanumeric(req.body.username) ){
 			console.log("POST /api/user Missing username");
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing username"));
-
 		}
 
 		if( req.body.password === undefined || req.body.password === '' ){
