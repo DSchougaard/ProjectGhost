@@ -32,6 +32,9 @@ var log = bunyan.createLogger({
     },{
     	level: 'error',
     	path: __base +'logs/ghost.error.log'
+    },{
+    	level: 'debug',
+    	path: __base + 'logs/ghost.debug.log'
     }]
 });
 
@@ -145,9 +148,9 @@ server.get('/api/ping', function(req, res, next){
 });
 
 // Routes
-users(server, knex);
-auth(server, knex);
-passwords(server, knex);
+users(server, knex, log);
+auth(server, knex, log);
+passwords(server, knex, log);
 
 // Finally catch all routes for static content.
 server.get('/', restify.serveStatic({
