@@ -20,6 +20,7 @@ unit:
 	openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:4096 -keyout test/unittest-test.key -subj $(SSL_SUBJ) -out test/unittest-test.crt	
 
 test:
+	rm logs/*
 	rm -f unittest.sqlite
 	node misc/createUnitTestData.js
 	NODE_ENV=test mocha
