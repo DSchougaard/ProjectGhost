@@ -11,6 +11,7 @@ const bunyan 			= require('bunyan');
 const users 			= require(__base + 'routes/users.js');
 const auth 				= require(__base + 'routes/auth.js');
 const passwords			= require(__base + 'routes/password.js');
+const category 			= require(__base + 'routes/category.js');
 
 
 //Helpers
@@ -151,6 +152,7 @@ server.get('/api/ping', function(req, res, next){
 users(server, knex, log);
 auth(server, knex, log);
 passwords(server, knex, log);
+category(server, knex, log);
 
 // Finally catch all routes for static content.
 server.get('/', restify.serveStatic({
