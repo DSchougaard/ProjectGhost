@@ -95,10 +95,10 @@ knex.schema.createTableIfNotExists('users', function(table){
 .catch(function(error){
 })
 
-knex.schema.createTableIfNotExists('structures', function(table){
+knex.schema.createTableIfNotExists('categories', function(table){
 	table.increments('id').primary();
 	table.integer('owner').unsigned().references('id').inTable('users').notNullable();
-	table.integer('parent').unsigned().references('id').inTable('structures');
+	table.integer('parent').unsigned().references('id').inTable('categories');
 	table.string('title');
 })
 .catch(function(error){
@@ -107,7 +107,7 @@ knex.schema.createTableIfNotExists('structures', function(table){
 knex.schema.createTableIfNotExists('passwords', function(table){
 	table.increments('id').primary();
 	table.integer('owner').unsigned().references('id').inTable('users');
-	table.integer('parent').unsigned().references('id').inTable('structures');
+	table.integer('parent').unsigned().references('id').inTable('categories');
 	table.string('title').notNullable();
 	table.string('password').notNullable();
 	table.binary('iv', 16).notNullable();
