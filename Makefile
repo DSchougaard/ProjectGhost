@@ -25,7 +25,7 @@ count:
 
 
 test:
-	rm logs/*
+	rm -f logs/*
 	rm -f unittest.sqlite
 	node misc/createUnitTestData.js
 	NODE_ENV=test mocha
