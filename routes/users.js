@@ -8,9 +8,9 @@ const argon2 		= require('argon2');
 const validate 		= require(__base + 'helpers/validate.js');
 const base64 		= require(__base + 'helpers/base64.js');
 
-module.exports = function(server, knex){
+module.exports = function(server, knex, log){
 	server.get('/api/users', function(req, res, next){
-		console.log("GET /api/users");
+		log.info({ method: 'GET', path: '/api/users' });
 
 		knex.select('username', 'publickey').from('users')
 		.then(function(rows){
@@ -25,17 +25,19 @@ module.exports = function(server, knex){
 	});
 
 	server.get('/api/user/:id', function(req, res, next){
+		log.info({method:'GET', path: '/api/users', payload: req.params.id});
 		console.log('GET /api/user/'+req.params.id);
 
 		knex.select('username', 'publickey').from('users').where('id', req.params.id)
 		.then(function(rows){
 			if(rows.length == 0){
-				console.log('GET /api/user/%d found no user in the database.', req.params.id);
+				
+				log.info({method: 'GET', path: '/api/user', payload: req.params.id, message: 'User not found in database.'});
 				return next( new restify.errors.NotFoundError('Username not found'));
 			}
 
 			if( rows.length > 1 ){
-				console.log('GET /api/user/%d found several users. Catastrophic error.', req.params.id);
+				log.error({method: 'GET', path: '/api/user', payload: req.params.id, message: 'Found several users with same ID. Catastrophic error.'});
 				return next( new restify.errors.InternalServerError('Catastropic internal server error.'));
 			}
 
@@ -45,7 +47,7 @@ module.exports = function(server, knex){
 	})
 
 	server.post('/api/user', function(req, res, next){
-		console.log("POST /api/user %j", req.body.username);	
+		log.info({ method: 'POST', path: '/api/user', payload: req.body.username });
 		/*
 			Request Content
 			Username: String
@@ -56,32 +58,30 @@ module.exports = function(server, knex){
 
 		// Validate Input
 		if( !validate.username(req.body.username) ){
-			console.log("POST /api/user Missing username");
+			log.debug({ method: 'POST', path: '/api/user', message: 'Missing username' });
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing username"));
 		}
 
-		//if( req.body.password === undefined || req.body.password === '' ){
 		if( !validate.password(req.body.password) ){
-			console.log("POST /api/user Missing password");
+			log.debug({ method: 'POST', path: '/api/user', message: 'Missing password' });
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing password"));
 		}
 
-		//if( req.body.privatekey === undefined || req.body.privatekey === '' ){
 		if( !validate.privateKey(req.body.privatekey) ){
-			console.log("POST /api/user Missing private key");
+			log.debug({ method: 'POST', path: '/api/user', message: 'Missing private key' });
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing private key"));
 		}
 
 		if( !validate.publicKey(req.body.publickey) ){
-			console.log("POST /api/user Missing public key");
+			log.debug({ method: 'POST', path: '/api/user', message: 'Missing public key' });
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing public key"));
 		}
 
 		// Generating a secure salt
 		bcrypt.genSalt(function(err, salt){
 			if(err){
-				console.log("POST /api/user Error generating salt: %s.", err);
-				next(new restify.errors.InternalServerError("Error generating salt."));
+				log.error({ method: 'POST', path: '/api/user', message: 'Error generating salt', error: err });
+				next(new restify.errors.InternalServerError("Error generating salt"));
 			}
 
 			// Hashing the password
@@ -89,8 +89,8 @@ module.exports = function(server, knex){
 				req.body.password = '';
 
 				if(err){
-					console.log("POST /api/user Error in producing hash of input.");
-					return next(new restify.errors.InternalServerError("Error in crypto libraries."));
+					log.error({ method: 'POST', path: '/api/user', message: 'Error in producing hash of input', error: err });
+					return next(new restify.errors.InternalServerError("Error in crypto libraries"));
 				}
 
 				var base64encoded = {
@@ -99,7 +99,7 @@ module.exports = function(server, knex){
 
 				knex('users').insert({username: req.body.username, password: hash, salt: salt, privatekey: req.body.privatekey, publickey: req.body.publickey})
 				.then(function(rows){
-					console.log("POST /api/user DB insert: %s", rows);
+					log.info({ method: 'POST', path: '/api/user', payload: req.body.username, message: 'Created new user' });
 					res.send(200, 'OK');
 					return next();
 				})
@@ -109,7 +109,7 @@ module.exports = function(server, knex){
 						res.send(400, "Username already exists.");
 						return next();
 					}
-					console.log("POST /api/user Undefined DB error: %s.", error);
+					log.error({ method: 'POST', path: '/api/user', payload: req.body.username, message: 'Undefined DB error', error: error });
 					res.send(500, "Unknown database error.");
 					return next();
 				});
@@ -122,7 +122,7 @@ module.exports = function(server, knex){
 	});
 
 	server.del('/api/user', function(req, res, next){
-		console.log("DEL /api/user")
+		log.info({ method: 'DEL', path: '/api/user', payload: req.body.username });
 		/*
 			Request Content
 			Username: String
@@ -137,12 +137,11 @@ module.exports = function(server, knex){
 		.then(function(rows){
 			if( rows === 0 ){
 				// No user was found to be deleted
-				console.log("DEL /api/user client supplied non-existant username.");
+				log.debug({ method: 'DEL', path: '/api/user', payload: req.body.username, message: 'Client supplied non-existant username' });
 				res.send(400, 'username not found');
 				return next();
 			}
-
-			console.log("Deleted user with username = %s.", req.body.username);
+			log.info({ method: 'DEL', path: '/api/user', payload: req.body.username, message: 'User deleted' });
 			res.send(200, 'OK');
 			return next();
 		})
