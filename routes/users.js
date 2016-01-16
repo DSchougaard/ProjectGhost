@@ -7,6 +7,7 @@ const argon2 		= require('argon2');
 
 const validate 		= require(__base + 'helpers/validate.js');
 const base64 		= require(__base + 'helpers/base64.js');
+const authHelpers	= require(__base + 'helpers/authHelpers.js');
 
 module.exports = function(server, knex, log){
 	server.get('/api/users', function(req, res, next){
@@ -24,29 +25,7 @@ module.exports = function(server, knex, log){
 		})
 	});
 
-	server.get('/api/user/:id', function(req, res, next){
-		log.info({method:'GET', path: '/api/users', payload: req.params.id});
-		console.log('GET /api/user/'+req.params.id);
-
-		knex.select('username', 'publickey').from('users').where('id', req.params.id)
-		.then(function(rows){
-			if(rows.length == 0){
-				
-				log.info({method: 'GET', path: '/api/user', payload: req.params.id, message: 'User not found in database.'});
-				return next( new restify.errors.NotFoundError('Username not found'));
-			}
-
-			if( rows.length > 1 ){
-				log.error({method: 'GET', path: '/api/user', payload: req.params.id, message: 'Found several users with same ID. Catastrophic error.'});
-				return next( new restify.errors.InternalServerError('Catastropic internal server error.'));
-			}
-
-			res.send(200, rows[0]);
-			return next();
-		});
-	})
-
-	server.post('/api/user', function(req, res, next){
+	server.post('/api/user', authHelpers.ensureAuthenticated, function(req, res, next){
 		log.info({ method: 'POST', path: '/api/user', payload: req.body.username });
 		/*
 			Request Content
@@ -57,6 +36,8 @@ module.exports = function(server, knex, log){
 		*/	
 
 		// Validate Input
+
+
 		if( !validate.username(req.body.username) ){
 			log.debug({ method: 'POST', path: '/api/user', message: 'Missing username' });
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing username"));
@@ -117,11 +98,69 @@ module.exports = function(server, knex, log){
 		});
 	});
 
-	server.put('/api/user', function(req, res, next){
-		next(new restify.errors.NotImplementedError("Later..."));
+	server.put('/api/user', authHelpers.ensureAuthenticated, function(req, res, next){
+		log.info({ method: 'PUT', path: '/api/user', payload: req.user });
+
+		/*
+			Contents:
+			-----------
+			username
+			password
+			publickey
+			privatekey
+		*/
+
+		// Validate input
+		if( !validate.json(req.body) ){
+			log.debug({ method: 'PUT', path: '/api/user', payload: req.body, message: 'Invalid format of request'});
+			return next(new restify.errors.BadRequestError('Error: Invalid format of request'));
+		}
+
+		if( username !== undefined && !validate.username(req.body.username) ){
+			log.debug({ method: 'PUT', path: '/api/user', payload: req.body.username, message: 'Invalid username'});
+			return next(new restify.errors.BadRequestError("Incomplete request: Invalid username"));
+		}
+
+		if( password !== undefined && !validate.password(req.body.password) ){
+			log.debug({ method: 'PUT', path: '/api/user', payload: req.body.username, message: 'Invalid password'});
+			return next(new restify.errors.BadRequestError("Incomplete request: Invalid password"));
+		}
+
+		if( privatekey !== undefined && !validate.privatekey(req.body.privatekey) ){
+			log.debug({ method: 'PUT', path: '/api/user', payload: req.body.username, message: 'Invalid private key'});
+			return next(new restify.errors.BadRequestError("Incomplete request: Invalid private key"));
+		}
+
+		if( publickey !== undefined && !validate.publickey(req.body.publickey) ){
+			log.debug({ method: 'PUT', path: '/api/user', payload: req.body.username, message: 'Invalid public key'});
+			return next(new restify.errors.BadRequestError("Incomplete request: Invalid public key"));
+		}
+
+
+		knex('users').where('id', req.user).update(req.body)
+		.then(function(rows){
+			if( rows < 1 ){
+				log.debug({ method: 'PUT', path: '/api/user', payload: req.body, message: 'User ID not found' });
+				return next( new restify.errors.NotFoundError('User ID not found') );
+			}
+
+			if( rows > 1 ){
+				log.error({ method: 'PUT', path: '/api/user', payload: req.body, message: 'Multiple users found with same ID.' });
+				return next( new restify.errors.InternalServerError('Catastropic internal database error') );
+			}
+
+			res.send(200, 'OK');
+			return next();
+
+		})
+		.catch(function(err){
+			log.debug({ method: 'PUT', path: '/api/user', payload: req.body, message: 'Database error', error: err });
+			return next( new restify.errors.InternalServerError('Undefined database error') );
+
+		})
 	});
 
-	server.del('/api/user', function(req, res, next){
+	server.del('/api/user', authHelpers.ensureAuthenticated, function(req, res, next){
 		log.info({ method: 'DEL', path: '/api/user', payload: req.body.username });
 		/*
 			Request Content
@@ -151,7 +190,55 @@ module.exports = function(server, knex, log){
 		});
 	});
 
-	server.get('/api/user/:id/publickey', function(req, res, next){
-		next(new restify.errors.NotImplementedError("API endpoint not implemented yet."));
-	})
+	server.get('/api/user/:id', authHelpers.ensureAuthenticated, function(req, res, next){
+		log.info({method:'GET', path: '/api/users', payload: req.params.id});
+		console.log('GET /api/user/'+req.params.id);
+
+		knex.select('username', 'publickey').from('users').where('id', req.params.id)
+		.then(function(rows){
+			if(rows.length == 0){
+				
+				log.info({method: 'GET', path: '/api/user', payload: req.params.id, message: 'User not found in database.'});
+				return next( new restify.errors.NotFoundError('Username not found'));
+			}
+
+			if( rows.length > 1 ){
+				log.error({method: 'GET', path: '/api/user', payload: req.params.id, message: 'Found several users with same ID. Catastrophic error.'});
+				return next( new restify.errors.InternalServerError('Catastropic internal server error.'));
+			}
+
+			res.send(200, rows[0]);
+			return next();
+		});
+	});
+
+	server.get('/api/user/:id/publickey', authHelpers.ensureAuthenticated, function(req, res, next){
+		log.info({ method: 'POST', path: '/api/user/:id/publickey', payload: req.params.id });
+
+		if( !validate.id( req.params.id ) ){
+			log.debug({ method: 'POST', path: '/api/user/:id/publickey', payload: req.params.id, message: 'Invalid user ID' });
+			return next(new restify.errors.BadRequestError("Incomplete request: Invalid user ID"));
+		}
+
+		knex.select('publickey').from('users').where('id', req.params.id)
+		.then(function(rows){
+			if( rows < 1 ){
+				log.debug({ method: 'POST', path: '/api/user/:id/publickey', payload: req.params.id, message: 'User ID not found' });
+				return next( new restify.errors.NotFoundError('User ID not found') );
+			}
+
+			if( rows > 1 ){
+				log.error({ method: 'POST', path: '/api/user/:id/publickey', payload: req.params.id, message: 'Multiple users found with same ID.' });
+				return next( new restify.errors.InternalServerError('Catastropic internal database error') );
+			}
+
+			res.send(200, rows[0].publickey);
+			return next();
+
+		})
+		.catch(function(err){
+			log.debug({ method: 'POST', path: '/api/user/:id/publickey', payload: req.params.id, message: 'Database error', error: err });
+			return next( new restify.errors.InternalServerError('Undefined database error') );
+		});
+	});
 };

@@ -1,27 +1,27 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 global.__base 		= __dirname + '/';
 
-var assert = require('assert');
-var request = require('supertest');  
-var should = require('should');
-var sinon = require('sinon');
+var assert 				= require('assert');
+var request 			= require('supertest');  
+var should 				= require('should');
+var sinon 				= require('sinon');
 
-var fs = require('fs');
-var fse = require('fs-extra');
-var rsa = require('node-rsa');
+var fs 					= require('fs');
+var fse 				= require('fs-extra');
+var rsa 				= require('node-rsa');
 
-var crypto = require('crypto');
+var crypto 				= require('crypto');
 
-var base64 = require('../helpers/base64.js');
-var restifyInstance = require('../app.js');
-var server = request(restifyInstance.server);
+var base64 				= require('../helpers/base64.js');
+var restifyInstance 	= require('../app.js');
+var server 				= request(restifyInstance.server);
 
 // Test user
 var testUser = {
 	username: 				'User3',
 	password: 				'password',
-	privatekey: 			fs.readFileSync('test/unittest-test.key').toString('utf8'),
-	publickey: 				fs.readFileSync('test/unittest-test.crt').toString('utf8'),
+	privatekey: 			fs.readFileSync('misc/unittest-private.key').toString('utf8'),
+	publickey: 				fs.readFileSync('misc/unittest-public.crt').toString('utf8'),
 
 };
 testUser.base64 = {
@@ -31,11 +31,29 @@ testUser.base64 = {
 //var ciphertext = encrypt.encrypt()
 
 describe('API /users', function(){
+
+	var authToken = '';
+
+	before(function(done){
+		// Obtain auth token
+		server
+		.post('/api/auth/login')
+		.field('username', 'User1')
+		.field('password', 'password')
+		.expect(200)
+		.end(function(err, res){
+			if(err) return done(err);
+			authToken = res.body.token;
+			return done();
+		});
+	});
+
 	describe("GET", function(){
 
 		it.skip("Timeout without https", function(done){
 			var wrongServer = request.agent("http://localhost:8080");
 			wrongServer
+			.set('Authorization', 'Bearer ' + authToken)
 			.get("/api/users")
 			.end(function(err,res){
 				assert.equal(err, "Error: socket hang up");
@@ -49,6 +67,7 @@ describe('API /users', function(){
 			//request(server)
 			server
 			.get('/api/users')
+			.set('Authorization', 'Bearer ' + authToken)
 			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -61,6 +80,7 @@ describe('API /users', function(){
 		it.skip('should gracefully handle an internal DAL error', function(done){
 			server
 			.get('/api/users')
+			.set('Authorization', 'Bearer ' + authToken)
 			.expect(500)
 			.end(function(err, res){
 				err.should.equal("Internal database error");
@@ -71,6 +91,23 @@ describe('API /users', function(){
 });
 
 describe("API /user/", function(){
+
+	var authToken = '';
+
+	before(function(done){
+		// Obtain auth token
+		server
+		.post('/api/auth/login')
+		.field('username', 'User1')
+		.field('password', 'password')
+		.expect(200)
+		.end(function(err, res){
+			if(err) return done(err);
+			authToken = res.body.token;
+			return done();
+		});
+	});
+
 	describe("POST: Create a new user", function(){
 
 		/*
@@ -83,6 +120,7 @@ describe("API /user/", function(){
 		it('should fail when a password is not supplied', function(done){
 			server
 			.post('/api/user')
+			.set('Authorization', 'Bearer ' + authToken)
 			.field('username', testUser.username)
 			.field('privatekey', testUser.privatekey)
 			.field('publickey', testUser.base64.publickey)
@@ -97,6 +135,7 @@ describe("API /user/", function(){
 		it('should fail when a username is not supplied', function(done){
 			server
 			.post('/api/user')
+			.set('Authorization', 'Bearer ' + authToken)
 			.field('password', testUser.password)
 			.field('privatekey', testUser.privatekey)
 			.field('publickey', testUser.base64.publickey)
@@ -111,6 +150,7 @@ describe("API /user/", function(){
 		it('should fail when a private key is not supplied', function(done){
 			server
 			.post('/api/user')
+			.set('Authorization', 'Bearer ' + authToken)
 			.field('username', testUser.username)
 			.field('password', testUser.password)
 			.field('publickey', testUser.base64.publickey)
@@ -125,6 +165,7 @@ describe("API /user/", function(){
 		it('should fail when a public key is not supplied', function(done){
 			server
 			.post('/api/user')
+			.set('Authorization', 'Bearer ' + authToken)
 			.field('username', testUser.username)
 			.field('password', testUser.password)
 			.field('privatekey', testUser.privatekey)
@@ -139,6 +180,7 @@ describe("API /user/", function(){
 		it("Should fail at creating a user that already exists", function(done){
 			server
 			.post('/api/user')
+			.set('Authorization', 'Bearer ' + authToken)
 			.field('username', 'User1')
 			.field('password', testUser.password)
 			.field('privatekey', testUser.privatekey)
@@ -161,6 +203,7 @@ describe("API /user/", function(){
 			// Insert user
 			server
 			.post('/api/user')
+			.set('Authorization', 'Bearer ' + authToken)
 			.field('username', testUser.username)
 			.field('password', testUser.password)
 			.field('privatekey', testUser.privatekey)
@@ -183,6 +226,7 @@ describe("API /user/", function(){
 		it("Get all users should now return one more user", function(done) {
 			server
 			.get('/api/users')
+			.set('Authorization', 'Bearer ' + authToken)
 			.expect(200)
 			.end(function(err,res){
 				if(err) return done(err);
@@ -197,6 +241,7 @@ describe("API /user/", function(){
 		it('should fail on deleting non-existant user', function(done){
 			server
 			.del('/api/user')
+			.set('Authorization', 'Bearer ' + authToken)
 			.field('username', 'DoesNotExist')
 			.expect(400)
 			.end(function(err,res){
@@ -207,6 +252,7 @@ describe("API /user/", function(){
 		it('should successfully delete a user', function(done){
 			server
 			.del('/api/user')
+			.set('Authorization', 'Bearer ' + authToken)
 			.field('username', 'User3')
 			.expect(200)
 			.end(function(err,res){
@@ -218,6 +264,7 @@ describe("API /user/", function(){
 		it('should return one less user', function(done){
 			server
 			.get('/api/users')
+			.set('Authorization', 'Bearer ' + authToken)
 			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -226,6 +273,5 @@ describe("API /user/", function(){
 				done();
 			});
 		});
-	})
-	
+	});
 });
