@@ -7,24 +7,22 @@ var sinon 	= require('sinon');
 
 
 
-var fs = require('fs');
-var base64 = require('../helpers/base64.js');
-var jwt 				= require('jsonwebtoken');
-var moment = require('moment');
+var fs 		= require('fs');
+var base64 	= require('../helpers/base64.js');
+var jwt 	= require('jsonwebtoken');
+var moment 	= require('moment');
 
 // SuperTest Connection
-var restifyInstance ;
-var server = request(require('../app.js').server);
-
+var server 	= request(require('../app.js').server);
 
 // Test user
 var testUser = {
 	id: 					1,
 	username: 				'User1',
 	password: 				'password',
-	privatekey_raw: 			fs.readFileSync('test/unittest-test.key'),
-	privatekey: 			fs.readFileSync('test/unittest-test.key').toString('utf8'),
-	publickey: 				fs.readFileSync('test/unittest-test.crt').toString('utf8'),
+	privatekey_raw: 		fs.readFileSync('misc/unittest-private.key'),
+	privatekey: 			fs.readFileSync('misc/unittest-private.key').toString('utf8'),
+	publickey: 				fs.readFileSync('misc/unittest-public.crt').toString('utf8'),
 	
 };
 testUser.base64 = {
