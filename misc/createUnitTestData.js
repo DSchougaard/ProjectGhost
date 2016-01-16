@@ -1,6 +1,6 @@
-const base64 = require('../helpers/base64.js');
-const fs = require('fs');
-const bcrypt = require('bcrypt');
+const base64 	= require('../helpers/base64.js');
+const fs 		= require('fs');
+const bcrypt 	= require('bcrypt');
 
 var knex = require('knex')({
 	client: 'sqlite3',
@@ -70,8 +70,8 @@ knex.schema.createTableIfNotExists('passwords', function(table){
 .catch(function(error){
 });
 
-var privateKey = fs.readFileSync('test/unittest-test.key');
-var publicKey  = fs.readFileSync('test/unittest-test.crt');
+var privateKey = fs.readFileSync('misc/unittest-private.key');
+var publicKey  = fs.readFileSync('misc/unittest-public.crt');
 
 var userData = [
 	{
