@@ -25,7 +25,7 @@ module.exports = function(server, knex, log){
 		})
 	});
 
-	server.post('/api/user', authHelpers.ensureAuthenticated, function(req, res, next){
+	server.post('/api/user', function(req, res, next){
 		log.info({ method: 'POST', path: '/api/user', payload: req.body.username });
 		/*
 			Request Content
@@ -98,8 +98,8 @@ module.exports = function(server, knex, log){
 		});
 	});
 
-	server.put('/api/user', authHelpers.ensureAuthenticated, function(req, res, next){
-		log.info({ method: 'PUT', path: '/api/user', payload: req.user });
+	server.put('/api/user/:id', function(req, res, next){
+		log.info({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.user });
 
 		/*
 			Contents:
@@ -111,28 +111,33 @@ module.exports = function(server, knex, log){
 		*/
 
 		// Validate input
+		if( !validate.id(req.params.id) ){
+			log.debug({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body, message: 'Invalid ID'});
+			return next(new restify.errors.BadRequestError('Error: Invalid ID'));
+		}
+
 		if( !validate.json(req.body) ){
-			log.debug({ method: 'PUT', path: '/api/user', payload: req.body, message: 'Invalid format of request'});
+			log.debug({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body, message: 'Invalid format of request'});
 			return next(new restify.errors.BadRequestError('Error: Invalid format of request'));
 		}
 
 		if( username !== undefined && !validate.username(req.body.username) ){
-			log.debug({ method: 'PUT', path: '/api/user', payload: req.body.username, message: 'Invalid username'});
+			log.debug({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body.username, message: 'Invalid username'});
 			return next(new restify.errors.BadRequestError("Incomplete request: Invalid username"));
 		}
 
 		if( password !== undefined && !validate.password(req.body.password) ){
-			log.debug({ method: 'PUT', path: '/api/user', payload: req.body.username, message: 'Invalid password'});
+			log.debug({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body.username, message: 'Invalid password'});
 			return next(new restify.errors.BadRequestError("Incomplete request: Invalid password"));
 		}
 
 		if( privatekey !== undefined && !validate.privatekey(req.body.privatekey) ){
-			log.debug({ method: 'PUT', path: '/api/user', payload: req.body.username, message: 'Invalid private key'});
+			log.debug({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body.username, message: 'Invalid private key'});
 			return next(new restify.errors.BadRequestError("Incomplete request: Invalid private key"));
 		}
 
 		if( publickey !== undefined && !validate.publickey(req.body.publickey) ){
-			log.debug({ method: 'PUT', path: '/api/user', payload: req.body.username, message: 'Invalid public key'});
+			log.debug({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body.username, message: 'Invalid public key'});
 			return next(new restify.errors.BadRequestError("Incomplete request: Invalid public key"));
 		}
 
@@ -160,37 +165,38 @@ module.exports = function(server, knex, log){
 		})
 	});
 
-	server.del('/api/user', authHelpers.ensureAuthenticated, function(req, res, next){
-		log.info({ method: 'DEL', path: '/api/user', payload: req.body.username });
-		/*
-			Request Content
-			Username: String
-		*/	
+	server.del('/api/user/:id', function(req, res, next){
 
-		//if( req.body.username === undefined || req.body.username === '' || !validator.isAlphanumeric(req.body.username) ){
-		if( !validate.username(req.body.username) ){
-			return next(new restify.errors.BadRequestError("Incomplete request: Missing username"));
+		var id = parseInt(req.params.id);
+
+ 		log.info({ method: 'DEL', path: '/api/user/'+req.params.id });
+
+ 		if( !validate.ID(id) ){
+			return next(new restify.errors.BadRequestError('Incomplete request: Invalid ID'));
 		}
 
-		knex('users').where({'username': req.body.username}).del()
+		knex('users').where('id', id).del()
 		.then(function(rows){
 			if( rows === 0 ){
 				// No user was found to be deleted
-				log.debug({ method: 'DEL', path: '/api/user', payload: req.body.username, message: 'Client supplied non-existant username' });
-				res.send(400, 'username not found');
-				return next();
+				log.debug({ method: 'DEL', path: '/api/user', payload: req.params.id, message: 'Client supplied non-existant username' });
+				return next(new restify.errors.BadRequestError('User ID not found'));
 			}
-			log.info({ method: 'DEL', path: '/api/user', payload: req.body.username, message: 'User deleted' });
+			log.info({ method: 'DEL', path: '/api/user', payload: req.params.id, message: 'User deleted', rowsAffected: rows });
 			res.send(200, 'OK');
 			return next();
 		})
 		.catch(function(err){
 			console.log(err);
-			next(err);
+			console.log("%j", err);
+			log.error({ method: 'DEL', path: '/api/user', payload: req.body, message: 'Database error', error: err });
+			return next( new restify.errors.InternalServerError('LALA LAND') );
 		});
+
+
 	});
 
-	server.get('/api/user/:id', authHelpers.ensureAuthenticated, function(req, res, next){
+	server.get('/api/user/:id', function(req, res, next){
 		log.info({method:'GET', path: '/api/users', payload: req.params.id});
 		console.log('GET /api/user/'+req.params.id);
 
@@ -212,7 +218,7 @@ module.exports = function(server, knex, log){
 		});
 	});
 
-	server.get('/api/user/:id/publickey', authHelpers.ensureAuthenticated, function(req, res, next){
+	server.get('/api/user/:id/publickey', function(req, res, next){
 		log.info({ method: 'POST', path: '/api/user/:id/publickey', payload: req.params.id });
 
 		if( !validate.id( req.params.id ) ){

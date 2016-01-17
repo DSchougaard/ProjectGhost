@@ -18,6 +18,7 @@ var server 				= request(restifyInstance.server);
 
 // Test user
 var testUser = {
+	id: 					3,
 	username: 				'User3',
 	password: 				'password',
 	privatekey: 			fs.readFileSync('misc/unittest-private.key').toString('utf8'),
@@ -90,7 +91,7 @@ describe('API /users', function(){
 	});
 });
 
-describe("API /user/", function(){
+describe("API /user", function(){
 
 	var authToken = '';
 
@@ -240,9 +241,8 @@ describe("API /user/", function(){
 	describe("DELETE: Delete a user", function(){
 		it('should fail on deleting non-existant user', function(done){
 			server
-			.del('/api/user')
+			.del('/api/user/'+1337)
 			.set('Authorization', 'Bearer ' + authToken)
-			.field('username', 'DoesNotExist')
 			.expect(400)
 			.end(function(err,res){
 				if(err) return done(err);
@@ -251,9 +251,8 @@ describe("API /user/", function(){
 		})
 		it('should successfully delete a user', function(done){
 			server
-			.del('/api/user')
+			.del('/api/user/'+testUser.id)
 			.set('Authorization', 'Bearer ' + authToken)
-			.field('username', 'User3')
 			.expect(200)
 			.end(function(err,res){
 				if(err) return done(err);
@@ -273,5 +272,18 @@ describe("API /user/", function(){
 				done();
 			});
 		});
+	});
+
+
+	describe('PUT: Updating a user', function(){
+
+	});
+
+	describe('GET: Get a single user', function(){
+
+	});
+
+	describe('GET: Get users public cert', function(){
+
 	});
 });
