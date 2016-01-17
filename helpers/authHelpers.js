@@ -32,7 +32,7 @@ exports.ensureAuthenticated = function(req, res, next) {
 				return next(new restify.errors.UnauthorizedError('Invalid auth token'));
 			}else if( err.name === 'TokenExpiredError' ){
 				// The token was expired
-				console.log('User tried to authorize using an expired token');
+				req.log.debug({message: 'User tried to authenticate using expired token'});
 				return next(new restify.errors.UnauthorizedError('Token has expired'));	
 			}else{
 				console.log('Undefined error in verifying JWT');
