@@ -2,6 +2,7 @@ const base64 	= require('../helpers/base64.js');
 const fs 		= require('fs');
 const bcrypt 	= require('bcrypt');
 
+
 var knex = require('knex')({
 	client: 'sqlite3',
 	connection: {
@@ -14,30 +15,28 @@ knex.raw('PRAGMA foreign_keys = ON')
 	console.log("Pragma enabled. "+ resp);
 });
 
+/*
+	var knex = require('knex')({
+		client: 'mysql',
+		connection: {
+			host 	: '127.0.0.1',
+			user 	: 'casper',
+			password: 'ghostsecret',
+			database: 'ghostdb'
+		}
+	});
 
-/*var knex = require('knex')({
-	client: 'mysql',
-	connection: {
-		host 	: '127.0.0.1',
-		user 	: 'casper',
-		password: 'ghostsecret',
-		database: 'ghostdb'
-	}
-});*/
-
-//knex.schema.dropTableIfExists('users');
-//knex.schema.dropTableIfExists('passwords');
-//knex.schema.dropTableIfExists('structures');
-
-
-
-
+	knex.schema.dropTableIfExists('users');
+	knex.schema.dropTableIfExists('passwords');
+	knex.schema.dropTableIfExists('structures');
+*/
 
 console.log('Creating unittest data');
 
 // Create table USERS if it doesn't exist
 knex.schema.createTableIfNotExists('users', function(table){
 	table.increments('id').primary();
+	table.boolean('isAdmin').notNullable().defaultTo(false);
 	table.string("username").unique().notNullable();
 	table.string("salt").notNullable();
 	table.string("password").notNullable();
@@ -46,7 +45,6 @@ knex.schema.createTableIfNotExists('users', function(table){
 })
 .catch(function(error){
 })
-
 
 knex.schema.createTableIfNotExists('structures', function(table){
 	table.increments('id').primary();
@@ -77,21 +75,18 @@ var userData = [
 	{
 		username 	: 'User1',
 		password 	: 'password',
+		isAdmin		: true,
 		privatekey 	: privateKey.toString('utf8'),
 		publickey 	: base64.encode(publicKey.toString('utf8'))
 	},
 	{
 		username 	: 'User2',
 		password 	: 'password',
+		isAdmin		: false,
 		privatekey 	: privateKey.toString('utf8'),
 		publickey 	: base64.encode(publicKey.toString('utf8'))
 	}
 ];
-
-
-//userData.forEach(function(user){
-//var i = 0;
-//for( i ; i < userData.length ; i++ ){
 
 for (var i in userData) {
 	userData[i].salt = bcrypt.genSaltSync();
@@ -165,13 +160,6 @@ var structuresData = [
 
 
 
-
-
-
-
-
-
-
 knex('users').insert(userData)
 .then(function(rows){
 	console.log('userData succesfully inserted');
@@ -179,8 +167,6 @@ knex('users').insert(userData)
 .catch(function(err){
 	console.log('Error inserting userData: ' + err);
 });
-
-
 
 
 knex('structures').insert(structuresData)
@@ -192,10 +178,6 @@ knex('structures').insert(structuresData)
 })
 
 
-
-
-
-
 knex('passwords').insert(passwordData)
 .then(function(rows){
 	console.log('passwordData succesfully inserted');
@@ -204,6 +186,43 @@ knex('passwords').insert(passwordData)
 	console.log('Error inserting passwordData: ' + err);
 })
 
-knex.destroy();
 
+
+
+/*
+	Reject Test
+*/
+
+/*
+
+var rejectUser = 	{
+	username 	: 'RejectMe',
+	password 	: 'password',
+	role 		: 'Captain!',
+	privatekey 	: privateKey.toString('utf8'),
+	publickey 	: base64.encode(publicKey.toString('utf8'))
+};
+rejectUser.salt = bcrypt.genSaltSync();
+rejectUser.password = bcrypt.hashSync(userData[i].password, userData[i].salt);
+
+
+
+knex('users').insert(rejectUser)
+.then(function(rows){
+	console.log('userData succesfully inserted');
+})
+.catch(function(err){
+	console.log('Error inserting userData: ' + err);
+});
+
+
+*/
+
+
+
+
+
+
+
+knex.destroy();
 return 0;
