@@ -70,6 +70,7 @@ var server = restify.createServer({
 	log: log
 });
 server.use(restify.bodyParser());
+server.use(restify.queryParser());
 
 // Database through Knex
 var knex = require('knex')({
