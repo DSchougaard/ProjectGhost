@@ -191,7 +191,8 @@ describe("API /user", function(){
 				if(err){
 					return done(err);	
 				} 
-				(res.body).should.equal("Username already exists.");
+				(res.body.code).should.equal('BadRequestError');
+				(res.body.message).should.equal('Username already exists');
 				return done();
 			});
 		});
