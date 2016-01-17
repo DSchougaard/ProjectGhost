@@ -87,8 +87,9 @@ module.exports = function(server, knex, log){
 				.catch(function(error){
 					// SQLite Username Exists error
 					if( error.errno == 19 && error.code === 'SQLITE_CONSTRAINT' ){
-						res.send(400, "Username already exists.");
-						return next();
+						return next( new restify.errors.BadRequestError('Username already exists'));
+					}else if( error.errno === 5 && error.code === 'SQLITE_BUSY'){
+						return next( new restify.errors.ServiceUnavailable('Database temporaryliy busy. Try again.'));
 					}
 					log.error({ method: 'POST', path: '/api/user', payload: req.body.username, message: 'Undefined DB error', error: error });
 					res.send(500, "Unknown database error.");
@@ -192,8 +193,6 @@ module.exports = function(server, knex, log){
 			log.error({ method: 'DEL', path: '/api/user', payload: req.body, message: 'Database error', error: err });
 			return next( new restify.errors.InternalServerError('LALA LAND') );
 		});
-
-
 	});
 
 	server.get('/api/user/:id', function(req, res, next){
