@@ -21,6 +21,7 @@ module.exports.isAuthorized = function(knex, type, userID, accessID){
 
 
 function isAuthorizedUser(knex, userID, accessID){
+
 	if( userID === accessID ){
 	   return q.promise.resolve({result:true});
 	}
@@ -31,8 +32,13 @@ function isAuthorizedUser(knex, userID, accessID){
     .where('id', userID)
     .orWhere('id', accessID)
     .then(function(rows){
-        if( rows.length < 2 ){
-            return { result: false, error: 'Invalid ID'};
+
+    	if( rows.length === 0 || ( rows.length === 1 && rows[0].id == accessID ) ){
+    		return { result: false, error: 'Invalid user ID' };
+    	}
+
+        if( rows.length === 1 && rows[0].id == userID ){
+            return { result: false, error: 'Invalid target ID'};
         }
 
         return {result: Boolean( (rows[0].id === userID &&  rows[0].isAdmin) || (rows[1].id === userID && rows[1].isAdmin) )}

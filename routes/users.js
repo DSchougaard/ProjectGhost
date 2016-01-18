@@ -8,6 +8,7 @@ const argon2 		= require('argon2');
 const validate 		= require(__base + 'helpers/validate.js');
 const base64 		= require(__base + 'helpers/base64.js');
 const authHelpers	= require(__base + 'helpers/authHelpers.js');
+const authorized 	= require(__base + 'helpers/authorization.js');
 
 module.exports = function(server, knex, log){
 	server.get('/api/users', function(req, res, next){
@@ -166,33 +167,46 @@ module.exports = function(server, knex, log){
 		})
 	});
 
-	server.del('/api/user/:id', function(req, res, next){
-
+	server.del('/api/user/:id', authHelpers.ensureAuthenticated, function(req, res, next){
 		var id = parseInt(req.params.id);
-
- 		log.info({ method: 'DEL', path: '/api/user/'+req.params.id });
-
+ 		log.info({ method: 'DEL', path: '/api/user/'+req.params.id, auth: 'Authenticated user: '+ req.user });
+ 	
  		if( !validate.ID(id) ){
 			return next(new restify.errors.BadRequestError('Incomplete request: Invalid ID'));
 		}
 
-		knex('users').where('id', id).del()
-		.then(function(rows){
-			if( rows === 0 ){
-				// No user was found to be deleted
-				log.debug({ method: 'DEL', path: '/api/user', payload: req.params.id, message: 'Client supplied non-existant username' });
-				return next(new restify.errors.BadRequestError('User ID not found'));
-			}
-			log.info({ method: 'DEL', path: '/api/user', payload: req.params.id, message: 'User deleted', rowsAffected: rows });
-			res.send(200, 'OK');
-			return next();
-		})
-		.catch(function(err){
-			console.log(err);
-			console.log("%j", err);
-			log.error({ method: 'DEL', path: '/api/user', payload: req.body, message: 'Database error', error: err });
-			return next( new restify.errors.InternalServerError('LALA LAND') );
-		});
+ 		authorized.isAuthorized(knex, authorized.types.user, req.user, req.params.id)
+ 		.then(function(returned){
+ 			// Error handling
+ 			if( !returned.result && returned.error === undefined ){
+ 				return next( new restify.errors.ForbiddenError('Access denied') );
+ 			}else if( !returned.result ){
+ 				return next( new restify.errors.BadRequestError(returned.error) );
+ 			}
+
+			knex('users').where('id', id).del()
+			.then(function(rows){
+				if( rows === 0 ){
+					// No user was found to be deleted
+					log.debug({ method: 'DEL', path: '/api/user', payload: req.params.id, message: 'Client supplied non-existant username' });
+					return next(new restify.errors.BadRequestError('User ID not found'));
+				}
+				log.info({ method: 'DEL', path: '/api/user', payload: req.params.id, message: 'User deleted', rowsAffected: rows });
+    			res.send(200);
+				return next();
+			})
+			.catch(function(err){
+				console.log(err);
+				console.log("%j", err);
+				log.error({ method: 'DEL', path: '/api/user', payload: req.body, message: 'Database error', error: err });
+				return next( new restify.errors.InternalServerError('LALA LAND') );
+			});
+ 		})
+ 		.catch(function(err){
+ 			return next( new restify.InternalServerError(err) );
+ 		})
+
+
 	});
 
 	server.get('/api/user/:id', function(req, res, next){
