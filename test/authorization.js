@@ -3,10 +3,14 @@ var request 			= require('supertest');
 var should 				= require('should');
 
 var q 					= require('q');
-var Promise = require("bluebird");
+var Promise 			= require("bluebird");
 
 // Lib to be tested
 var authorization 		= require('../helpers/authorization.js');
+
+
+// Errors
+const UnauthorizedError = require(__base + 'errors/UnauthorizedError.js');
 
 describe('Authorization Helper', function(){
 
@@ -33,21 +37,26 @@ describe('Authorization Helper', function(){
 
 	// Read: https://stackoverflow.com/questions/23986313/mocha-times-out-on-failed-assertions-with-q-promises
 	
-	describe('User', function(){
+	describe.only('User', function(){
 		it('should allow user to change own data', function(){
 			return authorization.isAuthorized(knex, authorization.types.user, user.id, user.id)
 			.then(function(success){
 				(success.result).should.be.true();
-			}, function(err){
+			})
+			.catch(UnauthorizedError, function(err){
 				should.fail();
 			});
+			/*, function(err){
+				should.fail();
+			});*/
 		});
 
 		it('should allow admin to change other users data', function(){
 			return authorization.isAuthorized(knex, authorization.types.user, adminUser.id, user.id)
 			.then(function(success){
 				(success.result).should.be.true();
-			}, function(err){
+			})
+			.catch(function(error){
 				should.fail(err);
 			});
 		});
@@ -56,7 +65,8 @@ describe('Authorization Helper', function(){
 			return authorization.isAuthorized(knex, authorization.types.user, adminUser.id, adminUser.id)
 			.then(function(success){
 				(success.result).should.be.true();
-			}, function(err){
+			})
+			.catch(function(error){
 				should.fail(err);
 			});
 		});
@@ -65,7 +75,8 @@ describe('Authorization Helper', function(){
 			return authorization.isAuthorized(knex, authorization.types.user, user.id, adminUser.id)
 			.then(function(success){
 				(success.result).should.equal(false);
-			},function(err){
+			})
+			.catch(function(error){
 				should.fail(err);
 			});
 		});
@@ -74,17 +85,26 @@ describe('Authorization Helper', function(){
 		
 			return authorization.isAuthorized(knex, authorization.types.user, 1337, adminUser.id)
 			.then(function(success){
-				(success.result).should.equal(false);
-			},function(err){
-				should.fail(err);
-			});
+				should.fail();
+			})
+			// Expected Exception
+			.catch(UnauthorizedError, function(err){
+				err.message.should.equal('Invalid user ID');
+			})
+			.catch(function(otherErrs){
+				should.fail();
+			})
 		});
 
 		it('should fail when tring to to edit a non-existing user', function(){
 			return authorization.isAuthorized(knex, authorization.types.user, user.id, 1337)
 			.then(function(success){
 				(success.result).should.equal(false);
-			},function(err){
+			})
+			.catch(UnauthorizedError, function(err){
+				(err.message).should.equal('Invalid target ID');
+			})
+			.catch(function(error){
 				should.fail(err);
 			});
 		});
