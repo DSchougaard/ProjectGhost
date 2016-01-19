@@ -91,7 +91,7 @@ describe('API /users', function(){
 	});
 });
 
-describe.only("API /user", function(){
+describe("API /user", function(){
 
 	var authToken = '';
 
