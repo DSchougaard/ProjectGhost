@@ -39,7 +39,7 @@ describe('Authorization Helper', function(){
 
 	// Read: https://stackoverflow.com/questions/23986313/mocha-times-out-on-failed-assertions-with-q-promises
 	
-	describe.only('User', function(){
+	describe('User', function(){
 		it('should allow user to change own data', function(){
 			return authorization.isAuthorized(knex, authorization.types.user, user.id, user.id)
 			.then(function(success){

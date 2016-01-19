@@ -10,6 +10,12 @@ const base64 		= require(__base + 'helpers/base64.js');
 const authHelpers	= require(__base + 'helpers/authHelpers.js');
 const authorized 	= require(__base + 'helpers/authorization.js');
 
+
+const UnauthorizedError 		= require(__base + 'errors/UnauthorizedError.js');
+const UserDoesNotExistError 	= require(__base + 'errors/UserDoesNotExistError.js');
+const PasswordDoesNotExistError 	= require(__base + 'errors/PasswordDoesNotExistError.js');
+
+
 module.exports = function(server, knex, log){
 	server.get('/api/users', function(req, res, next){
 		log.info({ method: 'GET', path: '/api/users' });
@@ -101,7 +107,20 @@ module.exports = function(server, knex, log){
 	});
 
 	server.put('/api/user/:id', function(req, res, next){
-		log.info({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.user });
+
+		if( !validate.ID(req.params.id) ){
+			return next(new restify.errors.BadRequestError('Incomplete request: Invalid ID'));
+		}
+
+		log.info({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body, auth: req.user });
+
+		autorized.isAuthorized(knex, authorized.types.user, req.user, req.params.id)
+		.then(function(authorized){
+		})
+		.catch(function(err){
+
+		})
+
 
 		/*
 			Contents:
@@ -168,23 +187,18 @@ module.exports = function(server, knex, log){
 	});
 
 	server.del('/api/user/:id', authHelpers.ensureAuthenticated, function(req, res, next){
-		var id = parseInt(req.params.id);
  		log.info({ method: 'DEL', path: '/api/user/'+req.params.id, auth: 'Authenticated user: '+ req.user });
- 	
- 		if( !validate.ID(id) ){
+
+		if( !validate.ID(req.params.id) ){
 			return next(new restify.errors.BadRequestError('Incomplete request: Invalid ID'));
 		}
 
- 		authorized.isAuthorized(knex, authorized.types.user, req.user, req.params.id)
- 		.then(function(returned){
- 			// Error handling
- 			if( !returned.result && returned.error === undefined ){
- 				return next( new restify.errors.ForbiddenError('Access denied') );
- 			}else if( !returned.result ){
- 				return next( new restify.errors.BadRequestError(returned.error) );
- 			}
+		authorized.isAuthorized(knex, authorized.types.user, req.user, req.params.id)
+		.then(function(allowed){
 
-			knex('users').where('id', id).del()
+			knex('users')
+			.where('id', req.params.id)
+			.del()
 			.then(function(rows){
 				if( rows === 0 ){
 					// No user was found to be deleted
@@ -192,20 +206,25 @@ module.exports = function(server, knex, log){
 					return next(new restify.errors.BadRequestError('User ID not found'));
 				}
 				log.info({ method: 'DEL', path: '/api/user', payload: req.params.id, message: 'User deleted', rowsAffected: rows });
-    			res.send(200);
+    			res.send(200, 'OK');
 				return next();
-			})
-			.catch(function(err){
+			}).catch(function(dbErr){
 				console.log(err);
 				console.log("%j", err);
 				log.error({ method: 'DEL', path: '/api/user', payload: req.body, message: 'Database error', error: err });
-				return next( new restify.errors.InternalServerError('LALA LAND') );
+				return next( new restify.errors.InternalServerError(err) );
 			});
- 		})
- 		.catch(function(err){
- 			return next( new restify.InternalServerError(err) );
- 		})
 
+		})
+		.catch(UnauthorizedError, function(err){
+			return next( new restify.errors.ForbiddenError('Access denied') );
+		})
+		.catch(UserDoesNotExistError, function(err){
+			return next( new restify.errors.BadRequestError('User ID ' + err.message + ' was not found.') );	
+		})
+		.catch(function(err){
+			console.log(err);
+		});
 
 	});
 

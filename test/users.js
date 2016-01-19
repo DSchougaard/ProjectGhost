@@ -91,7 +91,7 @@ describe('API /users', function(){
 	});
 });
 
-describe("API /user", function(){
+describe.only("API /user", function(){
 
 	var authToken = '';
 
@@ -249,7 +249,8 @@ describe("API /user", function(){
 				if(err) return done(err);
 				done();
 			});
-		})
+		});
+		
 		it('should successfully delete a user', function(done){
 			server
 			.del('/api/user/'+testUser.id)
