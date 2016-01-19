@@ -10,9 +10,11 @@ var authorization 		= require('../helpers/authorization.js');
 
 
 // Errors
-const UnauthorizedError = require(__base + 'errors/UnauthorizedError.js');
+const UnauthorizedError 		= require(__base + 'errors/UnauthorizedError.js');
+const UserDoesNotExistError 	= require(__base + 'errors/UserDoesNotExistError.js');
+const PasswordDoesNotExistError 	= require(__base + 'errors/PasswordDoesNotExistError.js');
 
-describe('Authorization Helper', function(){
+describe.only('Authorization Helper', function(){
 
 	// Uses data from createUnitTestData
 	var user = {
@@ -37,7 +39,7 @@ describe('Authorization Helper', function(){
 
 	// Read: https://stackoverflow.com/questions/23986313/mocha-times-out-on-failed-assertions-with-q-promises
 	
-	describe.only('User', function(){
+	describe('User', function(){
 		it('should allow user to change own data', function(){
 			return authorization.isAuthorized(knex, authorization.types.user, user.id, user.id)
 			.then(function(success){
@@ -114,38 +116,54 @@ describe('Authorization Helper', function(){
 		it('should allow an user to edit his own password', function(){
 			return authorization.isAuthorized(knex, authorization.types.password, user.id, 4)
 			.then(function(res){
-				(res.result).should.equal(true);
+				(res).should.equal(true);
 			});
 		});
 
 		it('should allow and admin to edit his own password', function(){
 			return authorization.isAuthorized(knex, authorization.types.password, adminUser.id, 1)
 			.then(function(res){
-				(res.result).should.equal(true);
+				(res).should.equal(true);
 			});
 		});
 
 		it('should not allow a user to edit another users password', function(){
 			return authorization.isAuthorized(knex, authorization.types.password, user.id, 1)
 			.then(function(res){
-				(res.result).should.equal(false);
-				(res.error).should.equal('Invalid ID');
+				should.fail();
+			})
+			.catch(UnauthorizedError, function(err){
+				err.message.should.equal('Insufficient privileges')
+			})
+			.error(function(err){
+				// No other errors should be thrown.
+				should.fail();
 			});
 		});
 
 		it('should fail when using a non-existing user ID', function(){
 			return authorization.isAuthorized(knex, authorization.types.password, 1337, 1)
 			.then(function(res){
-				(res.result).should.equal(false);
-				(res.error).should.equal('Invalid ID');
+				should.fail('sucess');
+			})
+			.catch(UserDoesNotExistError, function(err){
+				err.message.should.equal(1337);
+			}).error(function(err){
+				// No other errors should be thrown.
+				should.fail();
 			});
 		});
 
 		it('should fail when using a non-existing password ID', function(){
 			return authorization.isAuthorized(knex, authorization.types.password, user.id, 1337)
 			.then(function(res){
-				(res.result).should.equal(false);
-				(res.error).should.equal('Invalid ID');
+				should.fail();
+			})
+			.catch(PasswordDoesNotExistError, function(err){
+				err.message.should.equal(1337);
+			}).error(function(err){
+				// No other errors should be thrown.
+				should.fail();
 			});
 		});
 
