@@ -44,14 +44,11 @@ function isAuthorizedUser (knex, userID, accessID){
     .then(function(rows){
 
     	if( rows.length === 0 || ( rows.length === 1 && rows[0].id == accessID ) ){
-    		//return new Promise.reject(new UnauthorizedError('Invalid user ID'));
-    		throw new UnauthorizedError('Invalid user ID');
-
+            throw new UserDoesNotExistError(userID);
     	}
 
         if( rows.length === 1 && rows[0].id == userID ){
-            //throw new Error('Invalid target ID');
-            throw new UnauthorizedError('Invalid target ID');
+            throw new UserDoesNotExistError(accessID);
         }
 
         return new Promise.resolve({result: Boolean( (rows[0].id === userID &&  rows[0].isAdmin) || (rows[1].id === userID && rows[1].isAdmin) )});

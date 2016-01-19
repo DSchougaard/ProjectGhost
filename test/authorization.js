@@ -14,7 +14,7 @@ const UnauthorizedError 		= require(__base + 'errors/UnauthorizedError.js');
 const UserDoesNotExistError 	= require(__base + 'errors/UserDoesNotExistError.js');
 const PasswordDoesNotExistError 	= require(__base + 'errors/PasswordDoesNotExistError.js');
 
-describe.only('Authorization Helper', function(){
+describe('Authorization Helper', function(){
 
 	// Uses data from createUnitTestData
 	var user = {
@@ -39,7 +39,7 @@ describe.only('Authorization Helper', function(){
 
 	// Read: https://stackoverflow.com/questions/23986313/mocha-times-out-on-failed-assertions-with-q-promises
 	
-	describe('User', function(){
+	describe.only('User', function(){
 		it('should allow user to change own data', function(){
 			return authorization.isAuthorized(knex, authorization.types.user, user.id, user.id)
 			.then(function(success){
@@ -58,7 +58,7 @@ describe.only('Authorization Helper', function(){
 			.then(function(success){
 				(success.result).should.be.true();
 			})
-			.catch(function(error){
+			.catch(function(err){
 				should.fail(err);
 			});
 		});
@@ -68,7 +68,7 @@ describe.only('Authorization Helper', function(){
 			.then(function(success){
 				(success.result).should.be.true();
 			})
-			.catch(function(error){
+			.catch(function(err){
 				should.fail(err);
 			});
 		});
@@ -78,7 +78,7 @@ describe.only('Authorization Helper', function(){
 			.then(function(success){
 				(success.result).should.equal(false);
 			})
-			.catch(function(error){
+			.catch(function(err){
 				should.fail(err);
 			});
 		});
@@ -90,8 +90,8 @@ describe.only('Authorization Helper', function(){
 				should.fail();
 			})
 			// Expected Exception
-			.catch(UnauthorizedError, function(err){
-				err.message.should.equal('Invalid user ID');
+			.catch(UserDoesNotExistError, function(err){
+				err.message.should.equal(1337);
 			})
 			.catch(function(otherErrs){
 				should.fail();
@@ -103,10 +103,10 @@ describe.only('Authorization Helper', function(){
 			.then(function(success){
 				(success.result).should.equal(false);
 			})
-			.catch(UnauthorizedError, function(err){
-				(err.message).should.equal('Invalid target ID');
+			.catch(UserDoesNotExistError, function(err){
+				err.message.should.equal(1337);
 			})
-			.catch(function(error){
+			.catch(function(err){
 				should.fail(err);
 			});
 		});
@@ -117,6 +117,9 @@ describe.only('Authorization Helper', function(){
 			return authorization.isAuthorized(knex, authorization.types.password, user.id, 4)
 			.then(function(res){
 				(res).should.equal(true);
+			}).error(function(err){
+				// No other errors should be thrown.
+				should.fail();
 			});
 		});
 
@@ -124,6 +127,9 @@ describe.only('Authorization Helper', function(){
 			return authorization.isAuthorized(knex, authorization.types.password, adminUser.id, 1)
 			.then(function(res){
 				(res).should.equal(true);
+			}).error(function(err){
+				// No other errors should be thrown.
+				should.fail();
 			});
 		});
 
