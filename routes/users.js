@@ -98,6 +98,7 @@ module.exports = function(server, knex, log){
 					}else if( error.errno === 5 && error.code === 'SQLITE_BUSY'){
 						return next( new restify.errors.ServiceUnavailable('Database temporaryliy busy. Try again.'));
 					}
+
 					log.error({ method: 'POST', path: '/api/user', payload: req.body.username, message: 'Undefined DB error', error: error });
 					res.send(500, "Unknown database error.");
 					return next();
@@ -118,7 +119,7 @@ module.exports = function(server, knex, log){
 		.then(function(authorized){
 		})
 		.catch(function(err){
-
+			throw err;
 		})
 
 
@@ -188,45 +189,25 @@ module.exports = function(server, knex, log){
 
 	server.del('/api/user/:id', authHelpers.ensureAuthenticated, function(req, res, next){
  		log.info({ method: 'DEL', path: '/api/user/'+req.params.id, auth: 'Authenticated user: '+ req.user });
-
+		
 		if( !validate.ID(req.params.id) ){
 			return next(new restify.errors.BadRequestError('Incomplete request: Invalid ID'));
 		}
 
-		authorized.isAuthorized(knex, authorized.types.user, req.user, req.params.id)
-		.then(function(allowed){
-
-			knex('users')
-			.where('id', req.params.id)
-			.del()
-			.then(function(rows){
-				if( rows === 0 ){
-					// No user was found to be deleted
-					log.debug({ method: 'DEL', path: '/api/user', payload: req.params.id, message: 'Client supplied non-existant username' });
-					return next(new restify.errors.BadRequestError('User ID not found'));
-				}
-				log.info({ method: 'DEL', path: '/api/user', payload: req.params.id, message: 'User deleted', rowsAffected: rows });
-    			res.send(200, 'OK');
-				return next();
-			}).catch(function(dbErr){
-				console.log(err);
-				console.log("%j", err);
-				log.error({ method: 'DEL', path: '/api/user', payload: req.body, message: 'Database error', error: err });
-				return next( new restify.errors.InternalServerError(err) );
-			});
-
+		authorized.isAuthorizedUser(knex, req.user, req.params.id)
+		.then(knex('users').where('id', req.params.id).del().return())
+		.then(function(rows){
+			res.send(200, 'OK');
+			return next();
+		})
+		.catch(UserDoesNotExistError, function(err){
+			return next( new restify.errors.BadRequestError('User ID ' + req.params.id + ' was not found') );
 		})
 		.catch(UnauthorizedError, function(err){
 			return next( new restify.errors.ForbiddenError('Access denied') );
-		})
-		.catch(UserDoesNotExistError, function(err){
-			return next( new restify.errors.BadRequestError('User ID ' + err.message + ' was not found.') );	
-		})
-		.catch(function(err){
-			console.log(err);
 		});
 
-	});
+	});	
 
 	server.get('/api/user/:id', function(req, res, next){
 		log.info({method:'GET', path: '/api/users', payload: req.params.id});

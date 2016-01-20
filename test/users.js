@@ -16,6 +16,8 @@ var base64 				= require('../helpers/base64.js');
 var restifyInstance 	= require('../app.js');
 var server 				= request(restifyInstance.server);
 
+//var server = request.agent('https://localhost:8080');
+
 // Test user
 var testUser = {
 	id: 					3,
@@ -237,17 +239,44 @@ describe("API /user", function(){
 				done();
 			});
 		});
-	})
+	});
 	
 	describe("DELETE: Delete a user", function(){
+
 		it('should fail on deleting non-existant user', function(done){
+
 			server
 			.del('/api/user/'+1337)
 			.set('Authorization', 'Bearer ' + authToken)
 			.expect(400)
 			.end(function(err,res){
+				if(err){
+					return done(err);
+				} 
+				
+			
+
+				(res.body.code).should.equal('BadRequestError');
+				(res.body.message).should.equal('User ID 1337 was not found');
+
+				return done();
+			});
+
+		});
+
+		it('should fail when no auth token is passed', function(done){
+			server
+			.del('/api/user/'+testUser.id)
+			//.expect(401)
+			.end(function(err,res){
 				if(err) return done(err);
-				done();
+
+
+				(res.body.code).should.equal('UnauthorizedError');
+				(res.body.message).should.equal('No Authorization header was found');
+
+
+				return done();
 			});
 		});
 		
@@ -257,8 +286,13 @@ describe("API /user", function(){
 			.set('Authorization', 'Bearer ' + authToken)
 			.expect(200)
 			.end(function(err,res){
-				if(err) return done(err);
-				done();
+				if(err){
+					return done(err);
+				} 
+
+				(res.body).should.equal('OK');
+
+				return done();
 			});
 		});
 
@@ -269,11 +303,14 @@ describe("API /user", function(){
 			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
+
 				(res.body).should.have.length(2);
 				(res.body).should.deepEqual( [{'username':'User1', 'publickey': testUser.base64.publickey}, {'username':'User2', 'publickey': testUser.base64.publickey}] );
-				done();
+
+				return done();
 			});
 		});
+
 	});
 
 

@@ -1,4 +1,6 @@
 var Promise 	= require("bluebird");
+Promise.onPossiblyUnhandledRejection(function(error,promise) { throw error });
+
 const util 		= require('util');
 var q = require('q')
 
@@ -30,7 +32,52 @@ module.exports.isAuthorized = function(knex, type, userID, accessID){
 }
 
 
-function isAuthorizedUser (knex, userID, accessID){
+
+
+function isAuthorizedUser(knex, userID, accessID){
+
+	if( userID === accessID ){
+		// Only need a single database call
+		return getUser(knex, userID)
+		.then(function(user){
+			return new Promise.resolve();
+		});
+
+	}else{
+		// We need two database calls
+		return Promise.all([getUser(knex, userID), getUser(knex, accessID)])
+		.spread(function(user, access){
+			if( user.isAdmin ){
+				return new Promise.resolve();
+			}
+
+			return new Promise.reject( new UnauthorizedError('Insufficient privileges') );
+
+		});
+
+	}
+}
+
+
+
+function __isAuthorizedUser(knex, userID, accessID){
+	return getUser(knex, userID)
+	.then(function(user){
+		if( user.id === accessID ){
+			return new Promise.resolve(true);
+		}
+
+		return getUser(knex, accessID);
+	})
+	.then(function(accessedUser){
+		if( user.isAdmin )
+			return new Promise.resolve();
+
+		return new Promise.reject( new UnauthorizedError('Insufficient privileges') );
+	})
+}
+
+function _isAuthorizedUser (knex, userID, accessID){
 	if( userID === accessID ){
 	   //return q.promise.resolve({result:true});
 	   return new Promise.resolve({result:true});
@@ -44,14 +91,18 @@ function isAuthorizedUser (knex, userID, accessID){
     .then(function(rows){
 
     	if( rows.length === 0 || ( rows.length === 1 && rows[0].id == accessID ) ){
-            throw new UserDoesNotExistError(userID);
+            //return new Promise.reject(UserDoesNotExistError(userID));
+            return new UserDoesNotExistError(userID);
     	}
 
         if( rows.length === 1 && rows[0].id == userID ){
-            throw new UserDoesNotExistError(accessID);
+            return new UserDoesNotExistError(accessID);
         }
 
         return new Promise.resolve({result: Boolean( (rows[0].id === userID &&  rows[0].isAdmin) || (rows[1].id === userID && rows[1].isAdmin) )});
+    })
+    .catch(function(err){
+    	throw err;
     });
 
 }
@@ -62,25 +113,26 @@ function getUser(knex, id){
 	.where('id', id)
 	.then(function(rows){
 		if( rows.length === 0 ){
-			throw new UserDoesNotExistError(id);
+			return new Promise.reject( new UserDoesNotExistError(id) );
 		}
 		if( rows.length > 1 ){
-			throw new OperationalError('Catatrophic database error. Multiple users with same ID found.');
+			return new Promise.reject( new OperationalError('Catatrophic database error. Multiple users with same ID found.') );
 		}
 		return new Promise.resolve(rows[0]);
 	});
 }
 
 function getPassword(knex, id){
+
 	return knex('passwords')
 	.select()
 	.where('id', id)
 	.then(function(rows){
 		if( rows.length === 0 ){
-			throw new PasswordDoesNotExistError(id);
+			return new Promise.reject( new PasswordDoesNotExistError(id) );
 		}
 		if( rows.length > 1 ){
-			throw new OperationalError('Catatrophic database error. Multiple users with same ID found.');
+			return new Promise.reject( new OperationalError('Catatrophic database error. Multiple users with same ID found.') );
 		}
 
 		return new Promise.resolve(rows[0]);
@@ -96,6 +148,9 @@ function isAuthorizedPassword(knex, userID, passwordID){
 		if( user.id === password.owner )
 			return new Promise.resolve(true);
 
-		throw new UnauthorizedError('Insufficient privileges'); 
+		return new Promise.reject( new UnauthorizedError('Insufficient privileges') );
 	});
 }
+
+module.exports.getUser = getUser;
+module.exports.isAuthorizedUser = isAuthorizedUser;
