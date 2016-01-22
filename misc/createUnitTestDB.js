@@ -9,10 +9,13 @@ var knex = require('knex')({
 	}
 });
 
+const sleep = require('sleep');
+
 const data = require('../misc/unitTestData.js');
 
+knex.raw('PRAGMA foreign_keys = ON').then();
 
-var pragma = knex.raw('PRAGMA foreign_keys = ON');
+sleep.sleep(1);
 
 console.log('Creating unittest DB');
 
