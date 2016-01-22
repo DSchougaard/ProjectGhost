@@ -9,14 +9,28 @@ const hash 		= Promise.promisify(bcrypt.hash);
 
 var schemagic = require('schemagic');
 
-var knex = require(__base + 'database.js')();
+var knex = require(__base + 'database.js');
 
 // Errors
 const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js');
-const ValidationError = require(__base + 'errors/ValidationError.js');
-const SqlError = require(__base + 'errors/SqlError.js');
-
+const ValidationError 		= require(__base + 'errors/ValidationError.js');
+const SqlError 				= require(__base + 'errors/SqlError.js');
 const OperationalError 		= Promise.OperationalError;
+
+function SQLErrorHandler(err){
+	// SQLite Username Exists error
+	if( err.errno === 19 && err.code === 'SQLITE_CONSTRAINT' ){
+		console.log(err);
+		return new Promise.reject( new SqlError('Username already exists') );
+		//throw new SqlError('Username already exists.')
+	}else if( err.errno === 5 && err.code === 'SQLITE_BUSY'){
+		return new Promise.reject( new SqlError('database temporarily unavailable') );
+	}
+
+	return new Promise.reject( err );
+}
+
+
 
 module.exports = class User{
 	constructor(data){
@@ -27,6 +41,7 @@ module.exports = class User{
 		this.salt 		= data.salt;
 		this.privatekey = data.privatekey;
 		this.publickey 	= data.publickey;
+
 	}
 
 	static create(input){
@@ -100,8 +115,91 @@ module.exports = class User{
 	}
 
 
-	update(fields){
+	update(input){
+		var validate = schemagic.userUpdate.validate(input);
+		if( !validate.valid ){
+			return new Promise.reject( new ValidationError(validate.errors[0].message, validate.errors[0].property) );
+		}
 
+		var updated = {}
+
+		if( input.username !== undefined && input.username !== this.username ){
+			updated.username = input.username;
+		}
+		if( input.isAdmin !== undefined && input.isAdmin !== this.isAdmin ){
+			updated.isAdmin = input.isAdmin;
+		}
+		if( input.password !== undefined && input.password !== this.password ){
+			updated.password = input.password;
+		}
+		if( input.privatekey !== undefined && input.privatekey !== this.privatekey ){
+			updated.privatekey = input.privatekey;
+		}
+		if( input.publickey !== undefined && input.publickey !== this.publickey ){
+			updated.publickey = input.publickey;
+		}
+
+
+		if( _.has(updated, 'password') ){
+			return genSalt()
+			.then(hash.bind(null, updated.password))
+			.then(function(hash){
+				updated.password 	= hash;
+				updated.salt 		= hash.substring(0, 29);
+				return new Promise.resolve(updated);
+			//}).then(knex('users').where('id', 3).update.bind( knex('users') ))
+			}).bind(this)
+			.then(function(u){
+				// Ugly, ugly syntax. But bicthes about unique username otherwise
+				return knex('users')
+					.update(u)
+					.where('id', this.id);
+			})
+			.then(function(num){
+				if( num.length === 0 ){
+					return new Promise.reject( new SqlError('User ID was not found') );
+				}
+
+				if( num.length > 1 ){
+					return new Promise.reject( new SqlError('Multiple users found. Something was wrong.') );	
+				}
+				
+
+				this.username 	= ( typeof updated.username 	!== undefined ? updated.username 	: this.username );
+				this.password 	= ( typeof updated.password 	!== undefined ? updated.password 	: this.password );
+				this.salt 		= ( typeof updated.salt 		!== undefined ? updated.salt 		: this.salt );
+				this.isAdmin 	= ( typeof updated.isAdmin 		!== undefined ? updated.isAdmin 	: this.isAdmin );
+				this.privatekey = ( typeof updated.privatekey 	!== undefined ? updated.privatekey 	: this.privatekey );
+				this.publickey 	= ( typeof updated.publickey 	!== undefined ? updated.publickey 	: this.publickey );
+
+				return new Promise.resolve( this );
+
+			}, SQLErrorHandler);
+		}
+
+
+		return knex('users').where('id', this.id).update(updated)
+			.bind(this)
+			.then(function(num){
+				if( num.length === 0 ){
+					return new Promise.reject( new SqlError('User ID was not found') );
+				}
+
+				if( num.length > 1 ){
+					return new Promise.reject( new SqlError('Multiple users found. Something was wrong.') );	
+				}
+
+				this.username 	= ( typeof updated.username 	!== undefined ? updated.username 	: this.username );
+				this.password 	= ( typeof updated.password 	!== undefined ? updated.password 	: this.password );
+				this.salt 		= ( typeof updated.salt 		!== undefined ? updated.salt 		: this.salt );
+				this.isAdmin 	= ( typeof updated.isAdmin 		!== undefined ? updated.isAdmin 	: this.isAdmin );
+				this.privatekey = ( typeof updated.privatekey 	!== undefined ? updated.privatekey 	: this.privatekey );
+				this.publickey 	= ( typeof updated.publickey 	!== undefined ? updated.publickey 	: this.publickey );
+
+
+				return new Promise.resolve( this );
+
+			}, SQLErrorHandler);
 	}
 
 	del(){

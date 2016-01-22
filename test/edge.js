@@ -10,7 +10,7 @@ const ValidationError 		= require(__base + 'errors/ValidationError.js');
 const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js');
 const SqlError 				= require(__base + 'errors/SqlError.js');
 
-const unittestData = require(__base + 'misc/createUnitTestData.js');
+const unittestData = require(__base + 'misc/unitTestData.js');
 
 describe('Models', function(){
 
@@ -20,7 +20,6 @@ describe('Models', function(){
 	
 		var validUser;
 
-		var knex;
 		before(function(done){
 
 			validUser = {
@@ -30,19 +29,10 @@ describe('Models', function(){
 				privatekey: base64.encode(fs.readFileSync('misc/unittest-private.key').toString('utf8')),
 				publickey: base64.encode(fs.readFileSync('misc/unittest-public.crt').toString('utf8'))
 			}
-
-
-			knex = require('knex')({
-				client: 'sqlite',
-				connection:{
-					filename: 'unittest.sqlite'
-				}
-			});
-
 			done();
 		});
 
-		describe.only('#create', function(){
+		describe('#create', function(){
 
 			it('succeeds in creating new user', function(){
 				return User.create(validUser)
@@ -250,132 +240,21 @@ describe('Models', function(){
 				});
 			})
 		});
-	
 
-
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+		describe('#put', function(){
+			it('test', function(){
+
+				return User.find(3)
+				.then(function(user){
+					//return user.update({password: 'p@ssword'})
+					return user.update({username: 'Darth Maul', password: 'DeathToTheJedi'})
+				})
+				.then(function(updatedUser){
+					console.log("%j",updatedUser);
+					assert.equal(updatedUser.username, 'Darth Maul');
+				})
+			})
+		})
 	});
 
 });
