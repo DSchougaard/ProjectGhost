@@ -9,10 +9,7 @@ const hash 		= Promise.promisify(bcrypt.hash);
 
 var schemagic = require('schemagic');
 
-
-//const userSchema = require(__base + 'schemas/userSchema.js');
-
-var knex = require(__base + 'database.js').get();
+var knex = require(__base + 'database.js')();
 
 // Errors
 const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js');
@@ -68,7 +65,7 @@ module.exports = class User{
 				return new Promise.reject( new SqlError('database temporarily unavailable') );
 			}
 
-			return new Promise.reject( error );
+			return new Promise.reject( err );
 		});
 	}
 
