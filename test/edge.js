@@ -1,0 +1,408 @@
+"use strict";
+
+var assert = require('assert');
+
+const fs 		= require('fs');
+const base64 	= require(__base + 'helpers/base64.js');
+const _ 		= require('underscore');
+
+const ValidationError = require(__base + 'errors/ValidationError.js');
+const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js');
+
+const unittestData = require(__base + 'misc/createUnitTestData.js');
+
+describe('Models', function(){
+
+	describe("User", function(){
+		
+		var User = require('../model/user.js');
+		var validUser = {
+			id: 10,
+			username: 'Darth Vader',
+			isAdmin: true,
+			password: "$2a$10$mm8JMl8iSIYD38N7KUljweZSQsraQvRIgE3H.CIW.UIu9qKppXoJ6",
+			salt: "$2a$10$mm8JMl8iSIYD38N7KUljwe",
+			privatekey: base64.encode(fs.readFileSync('misc/unittest-private.key').toString('utf8')),
+			publickey: base64.encode(fs.readFileSync('misc/unittest-public.crt').toString('utf8'))
+		}
+
+		var t = {
+			username: 'Darth Vader',
+			isAdmin: true,
+			password: 'password',
+			privatekey: base64.encode(fs.readFileSync('misc/unittest-private.key').toString('utf8')),
+			publickey: base64.encode(fs.readFileSync('misc/unittest-public.crt').toString('utf8'))
+
+		}
+
+		var knex;
+		before(function(done){
+
+			knex = require('knex')({
+				client: 'sqlite',
+				connection:{
+					filename: 'unittest.sqlite'
+				}
+			});
+			done();
+		});
+
+		describe('#create', function(){
+
+			it.only('succeeds', function(){
+				return User.create(t)
+				.then(function(h){
+					console.log(h);
+				});
+				//return User.create(validUser)
+				//.then(function(user){
+				//})
+			})
+
+			describe('missing fields', function(){ 
+				it('should throw error when creating a new user with undefined data', function(){
+					return User.create(undefined)
+					.then(function(user){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is required');
+						assert.equal(err.property, 'data');
+					});
+				});
+
+				it('should throw error when creating a new user with undefined id', function(){
+					return User.create( _.omit(validUser, 'id') )
+					.then(function(user){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is required');
+						assert.equal(err.property, 'data.id');
+					});
+				});
+				
+				it('should throw error when creating a new user with undefined username', function(){
+					return User.create( _.omit(validUser, 'username') )
+					.then(function(user){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is required');
+						assert.equal(err.property, 'data.username');
+					});
+				});
+
+				it('should throw error when creating a new user with undefined password', function(){
+					return User.create( _.omit(validUser, 'password') )
+					.then(function(user){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is required');
+						assert.equal(err.property, 'data.password');
+					});
+				});
+				
+				it('should throw error when creating a new user with undefined salt', function(){
+					return User.create( _.omit(validUser, 'salt') )
+					.then(function(user){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is required');
+						assert.equal(err.property, 'data.salt');
+					});
+				});
+
+				it('should throw error when creating a new user with undefined publickey', function(){
+					return User.create( _.omit(validUser, 'publickey') )
+					.then(function(user){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is required');
+						assert.equal(err.property, 'data.publickey');
+					});
+				});
+
+				it('should throw error when creating a new user with undefined privatekey', function(){
+					return User.create( _.omit(validUser, 'privatekey') )
+					.then(function(user){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is required');
+						assert.equal(err.property, 'data.privatekey');
+					});
+				});
+			});
+		
+			describe('wrong field types', function(){
+				it('should throw an error when creating a new user with data of wrong type', function(){
+					return User.create(true)
+					.then(function(user){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is the wrong type');
+						assert.equal(err.property, 'data');
+					});
+				});
+
+				it('should throw an error when creating a new user with id of wrong type', function(){
+					var temp = _.clone(validUser);
+					temp.id = true;
+					return User.create( temp )
+					.then(function(user){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is the wrong type');
+						assert.equal(err.property, 'data.id');
+					});
+				});
+
+				it('should throw an error when creating a new user with username of wrong type', function(){
+					var temp = _.clone(validUser);
+					temp.username = true;
+					return User.create( temp )
+					.then(function(user){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is the wrong type');
+						assert.equal(err.property, 'data.username');
+					});
+				});
+
+				it('should throw an error when creating a new user with password of wrong type', function(){
+					var temp = _.clone(validUser);
+					temp.password = true;
+					return User.create( temp )
+					.then(function(user){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is the wrong type');
+						assert.equal(err.property, 'data.password');
+					});
+				});
+
+				it('should throw an error when creating a new user with salt of wrong type', function(){
+					var temp = _.clone(validUser);
+					temp.salt = true;
+					return User.create( temp )
+					.then(function(user){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is the wrong type');
+						assert.equal(err.property, 'data.salt');
+					});
+				});
+
+				it('should throw an error when creating a new user with privatekey of wrong type', function(){
+					var temp = _.clone(validUser);
+					temp.privatekey = true;
+					return User.create( temp )
+					.then(function(user){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is the wrong type');
+						assert.equal(err.property, 'data.privatekey');
+					});
+				});
+
+				it('should throw an error when creating a new user with privatekey of wrong type', function(){
+					var temp = _.clone(validUser);
+					temp.privatekey = true;
+					return User.create( temp )
+					.then(function(user){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is the wrong type');
+						assert.equal(err.property, 'data.privatekey');
+					});
+				});
+
+				it('should throw an error when creating a new user with publickey of wrong type', function(){
+					var temp = _.clone(validUser);
+					temp.publickey = true;
+					return User.create( temp )
+					.then(function(user){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is the wrong type');
+						assert.equal(err.property, 'data.publickey');
+					});
+				});
+			});	
+		});
+
+		describe('#find', function(){
+			it('should fail when trying to find a non-existant id', function(){
+				return User.find(1337)
+				.then(function(user){
+					assert.fail();
+				})
+				.catch(UserDoesNotExistError, function(err){
+					assert.equal(err.message, 1337);
+				});
+			});
+
+			it('should fetch user when finding existing id', function(){
+				return User.find(1)
+				.then(function(user){
+					assert.equal(1, 									user.id);
+
+					assert.equal(unittestData.userData[0].username, 	user.username);
+					assert.equal(unittestData.userData[0].isadmin, 		user.isadmin);
+					assert.equal(unittestData.userData[0].privatekey, 	user.privatekey);
+					assert.equal(unittestData.userData[0].publickey, 	user.publickey);
+				});
+			});
+
+			it('should fail when given wrong input type', function(){
+				return User.find(true)
+				.then(function(user){
+					assert.fail();
+				})
+				.catch(ValidationError, function(err){
+					assert.equal(err.message, 'wrong type');
+					assert.equal(err.property, 'id');
+				});
+			})
+		});
+	
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	});
+
+});
