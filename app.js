@@ -1,7 +1,6 @@
 // Define Base Path
 global.__base 		= __dirname + '/';
 
-
 // Libraries
 const restify 			= require('restify');
 const fs				= require('fs');
@@ -12,7 +11,6 @@ const users 			= require(__base + 'routes/users.js');
 const auth 				= require(__base + 'routes/auth.js');
 const passwords			= require(__base + 'routes/password.js');
 const category 			= require(__base + 'routes/category.js');
-
 
 //Helpers
 const authHelpers 		= require(__base + 'helpers/authHelpers.js');
@@ -73,10 +71,15 @@ server.use(restify.bodyParser());
 server.use(restify.queryParser());
 
 // Database through Knex
-var knex = require('knex')({
+/*var knex = require('knex')({
 	client: opts.database,
 	connection: opts.connection
-});
+});*/
+
+var knex = require(__base + 'database.js').connect(opts);
+
+
+
 // FOR SOME FUCKING REASON SQLITE DOES NOT HAVE FOREIGN KEYS ENABLED PER DEFAULT
 // SO IT HAS TO BE ENABLED MANUALLY.....
 knex.raw('PRAGMA foreign_keys = ON').then(function(resp){ });
