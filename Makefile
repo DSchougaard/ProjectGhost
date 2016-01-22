@@ -27,12 +27,12 @@ count:
 test:
 	rm -f logs/*
 	rm -f unittest.sqlite
-	node misc/createUnitTestData.js
-	NODE_ENV=test mocha
+	node misc/createUnitTestDB.js
+	NODE_ENV=test mocha test/tests
 
 cov: 
 	rm -f unittest.sqlite
-	node misc/createUnitTestData.js
+	node misc/createUnitTestDB.js
 	@NODE_ENV=test istanbul cover _mocha -- -R spec
 
 
