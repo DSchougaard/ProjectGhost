@@ -34,17 +34,15 @@ module.exports = class User{
 		if( !validate.valid ){
 			return new Promise.reject( new ValidationError(validate.errors[0].message, validate.errors[0].property) );
 		}
-
+	
 		return genSalt()
 		.then(hash.bind(null, data.password))
 		.then(function(hash){
 			data.password = hash;
 			data.salt = hash.substring(0, 29);
-
-			return knex
-			 	.insert(data)
-			 	.into('users');
+			return new Promise.resolve(data);
 		})
+		.then(knex('users').insert.bind( knex('users') ))
 		.then(function(id){
 			data.id = id[0];
 			return new Promise.resolve( new User(data) );
