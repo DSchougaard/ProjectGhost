@@ -76,14 +76,14 @@ var userData = [
 		username 	: 'User1',
 		password 	: 'password',
 		isAdmin		: true,
-		privatekey 	: privateKey.toString('utf8'),
+		privatekey 	: base64.encode(privateKey.toString('utf8')),
 		publickey 	: base64.encode(publicKey.toString('utf8'))
 	},
 	{
 		username 	: 'User2',
 		password 	: 'password',
 		isAdmin		: false,
-		privatekey 	: privateKey.toString('utf8'),
+		privatekey 	: base64.encode(privateKey.toString('utf8')),
 		publickey 	: base64.encode(publicKey.toString('utf8'))
 	}
 ];
@@ -187,6 +187,8 @@ knex('passwords').insert(passwordData)
 })
 
 
+module.exports.userData = userData;
+module.exports.passwordData = passwordData;
 
 
 /*
