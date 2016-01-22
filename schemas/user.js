@@ -12,7 +12,7 @@ module.exports = {
 		"isAdmin":{
 			"description": "Denotes if the user is admin",
 			"required": true,
-			"type":"number",
+			"type":"boolean",
 			"example":0
 		},
 		"username":{
@@ -40,7 +40,8 @@ module.exports = {
 		"privatekey":{
 			"description": "Private key of the user",
 			"required":true,
-			"type": "string"
+			"type": "string",
+			"pattern": /^([A-Za-z0-9+\/]{4})*([A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}==)$/
 		}
 	}
 };
