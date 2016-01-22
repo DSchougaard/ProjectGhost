@@ -6,8 +6,9 @@ const fs 		= require('fs');
 const base64 	= require(__base + 'helpers/base64.js');
 const _ 		= require('underscore');
 
-const ValidationError = require(__base + 'errors/ValidationError.js');
+const ValidationError 		= require(__base + 'errors/ValidationError.js');
 const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js');
+const SqlError 				= require(__base + 'errors/SqlError.js');
 
 const unittestData = require(__base + 'misc/createUnitTestData.js');
 
@@ -16,27 +17,20 @@ describe('Models', function(){
 	describe("User", function(){
 		
 		var User = require('../model/user.js');
-		var validUser = {
-			id: 10,
-			username: 'Darth Vader',
-			isAdmin: true,
-			password: "$2a$10$mm8JMl8iSIYD38N7KUljweZSQsraQvRIgE3H.CIW.UIu9qKppXoJ6",
-			salt: "$2a$10$mm8JMl8iSIYD38N7KUljwe",
-			privatekey: base64.encode(fs.readFileSync('misc/unittest-private.key').toString('utf8')),
-			publickey: base64.encode(fs.readFileSync('misc/unittest-public.crt').toString('utf8'))
-		}
-
-		var t = {
-			username: 'Darth Vader',
-			isAdmin: true,
-			password: 'password',
-			privatekey: base64.encode(fs.readFileSync('misc/unittest-private.key').toString('utf8')),
-			publickey: base64.encode(fs.readFileSync('misc/unittest-public.crt').toString('utf8'))
-
-		}
+	
+		var validUser;
 
 		var knex;
 		before(function(done){
+
+			validUser = {
+				username: 'Darth Vader',
+				isAdmin: true,
+				password: 'password',
+				privatekey: base64.encode(fs.readFileSync('misc/unittest-private.key').toString('utf8')),
+				publickey: base64.encode(fs.readFileSync('misc/unittest-public.crt').toString('utf8'))
+			}
+
 
 			knex = require('knex')({
 				client: 'sqlite',
@@ -44,19 +38,34 @@ describe('Models', function(){
 					filename: 'unittest.sqlite'
 				}
 			});
+
 			done();
 		});
 
-		describe('#create', function(){
+		describe.only('#create', function(){
 
-			it.only('succeeds', function(){
-				return User.create(t)
-				.then(function(h){
-					console.log(h);
+			it('succeeds in creating new user', function(){
+				return User.create(validUser)
+				.then(function(user){
+					//console.log(h);
+					assert.equal(user.id, 3);
+					assert.equal(user.username, validUser.username);
+					assert.equal(user.isAdmin, validUser.isAdmin);
+					assert.equal(user.privatekey, validUser.privatekey);
+					assert.equal(user.publickey, validUser.publickey);
 				});
-				//return User.create(validUser)
-				//.then(function(user){
-				//})
+			});
+
+			it('fails when creating a user with already existing username', function(){
+				var temp = _.clone(validUser);
+				temp.username = unittestData.userData[0].username;
+				return User.create(temp)
+				.then(function(user){
+					assert.fail(user);
+				})
+				.catch(SqlError, function(err){
+					assert.equal(err.message, 'Username already exists');
+				});
 			})
 
 			describe('missing fields', function(){ 
@@ -71,17 +80,6 @@ describe('Models', function(){
 					});
 				});
 
-				it('should throw error when creating a new user with undefined id', function(){
-					return User.create( _.omit(validUser, 'id') )
-					.then(function(user){
-						assert.fail();
-					})
-					.catch(ValidationError, function(err){
-						assert.equal(err.cause, 'is required');
-						assert.equal(err.property, 'data.id');
-					});
-				});
-				
 				it('should throw error when creating a new user with undefined username', function(){
 					return User.create( _.omit(validUser, 'username') )
 					.then(function(user){
@@ -90,6 +88,17 @@ describe('Models', function(){
 					.catch(ValidationError, function(err){
 						assert.equal(err.cause, 'is required');
 						assert.equal(err.property, 'data.username');
+					});
+				});
+
+				it('should throw error when creating a new user with undefined admin bool', function(){
+					return User.create( _.omit(validUser, 'isAdmin') )
+					.then(function(user){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is required');
+						assert.equal(err.property, 'data.isAdmin');
 					});
 				});
 
@@ -104,17 +113,7 @@ describe('Models', function(){
 					});
 				});
 				
-				it('should throw error when creating a new user with undefined salt', function(){
-					return User.create( _.omit(validUser, 'salt') )
-					.then(function(user){
-						assert.fail();
-					})
-					.catch(ValidationError, function(err){
-						assert.equal(err.cause, 'is required');
-						assert.equal(err.property, 'data.salt');
-					});
-				});
-
+		
 				it('should throw error when creating a new user with undefined publickey', function(){
 					return User.create( _.omit(validUser, 'publickey') )
 					.then(function(user){
@@ -150,19 +149,6 @@ describe('Models', function(){
 					});
 				});
 
-				it('should throw an error when creating a new user with id of wrong type', function(){
-					var temp = _.clone(validUser);
-					temp.id = true;
-					return User.create( temp )
-					.then(function(user){
-						assert.fail();
-					})
-					.catch(ValidationError, function(err){
-						assert.equal(err.cause, 'is the wrong type');
-						assert.equal(err.property, 'data.id');
-					});
-				});
-
 				it('should throw an error when creating a new user with username of wrong type', function(){
 					var temp = _.clone(validUser);
 					temp.username = true;
@@ -176,6 +162,19 @@ describe('Models', function(){
 					});
 				});
 
+				it('should throw an error when creating a new user with admin bool of wrong type', function(){
+					var temp = _.clone(validUser);
+					temp.isAdmin = "true";
+					return User.create( temp )
+					.then(function(user){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is the wrong type');
+						assert.equal(err.property, 'data.isAdmin');
+					});
+				});
+
 				it('should throw an error when creating a new user with password of wrong type', function(){
 					var temp = _.clone(validUser);
 					temp.password = true;
@@ -186,32 +185,6 @@ describe('Models', function(){
 					.catch(ValidationError, function(err){
 						assert.equal(err.cause, 'is the wrong type');
 						assert.equal(err.property, 'data.password');
-					});
-				});
-
-				it('should throw an error when creating a new user with salt of wrong type', function(){
-					var temp = _.clone(validUser);
-					temp.salt = true;
-					return User.create( temp )
-					.then(function(user){
-						assert.fail();
-					})
-					.catch(ValidationError, function(err){
-						assert.equal(err.cause, 'is the wrong type');
-						assert.equal(err.property, 'data.salt');
-					});
-				});
-
-				it('should throw an error when creating a new user with privatekey of wrong type', function(){
-					var temp = _.clone(validUser);
-					temp.privatekey = true;
-					return User.create( temp )
-					.then(function(user){
-						assert.fail();
-					})
-					.catch(ValidationError, function(err){
-						assert.equal(err.cause, 'is the wrong type');
-						assert.equal(err.property, 'data.privatekey');
 					});
 				});
 
