@@ -76,7 +76,7 @@ server.use(restify.queryParser());
 	connection: opts.connection
 });*/
 
-var knex = require(__base + 'database.js').connect(opts);
+var knex = require(__base + 'database.js')(opts);
 
 
 
@@ -153,7 +153,7 @@ server.get('/api/ping', function(req, res, next){
 });
 
 // Routes
-users(server, knex, log);
+users(server, log);
 auth(server, knex, log);
 passwords(server, knex, log);
 category(server, knex, log);

@@ -16,7 +16,10 @@ const UserDoesNotExistError 	= require(__base + 'errors/UserDoesNotExistError.js
 const PasswordDoesNotExistError 	= require(__base + 'errors/PasswordDoesNotExistError.js');
 
 
-module.exports = function(server, knex, log){
+module.exports = function(server, log){
+
+	var knex = require(__base + 'database.js')();
+
 	server.get('/api/users', function(req, res, next){
 		log.info({ method: 'GET', path: '/api/users' });
 
