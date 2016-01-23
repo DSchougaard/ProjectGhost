@@ -207,6 +207,10 @@ module.exports = class User{
 	}
 
 	del(){
+		if( typeof this.id !== 'number' ){
+			return new Promise.reject( new ValidationError('is wrong type', 'user.id'));
+		}
+
 		return knex('users')
 		.where('id', this.id)
 		.del()
@@ -219,6 +223,6 @@ module.exports = class User{
 			} 
 
 			return new Promise.resolve(true);
-		});
+		}, SQLErrorHandler);
 	}
 }

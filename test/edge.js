@@ -555,6 +555,21 @@ describe('Models', function(){
 				});
 			});
 
+			it('fails validation, when user has been tampered with and ID given another type', function(){
+				var fakeUser = {
+					id: true
+				}
+				var t = new User(fakeUser);
+				return t.del()
+				.then(function(num){
+					assert.fail();
+				})
+				.catch(ValidationError, function(err){
+					assert.equal(err.message, 'is wrong type');
+					assert.equal(err.property, 'user.id');
+				});
+			});
+
 
 		});
 
