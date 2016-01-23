@@ -242,6 +242,28 @@ describe('Models', function(){
 		});
 
 		describe('#put', function(){
+			it('update  password', function(){
+				var oldValues = undefined;
+				return User.find(3)
+				.then(function(user){
+					oldValues = _.clone(user);
+					return user.update({password: 'LongLiveTheEmpire'})
+				})
+				.then(function(updatedUser){
+					// check username, password and salt changed
+					assert.notEqual(oldValues.salt, updatedUser.salt);
+					assert.notEqual(oldValues.password, updatedUser.password);
+
+					// check other fields are the same
+					assert.equal(oldValues.id, updatedUser.id);
+					assert.equal(oldValues.username, updatedUser.username);
+					assert.equal(oldValues.isAdmin, updatedUser.isAdmin);
+					assert.equal(oldValues.privatekey, updatedUser.privatekey);
+					assert.equal(oldValues.publickey, updatedUser.publickey);
+				});
+			});
+
+
 			it('update username AND password', function(){
 				var oldValues = undefined;
 				return User.find(3)
@@ -282,7 +304,56 @@ describe('Models', function(){
 					assert.equal(oldValues.salt, updatedUser.salt);
 					assert.equal(oldValues.password, updatedUser.password);
 				});
-			})
+			});
+			
+			it('update privatekey', function(){
+				var oldValues = undefined;
+				return User.find(3)
+				.then(function(user){
+					oldValues = _.clone(user);
+					return user.update({privatekey: base64.encode('ThisIsSOOOOMuchNotACert.....')})
+				})
+				.then(function(updatedUser){
+					// check username has changed
+					assert.equal(updatedUser.privatekey, base64.encode('ThisIsSOOOOMuchNotACert.....'));
+
+					// ensure other values are the same
+					assert.equal(oldValues.id, updatedUser.id);
+					assert.equal(oldValues.isAdmin, updatedUser.isAdmin);
+					assert.equal(oldValues.username, updatedUser.username);
+					assert.equal(oldValues.publickey, updatedUser.publickey);
+					assert.equal(oldValues.salt, updatedUser.salt);
+					assert.equal(oldValues.password, updatedUser.password);
+				});
+			});
+		
+			it('update publickey', function(){
+				var oldValues = undefined;
+				return User.find(3)
+				.then(function(user){
+					oldValues = _.clone(user);
+					return user.update({publickey: base64.encode('ThisIsSOOOOMuchNotACert.....')})
+				})
+				.then(function(updatedUser){
+					// check username has changed
+					assert.equal(updatedUser.publickey, base64.encode('ThisIsSOOOOMuchNotACert.....'));
+
+					// ensure other values are the same
+					assert.equal(oldValues.id, updatedUser.id);
+					assert.equal(oldValues.isAdmin, updatedUser.isAdmin);
+					assert.equal(oldValues.username, updatedUser.username);
+					assert.equal(oldValues.privatekey, updatedUser.privatekey);
+					assert.equal(oldValues.salt, updatedUser.salt);
+					assert.equal(oldValues.password, updatedUser.password);
+				});
+			});
+		
+
+
+
+
+
+
 		})
 	});
 
