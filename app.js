@@ -76,7 +76,7 @@ server.use(restify.queryParser());
 	connection: opts.connection
 });*/
 
-var knex = require(__base + 'database.js')(opts);
+var knex = require(__base + 'database.js');
 
 
 

@@ -1,5 +1,5 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-global.__base 		= __dirname + '/';
+global.__base 			= __dirname + '/';
 
 var assert 				= require('assert');
 var request 			= require('supertest');  
