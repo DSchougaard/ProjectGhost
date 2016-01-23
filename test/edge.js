@@ -519,11 +519,45 @@ describe('Models', function(){
 					});
 				});
 			});
+		});
+
+		describe('#del', function(){
+			it('fails when id has been edited to be invalid', function(){
+				User.find(3)
+				.then(function(user){
+					user.id = 1337;
+					return user.del();
+				})
+				.then(function(succeeded){
+					assert.fail();
+				})
+				.catch(SqlError, function(err){
+					assert.equal(err.message, 'User was not found');
+				});
+			});
 
 
+			it('succeeds in deleting user', function(){
+				var idForThisTest = 3;
+				User.find(idForThisTest)
+				.then(function(user){
+					return user.del();
+				})
+				.then(function(succeeded){
+					assert.equal(succeeded, true);
+					
+					return knex('users')
+					.select()
+					.where('id', idForThisTest)
+					.then(function(rows){
+						assert.equal(rows, 0);
+					});
+				});
+			});
 
 
-		})
+		});
+
 	});
 
 });

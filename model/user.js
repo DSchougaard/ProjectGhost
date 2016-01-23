@@ -114,7 +114,6 @@ module.exports = class User{
 			});
 	}
 
-
 	update(input){
 		var validate = schemagic.userUpdate.validate(input);
 		if( !validate.valid ){
@@ -208,6 +207,18 @@ module.exports = class User{
 	}
 
 	del(){
+		return knex('users')
+		.where('id', this.id)
+		.del()
+		.then(function(rows){
+			if( rows === 0 ){
+				return new Promise.reject(new SqlError('User was not found'));
+			}
+			if( rows > 1 ){
+				return new Promise.reject(new SqlError('Catastrophic database error. Several users where deleted'));
+			} 
 
+			return new Promise.resolve(true);
+		});
 	}
 }
