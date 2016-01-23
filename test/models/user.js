@@ -19,7 +19,7 @@ describe('Models', function(){
 
 	describe("User", function(){
 		
-		var User = require('../model/user.js');
+		var User = require(__base + 'model/user.js');
 	
 		var validUser;
 
