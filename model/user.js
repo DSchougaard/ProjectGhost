@@ -195,13 +195,12 @@ module.exports = class User{
 					return new Promise.reject( new SqlError('Multiple users found. Something was wrong.') );	
 				}
 
-				this.username 	= ( typeof updated.username 	!== undefined ? updated.username 	: this.username );
-				this.password 	= ( typeof updated.password 	!== undefined ? updated.password 	: this.password );
-				this.salt 		= ( typeof updated.salt 		!== undefined ? updated.salt 		: this.salt );
-				this.isAdmin 	= ( typeof updated.isAdmin 		!== undefined ? updated.isAdmin 	: this.isAdmin );
-				this.privatekey = ( typeof updated.privatekey 	!== undefined ? updated.privatekey 	: this.privatekey );
-				this.publickey 	= ( typeof updated.publickey 	!== undefined ? updated.publickey 	: this.publickey );
-
+				this.username 	= updated.username 		|| this.username;
+				this.password 	= updated.password 		|| this.password;
+				this.salt 		= updated.salt 			|| this.salt;
+				this.isAdmin 	= updated.isAdmin 		|| this.isAdmin;
+				this.privatekey = updated.privatekey 	|| this.privatekey;
+				this.publickey 	= updated.publickey 	|| this.publickey;
 
 				return new Promise.resolve( this );
 

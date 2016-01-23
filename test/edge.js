@@ -243,22 +243,44 @@ describe('Models', function(){
 
 		describe('#put', function(){
 			it('update username AND password', function(){
-
 				var oldValues = undefined;
-
 				return User.find(3)
 				.then(function(user){
 					oldValues = _.clone(user);
 					return user.update({username: 'Darth Maul', password: 'DeathToTheJedi'})
 				})
 				.then(function(updatedUser){
-					assert.equal(oldValues.id, updatedUser.id);
-					assert.equal(oldValues.privatekey, updatedUser.privatekey);
-					assert.equal(oldValues.publickey, updatedUser.publickey);
-
+					// check username, password and salt changed
 					assert.equal(updatedUser.username, 'Darth Maul');
 					assert.notEqual(oldValues.salt, updatedUser.salt);
 					assert.notEqual(oldValues.password, updatedUser.password);
+
+					// check other fields are the same
+					assert.equal(oldValues.id, updatedUser.id);
+					assert.equal(oldValues.isAdmin, updatedUser.isAdmin);
+					assert.equal(oldValues.privatekey, updatedUser.privatekey);
+					assert.equal(oldValues.publickey, updatedUser.publickey);
+				});
+			});
+
+			it('update username', function(){
+				var oldValues = undefined;
+				return User.find(3)
+				.then(function(user){
+					oldValues = _.clone(user);
+					return user.update({username: 'Darth Sidious'})
+				})
+				.then(function(updatedUser){
+					// check username has changed
+					assert.equal(updatedUser.username, 'Darth Sidious');
+
+					// ensure other values are the same
+					assert.equal(oldValues.id, updatedUser.id);
+					assert.equal(oldValues.isAdmin, updatedUser.isAdmin);
+					assert.equal(oldValues.privatekey, updatedUser.privatekey);
+					assert.equal(oldValues.publickey, updatedUser.publickey);
+					assert.equal(oldValues.salt, updatedUser.salt);
+					assert.equal(oldValues.password, updatedUser.password);
 				});
 			})
 		})
