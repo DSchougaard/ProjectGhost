@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/Dasch42/ProjectGhost#readme",
   "devDependencies": {
+    "fibers": "^1.0.8",
     "fs-extra": "^0.26.4",
     "hippie": "^0.4.0",
     "istanbul": "^0.4.2",
@@ -32,7 +33,8 @@
     "request": "^2.67.0",
     "should": "^8.0.2",
     "sinon": "^1.17.2",
-    "supertest": "^1.1.0"
+    "supertest": "^1.1.0",
+    "sync": "^0.2.5"
   },
   "dependencies": {
     "argon2": "^0.4.1",
