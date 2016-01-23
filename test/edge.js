@@ -12,6 +12,9 @@ const SqlError 				= require(__base + 'errors/SqlError.js');
 
 const unittestData = require(__base + 'misc/unitTestData.js');
 
+
+var knex = require(__base + 'database.js');
+
 describe('Models', function(){
 
 	describe("User", function(){
@@ -242,7 +245,7 @@ describe('Models', function(){
 		});
 
 		describe('#put', function(){
-			it('update  password', function(){
+			it('update password', function(){
 				var oldValues = undefined;
 				return User.find(3)
 				.then(function(user){
@@ -260,9 +263,23 @@ describe('Models', function(){
 					assert.equal(oldValues.isAdmin, updatedUser.isAdmin);
 					assert.equal(oldValues.privatekey, updatedUser.privatekey);
 					assert.equal(oldValues.publickey, updatedUser.publickey);
+
+					return knex('users')
+					.select()
+					.where('id', updatedUser.id)
+					.then(function(dbUser){
+						assert.equal(dbUser.length, 1);
+
+						assert.equal(dbUser[0].id, 	 		updatedUser.id);
+						assert.equal(dbUser[0].username, 	updatedUser.username);
+						assert.equal(dbUser[0].password, 	updatedUser.password);
+						assert.equal(dbUser[0].salt, 		updatedUser.salt);
+						assert.equal(dbUser[0].isAdmin,  	updatedUser.isAdmin);
+						assert.equal(dbUser[0].privatekey,	updatedUser.privatekey);
+						assert.equal(dbUser[0].publickey, 	updatedUser.publickey);
+					});
 				});
 			});
-
 
 			it('update username AND password', function(){
 				var oldValues = undefined;
@@ -282,6 +299,21 @@ describe('Models', function(){
 					assert.equal(oldValues.isAdmin, updatedUser.isAdmin);
 					assert.equal(oldValues.privatekey, updatedUser.privatekey);
 					assert.equal(oldValues.publickey, updatedUser.publickey);
+
+					return knex('users')
+					.select()
+					.where('id', updatedUser.id)
+					.then(function(dbUser){
+						assert.equal(dbUser.length, 1);
+
+						assert.equal(dbUser[0].id, 	 		updatedUser.id);
+						assert.equal(dbUser[0].username, 	updatedUser.username);
+						assert.equal(dbUser[0].password, 	updatedUser.password);
+						assert.equal(dbUser[0].salt, 		updatedUser.salt);
+						assert.equal(dbUser[0].isAdmin,  	updatedUser.isAdmin);
+						assert.equal(dbUser[0].privatekey,	updatedUser.privatekey);
+						assert.equal(dbUser[0].publickey, 	updatedUser.publickey);
+					});
 				});
 			});
 
@@ -303,6 +335,21 @@ describe('Models', function(){
 					assert.equal(oldValues.publickey, updatedUser.publickey);
 					assert.equal(oldValues.salt, updatedUser.salt);
 					assert.equal(oldValues.password, updatedUser.password);
+
+					return knex('users')
+					.select()
+					.where('id', updatedUser.id)
+					.then(function(dbUser){
+						assert.equal(dbUser.length, 1);
+
+						assert.equal(dbUser[0].id, 	 		updatedUser.id);
+						assert.equal(dbUser[0].username, 	updatedUser.username);
+						assert.equal(dbUser[0].password, 	updatedUser.password);
+						assert.equal(dbUser[0].salt, 		updatedUser.salt);
+						assert.equal(dbUser[0].isAdmin,  	updatedUser.isAdmin);
+						assert.equal(dbUser[0].privatekey,	updatedUser.privatekey);
+						assert.equal(dbUser[0].publickey, 	updatedUser.publickey);
+					});
 				});
 			});
 			
@@ -324,6 +371,21 @@ describe('Models', function(){
 					assert.equal(oldValues.publickey, updatedUser.publickey);
 					assert.equal(oldValues.salt, updatedUser.salt);
 					assert.equal(oldValues.password, updatedUser.password);
+
+					return knex('users')
+					.select()
+					.where('id', updatedUser.id)
+					.then(function(dbUser){
+						assert.equal(dbUser.length, 1);
+
+						assert.equal(dbUser[0].id, 	 		updatedUser.id);
+						assert.equal(dbUser[0].username, 	updatedUser.username);
+						assert.equal(dbUser[0].password, 	updatedUser.password);
+						assert.equal(dbUser[0].salt, 		updatedUser.salt);
+						assert.equal(dbUser[0].isAdmin,  	updatedUser.isAdmin);
+						assert.equal(dbUser[0].privatekey,	updatedUser.privatekey);
+						assert.equal(dbUser[0].publickey, 	updatedUser.publickey);
+					});
 				});
 			});
 		
@@ -345,11 +407,118 @@ describe('Models', function(){
 					assert.equal(oldValues.privatekey, updatedUser.privatekey);
 					assert.equal(oldValues.salt, updatedUser.salt);
 					assert.equal(oldValues.password, updatedUser.password);
+
+					return knex('users')
+					.select()
+					.where('id', updatedUser.id)
+					.then(function(dbUser){
+						assert.equal(dbUser.length, 1);
+
+						assert.equal(dbUser[0].id, 	 		updatedUser.id);
+						assert.equal(dbUser[0].username, 	updatedUser.username);
+						assert.equal(dbUser[0].password, 	updatedUser.password);
+						assert.equal(dbUser[0].salt, 		updatedUser.salt);
+						assert.equal(dbUser[0].isAdmin,  	updatedUser.isAdmin);
+						assert.equal(dbUser[0].privatekey,	updatedUser.privatekey);
+						assert.equal(dbUser[0].publickey, 	updatedUser.publickey);
+					});
+				});
+			});
+
+			it('should fail when no input is given', function(){
+				return User.find(3)
+				.then(function(user){
+					return user.update()
+				}).then(function(u){
+					assert.fail();
+				})
+				.catch(ValidationError, function(err){
+					assert.equal(err.cause, 'is required');
+					assert.equal(err.property, 'data');
 				});
 			});
 		
+			describe('when given invalid fields in input, it', function(){
+
+				it('should throw an error when creating a new user with data of wrong type', function(){
+					return User.find(3)
+					.then(function(user){
+						return user.update(true)
+					}).then(function(u){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is the wrong type');
+						assert.equal(err.property, 'data');
+					});
+				});
 
 
+				it('should throw an error when creating a new user with username of wrong type', function(){
+					return User.find(3)
+					.then(function(user){
+						return user.update({username: true})
+					}).then(function(u){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is the wrong type');
+						assert.equal(err.property, 'data.username');
+					});
+				});
+
+				it('should throw an error when creating a new user with admin bool of wrong type', function(){
+					return User.find(3)
+					.then(function(user){
+						return user.update({isAdmin: "true"})
+					}).then(function(u){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is the wrong type');
+						assert.equal(err.property, 'data.isAdmin');
+					});
+				});
+
+				it('should throw an error when creating a new user with password of wrong type', function(){
+					return User.find(3)
+					.then(function(user){
+						return user.update({password: true})
+					}).then(function(u){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is the wrong type');
+						assert.equal(err.property, 'data.password');
+					});
+				});
+
+				it('should throw an error when creating a new user with privatekey of wrong type', function(){
+					return User.find(3)
+					.then(function(user){
+						return user.update({privatekey: true})
+					}).then(function(u){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is the wrong type');
+						assert.equal(err.property, 'data.privatekey');
+					});
+				});
+
+				it('should throw an error when creating a new user with publickey of wrong type', function(){
+					return User.find(3)
+					.then(function(user){
+						return user.update({publickey: true})
+					}).then(function(u){
+						assert.fail();
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.cause, 'is the wrong type');
+						assert.equal(err.property, 'data.publickey');
+					});
+				});
+			});
 
 
 
