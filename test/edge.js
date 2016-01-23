@@ -242,17 +242,24 @@ describe('Models', function(){
 		});
 
 		describe('#put', function(){
-			it('test', function(){
+			it('update username AND password', function(){
+
+				var oldValues = undefined;
 
 				return User.find(3)
 				.then(function(user){
-					//return user.update({password: 'p@ssword'})
+					oldValues = _.clone(user);
 					return user.update({username: 'Darth Maul', password: 'DeathToTheJedi'})
 				})
 				.then(function(updatedUser){
-					console.log("%j",updatedUser);
+					assert.equal(oldValues.id, updatedUser.id);
+					assert.equal(oldValues.privatekey, updatedUser.privatekey);
+					assert.equal(oldValues.publickey, updatedUser.publickey);
+
 					assert.equal(updatedUser.username, 'Darth Maul');
-				})
+					assert.notEqual(oldValues.salt, updatedUser.salt);
+					assert.notEqual(oldValues.password, updatedUser.password);
+				});
 			})
 		})
 	});
