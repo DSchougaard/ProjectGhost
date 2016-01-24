@@ -42,7 +42,7 @@ module.exports = class Password{
 
 	static find(id){
 		if( typeof id !== 'number' ){
-			return new Promise.reject( new ValidationError('wrong type', 'id') );
+			return new Promise.reject( new ValidationError('is wrong type', 'id') );
 		}
 
 		return knex

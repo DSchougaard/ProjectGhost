@@ -1,3 +1,4 @@
+/* global __base */
 "use strict";
 
 var assert = require('assert');
@@ -46,5 +47,16 @@ describe('Password', function(){
 				assert.equal(unittestData.passwordData[0].note, password.note);
 			})
 		});
+        
+        it('fails when given an ID of invalid type', function(){
+            return Password.find(true)
+            .then(function(password){
+                assert.fail();
+            })
+            .catch(ValidationError, function(err){
+               assert.equal(err.message, 'is wrong type');
+               assert.equal(err.property, 'id'); 
+            });
+        });
 	});
 });
