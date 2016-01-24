@@ -111,7 +111,7 @@ module.exports = class User{
 				}
 
 				return new Promise.resolve(new User(rows[0]));
-			});
+			}, SQLErrorHandler);
 	}
 
 	update(input){
