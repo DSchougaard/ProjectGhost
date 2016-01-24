@@ -10,4 +10,8 @@ before(function(done){
 })
 
 require(__base + 'test/base64.js');
-require(__base + 'test/models/user.js');
+
+describe('Models', function(){
+	require(__base + 'test/models/user.js');
+	require(__base + 'test/models/password.js');
+})
