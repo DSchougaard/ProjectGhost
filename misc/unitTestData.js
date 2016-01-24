@@ -33,8 +33,8 @@ var passwordData = [
 		owner 		: 1,
 		title 		: 'SomeTitle1',
 		username 	: 'SomeUser1',
-		password 	: 'password',
-		iv 			: '1111111111111111',
+		password 	: base64.encode('password'),
+		iv 			: base64.encode('1111111111111111'),
 		note 		: 'This is clearly a note!' 
 	},
 	{
@@ -42,8 +42,8 @@ var passwordData = [
 		owner 		: 1,
 		title 		: 'SomeTitle2',
 		username 	: 'SomeUser1',
-		password 	: 'password',
-		iv 			: '1111111111111111',
+		password 	: base64.encode('password'),
+		iv 			: base64.encode('1111111111111111'),
 		note 		: 'null' 
 
 	},
@@ -52,8 +52,8 @@ var passwordData = [
 		owner 		: 1,
 		title 		: 'SomeOtherTitle1.1',
 		username 	: 'Doge',
-		password 	: 'P@ssw0rd',
-		iv 			: '1111111111111111',
+		password 	: base64.encode('P@ssw0rd'),
+		iv 			: base64.encode('1111111111111111'),
 		note 		: 'Such password, much secure. Wow.' 
 
 	},
@@ -62,8 +62,8 @@ var passwordData = [
 		owner 		: 2,
 		title 		: 'SomeTitleAgain',
 		username 	: 'BadLuckBrian',
-		password 	: 'password',
-		iv 			: '1111111111111111',
+		password 	: base64.encode('password'),
+		iv 			: base64.encode('1111111111111111'),
 		note 		: 'Oh no... Not again...' 
 	}
 ];
