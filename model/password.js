@@ -1,13 +1,19 @@
+/* global __base */
 'use strict'
 const Promise 	= require('bluebird');
 const _ 		= require('underscore');
-
 const schemagic = require('schemagic');
 
+
+// Objects
+var User 					= require(__base + 'model/user.js');
+
+// Errors
 const PasswordDoesNotExistError = require(__base + 'errors/PasswordDoesNotExistError.js');
 const ValidationError 		= require(__base + 'errors/ValidationError.js');
 const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js');
 const SqlError 				= require(__base + 'errors/SqlError.js');
+const OperationalError      = Promise.OperationalError;
 
 const unittestData = require(__base + 'misc/unitTestData.js');
 
@@ -60,13 +66,37 @@ module.exports = class Password{
 			var validate = schemagic.password.validate(rows[0])
 
 			if( !validate.valid ){
-				return new Promise.reject( new ValidationError(validate.errors[0].message, validate.errors[0].message) );
+				return new Promise.reject( new ValidationError(validate.errors[0].message, validate.errors[0].property) );
 			}
 			
 			return new Promise.resolve(new Password(rows[0]));
 
 		});
 	}
+    
+    static create(input){
+        var validate = schemagic.passwordInput.validate(input);
+        if( !validate.valid ){
+            return new Promise.reject( new ValidationError(validate.errors[0].message, validate.errors[0].property) );
+        }
+
+        return User.find(input.owner)
+        .then(function(user){
+        	return knex('passwords').insert(input);
+        })
+        .then(function(id){
+            if( id.length > 1 ){
+                return new Promise.reject(new SqlError('More than a single entry was inserted'));
+            }
+            
+            input.id = id[0];
+            return new Promise.resolve( new Password(input) );
+            
+        }, function(err){
+        	return new Promise.reject(err);
+        });
+        
+    }
 }
 
 
