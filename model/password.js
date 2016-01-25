@@ -71,7 +71,7 @@ module.exports = class Password{
 			
 			return new Promise.resolve(new Password(rows[0]));
 
-		});
+		}, SQLErrorHandler);
 	}
     
     static create(input){
@@ -94,7 +94,7 @@ module.exports = class Password{
             
         }, function(err){
         	return new Promise.reject(err);
-        });
+        }, SQLErrorHandler);
     };
 	
 	update(input){
@@ -122,8 +122,30 @@ module.exports = class Password{
 			
 			return new Promise.resolve(self);
 		
-		});
+		}, SQLErrorHandler);
 	};
+	
+	del(){
+		var self = this;
+		var validate = shcemagic.passwordInput.validate(self);
+		if( !validate.valid ){
+			return new Promise.reject( new ValidationError(validate.errors[0].message, validate.errors[0].property) );
+		}
+		
+		return knex('passwords')
+		.where('id', self.id)
+		.del()
+		.then(function(rows){
+			if( rows === 0 ){
+				return new Promise.reject(new SqlError('Password was not found'));
+			}
+			if( rows > 1 ){
+				return new Promise.reject(new SqlError('Catastrophic database error. Several passwords were deleted'));
+			} 
+
+			return new Promise.resolve(true);
+		}, SQLErrorHandler);
+	}
 };
 
 

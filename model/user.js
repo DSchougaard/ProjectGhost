@@ -219,7 +219,7 @@ module.exports = class User{
 				return new Promise.reject(new SqlError('User was not found'));
 			}
 			if( rows > 1 ){
-				return new Promise.reject(new SqlError('Catastrophic database error. Several users where deleted'));
+				return new Promise.reject(new SqlError('Catastrophic database error. Several users were deleted'));
 			} 
 
 			return new Promise.resolve(true);
