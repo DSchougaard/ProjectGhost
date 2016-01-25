@@ -447,6 +447,20 @@ describe('Password', function(){
 			
 		});
 		
+		it('should fail when trying to update id', function(){
+			return Password.find(1)
+			.then(function(password){
+				return password.update({id: 1337});
+			})
+			.then(function(updatedPassword){
+				assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
+			})
+			.catch(ValidationError, function(err){
+				assert.equal(err.message, 'has additional properties');
+				assert.equal(err.property, 'data');
+			});
+		})
+		
 		describe('fails on wrong input for update', function(){
 			
 			it('should throw an error when creating a new password with data of wrong type', function(){
