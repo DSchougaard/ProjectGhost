@@ -106,7 +106,7 @@ describe('Password', function(){
                 assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
             })
             .catch(UserDoesNotExistError, function(err){
-                assert.equal(err.message, 1337);
+                assert.equal(err.message, 'User ID 1337 was not found');
             });
         });
 
