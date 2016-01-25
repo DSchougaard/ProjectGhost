@@ -95,9 +95,36 @@ module.exports = class Password{
         }, function(err){
         	return new Promise.reject(err);
         });
-        
-    }
-}
+    };
+	
+	update(input){
+		var self = this;
+		
+		var validate = schemagic.passwordUpdate.validate(input);
+		if( !validate.valid ){
+			return new Promise.reject( new ValidationError(validate.errors[0].message, validate.errors[0].property) );
+		}
+		
+		return knex('passwords').where('id', self.id).update(input)
+		.then(function(num){
+			if( num.length === 0 ){
+				return new Promise.reject( new SqlError('Password ID was not found') );
+			}
+
+			if( num.length > 1 ){
+				return new Promise.reject( new SqlError('Multiple users found. Something was wrong.') );	
+			}
+
+			// Applying the update
+			_.mapObject(input, function(val, key){
+				self[key] = val;
+			});
+			
+			return new Promise.resolve(self);
+		
+		});
+	};
+};
 
 
 
@@ -109,9 +136,9 @@ knex.schema.createTableIfNotExists('passwords', function(table){
 	table.integer('owner').unsigned().references('id').inTable('users');
 	table.integer('parent').unsigned().references('id').inTable('categories');
 	table.string('title').notNullable();
+	table.string('username').nullable();
 	table.string('password').notNullable();
 	table.binary('iv', 16).notNullable();
-	table.string('username').nullable();
 	table.string('note').nullable();
 })
 
