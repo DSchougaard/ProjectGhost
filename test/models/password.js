@@ -367,59 +367,205 @@ describe('Password', function(){
 				});
 			});
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 		});
 		
     });
     
-	
-	
-	
-	
-	
-	
 	describe('#update', function(){
-		it('test', function(){
+		it('successfully updates single field', function(){
 			
-			var testValue = 'Test0001';
+			var testValue = 'SithCode Online';
+			var testID = 1;
 			
-			var pword = undefined;
-			return Password.find(1)
+			var originalPassword = undefined;
+			return Password.find(testID)
 			.then(function(password){
-				pword = _.clone(password);
+				originalPassword = _.clone(password);
 				return password.update({title: testValue});
 			})
 			.then(function(updatedPassword){
-				assert.equal(updatedPassword.owner ,     pword.owner );
-				assert.equal(updatedPassword.parent ,    pword.parent );
+				assert.equal(updatedPassword.id, 		 testID);
+				assert.equal(updatedPassword.owner ,     originalPassword.owner );
+				assert.equal(updatedPassword.parent ,    originalPassword.parent );
 				assert.equal(updatedPassword.title,      testValue );
-				assert.equal(updatedPassword.username ,  pword.username );
-				assert.equal(updatedPassword.password ,  pword.password );
-				assert.equal(updatedPassword.iv ,        pword.iv );
-				assert.equal(updatedPassword.note ,      pword.note );
+				assert.equal(updatedPassword.username ,  originalPassword.username );
+				assert.equal(updatedPassword.password ,  originalPassword.password );
+				assert.equal(updatedPassword.iv ,        originalPassword.iv );
+				assert.equal(updatedPassword.note ,      originalPassword.note );
+				
+				return knex('passwords')
+				.select()
+				.where('id', testID)
+				.then(function(dbPassword){
+					assert.equal(dbPassword[0].id, 			testID);
+					assert.equal(dbPassword[0].owner ,     originalPassword.owner );
+					assert.equal(dbPassword[0].parent ,    originalPassword.parent );
+					assert.equal(dbPassword[0].title,      testValue );
+					assert.equal(dbPassword[0].username ,  originalPassword.username );
+					assert.equal(dbPassword[0].password ,  originalPassword.password );
+					assert.equal(dbPassword[0].iv ,        originalPassword.iv );
+					assert.equal(dbPassword[0].note ,      originalPassword.note );
+				});
 			});
 		});
 		
+		it('successfully updates several fields', function(){
+			
+			var testValues = [ 'Rebel Dating', 'BlueSaber132' ];
+			var testID = 1;
+						
+			var originalPassword = undefined;
+			return Password.find(1)
+			.then(function(password){
+				originalPassword = _.clone(password);
+				return password.update({title: testValues[0], username: testValues[1] });
+			})
+			.then(function(updatedPassword){
+				assert.equal(updatedPassword.id, 		 testID);
+				assert.equal(updatedPassword.owner ,     originalPassword.owner );
+				assert.equal(updatedPassword.parent ,    originalPassword.parent );
+				assert.equal(updatedPassword.title,      testValues[0] );
+				assert.equal(updatedPassword.username ,  testValues[1] );
+				assert.equal(updatedPassword.password ,  originalPassword.password );
+				assert.equal(updatedPassword.iv ,        originalPassword.iv );
+				assert.equal(updatedPassword.note ,      originalPassword.note );
+				
+				return knex('passwords')
+				.select()
+				.where('id', testID)
+				.then(function(dbPassword){
+					assert.equal(dbPassword[0].id, 			testID);
+					assert.equal(dbPassword[0].owner ,     originalPassword.owner );
+					assert.equal(dbPassword[0].parent ,    originalPassword.parent );
+					assert.equal(dbPassword[0].title,      testValues[0] );
+					assert.equal(dbPassword[0].username ,  testValues[1] );
+					assert.equal(dbPassword[0].password ,  originalPassword.password );
+					assert.equal(dbPassword[0].iv ,        originalPassword.iv );
+					assert.equal(dbPassword[0].note ,      originalPassword.note );
+				});
+			});
+			
+		});
 		
+		describe('fails on wrong input for update', function(){
+			
+			it('should throw an error when creating a new password with data of wrong type', function(){
+				return Password.find(1)
+				.then(function(password){
+					return password.update(true);
+				})
+				.then(function(updated){
+					assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
+				})
+				.catch(ValidationError, function(err){
+					assert.equal(err.message, 'is the wrong type');
+					assert.equal(err.property, 'data');
+				});
+			});
+			
+			it('should throw an error when creating a new password with owner of wrong type', function(){
+				return Password.find(1)
+				.then(function(password){
+					return password.update({owner:true});
+				})
+				.then(function(updated){
+					assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
+				})
+				.catch(ValidationError, function(err){
+					assert.equal(err.message, 'is the wrong type');
+					assert.equal(err.property, 'data.owner');
+				});
+			});
+			
+			it('should throw an error when creating a new password with parent of wrong type', function(){
+				return Password.find(1)
+				.then(function(password){
+					return password.update({parent:true});
+				})
+				.then(function(updated){
+					assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
+				})
+				.catch(ValidationError, function(err){
+					assert.equal(err.message, 'is the wrong type');
+					assert.equal(err.property, 'data.parent');
+				});
+			});		
+			
+			it('should throw an error when creating a new password with title of wrong type', function(){
+				return Password.find(1)
+				.then(function(password){
+					return password.update({title:true});
+				})
+				.then(function(updated){
+					assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
+				})
+				.catch(ValidationError, function(err){
+					assert.equal(err.message, 'is the wrong type');
+					assert.equal(err.property, 'data.title');
+				});
+			});		
+						
+			it('should throw an error when creating a new password with username of wrong type', function(){
+				return Password.find(1)
+				.then(function(password){
+					return password.update({username:true});
+				})
+				.then(function(updated){
+					assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
+				})
+				.catch(ValidationError, function(err){
+					assert.equal(err.message, 'is the wrong type');
+					assert.equal(err.property, 'data.username');
+				});
+			});			
 		
+			it('should throw an error when creating a new password with password of wrong type', function(){
+				return Password.find(1)
+				.then(function(password){
+					return password.update({password:true});
+				})
+				.then(function(updated){
+					assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
+				})
+				.catch(ValidationError, function(err){
+					assert.equal(err.message, 'is the wrong type');
+					assert.equal(err.property, 'data.password');
+				});
+			});	
+			
+			it('should throw an error when creating a new password with iv of wrong type', function(){
+				return Password.find(1)
+				.then(function(password){
+					return password.update({iv:true});
+				})
+				.then(function(updated){
+					assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
+				})
+				.catch(ValidationError, function(err){
+					assert.equal(err.message, 'is the wrong type');
+					assert.equal(err.property, 'data.iv');
+				});
+			});					
+			
+			it('should throw an error when creating a new password with note of wrong type', function(){
+				return Password.find(1)
+				.then(function(password){
+					return password.update({note:true});
+				})
+				.then(function(updated){
+					assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
+				})
+				.catch(ValidationError, function(err){
+					assert.equal(err.message, 'is the wrong type');
+					assert.equal(err.property, 'data.note');
+				});
+			});		
+				
+		});	
 		
+	});
+	
+	describe('#del', function(){
 		
 	});
     
