@@ -73,6 +73,20 @@ module.exports = class Password{
 
 		}, SQLErrorHandler);
 	}
+	
+	static findAll(user){
+		var validate = schemagic.user.validate(user);
+		if( !validate.valid ){
+			return new Promise.reject( new ValidationError(validate.errors[0].message, validate.errors[0].property) );
+		}
+		
+		return knex('passwords')
+		.select()
+		.where('owner', user.id)
+		.then(function(rows){
+			return rows;
+		}, SQLErrorHandler);
+	}
     
     static create(input){
         var validate = schemagic.passwordInput.validate(input);

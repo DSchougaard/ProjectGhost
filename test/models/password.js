@@ -1,4 +1,7 @@
 /* global __base */
+
+///<reference path="../../typings/assert/assert.d.ts" />
+
 "use strict";
 
 var Promise = require('bluebird');
@@ -640,8 +643,51 @@ describe('Password', function(){
 				assert.equal(r, true);
 			});
 		});
+	});
+	
+	describe.only('#findAll', function(){
+		it('successfully finds all of a user\'s passwords', function(){
+			return User.find(1)
+			.then(Password.findAll)
+			.then(function(passwords){
+				
+				var expected = _.where(unittestData.passwordData, {owner: 1});
+				var passwordsWithoutIDs = _.map(passwords, function(o) { return _.omit(o, 'id'); });
+			
+				assert.deepEqual(passwordsWithoutIDs, expected);
+			});
+		});
 		
-
+		it('succeeds when passed a user that does not exist, but returns empty list', function(){
+			var fakeData = {
+				id: 1337,
+				isAdmin: false,
+				username: 'Fake',
+				password: 'Fake',
+				salt: 'Fake',
+				privatekey: base64.encode('fake'),
+				publickey: base64.encode('fake')
+			}
+			var fake = new User(fakeData);
+			
+			return Password.findAll(fake)
+			.then(function(passwords){
+				assert.deepEqual(passwords, []);
+			});
+		});
+		
+		it('fails when passed an invalid user object', function(){
+			var fake = new User({username: 'ImDaCaptainNow'});
+			return Password.findAll(fake)
+			.then(function(passwords){
+				assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
+			})
+			.catch(ValidationError, function(err){
+				assert.equal(err.message, 'is required');
+				assert.equal(err.property, 'data.id');	
+			});
+		});
+		
 	});
     
     
