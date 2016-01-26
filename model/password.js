@@ -63,8 +63,7 @@ module.exports = class Password{
 				return new Promise.reject( new OperationalError('Catatrophic database error. Multiple users with same ID found.') );
 			}
 
-			var validate = schemagic.password.validate(rows[0])
-
+			var validate = schemagic.password.validate(rows[0]);
 			if( !validate.valid ){
 				return new Promise.reject( new ValidationError(validate.errors[0].message, validate.errors[0].property) );
 			}

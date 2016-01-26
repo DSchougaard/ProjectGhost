@@ -37,7 +37,7 @@ test:
 cov: 
 	rm -f unittest.sqlite
 	node misc/createUnitTestDB.js
-	@NODE_ENV=test istanbul cover _mocha -- -R spec
+	@NODE_ENV=test istanbul cover _mocha test/tests.js -- -R spec
 
 
 .PHONY: test cov count
