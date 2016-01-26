@@ -11,7 +11,15 @@ before(function(done){
 
 require(__base + 'test/base64.js');
 
-describe('Models', function(){
+describe('Errors', function(){
+	require(__base + 'test/errors.js');
+})
+
+describe.skip('Models', function(){
 	require(__base + 'test/models/user.js');
 	require(__base + 'test/models/password.js');
+});
+
+describe.skip('Routes', function(){
+	require(__base + 'test/routes/users.js');
 })
