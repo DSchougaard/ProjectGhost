@@ -127,7 +127,8 @@ module.exports = class Password{
 	
 	del(){
 		var self = this;
-		var validate = shcemagic.passwordInput.validate(self);
+		var validate = schemagic.password.validate(self);
+
 		if( !validate.valid ){
 			return new Promise.reject( new ValidationError(validate.errors[0].message, validate.errors[0].property) );
 		}
@@ -137,14 +138,17 @@ module.exports = class Password{
 		.del()
 		.then(function(rows){
 			if( rows === 0 ){
-				return new Promise.reject(new SqlError('Password was not found'));
+				return new Promise.reject(new PasswordDoesNotExistError(self.id));
 			}
+			
 			if( rows > 1 ){
 				return new Promise.reject(new SqlError('Catastrophic database error. Several passwords were deleted'));
 			} 
 
 			return new Promise.resolve(true);
-		}, SQLErrorHandler);
+		}, function(err){
+			console.log(JSON.stringify(err));
+		});
 	}
 };
 

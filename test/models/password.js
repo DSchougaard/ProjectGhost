@@ -1,6 +1,8 @@
 /* global __base */
 "use strict";
 
+var Promise = require('bluebird');
+
 var assert = require('assert');
 
 const fs 		= require('fs');
@@ -39,6 +41,26 @@ describe('Password', function(){
         'iv': base64.encode('1111111111111111')
 	}
     
+	describe('Object creation and manipulation', function(){
+		it('should allow edit on one object, without affecting the other', function(){
+			return Promise.all([Password.find(1), Password.find(1)])
+			.spread(function(passwordOne, passwordTwo){
+				var originalValues = _.clone(passwordTwo);
+				passwordOne.title = "Ugh, not that green little shit again.";
+				
+				assert.equal(passwordTwo.id, 		originalValues.id);
+				assert.equal(passwordTwo.owner, 	originalValues.owner);
+				assert.equal(passwordTwo.parent, 	originalValues.parent);
+				assert.equal(passwordTwo.title, 	originalValues.title);
+				assert.equal(passwordTwo.username, 	originalValues.username);
+				assert.equal(passwordTwo.password, 	originalValues.password);
+				assert.equal(passwordTwo.iv, 		originalValues.iv);
+				assert.equal(passwordTwo.note, 		originalValues.note);
+
+				
+			});
+		});
+	});
 
 	describe('#find', function(){
 		
@@ -48,7 +70,7 @@ describe('Password', function(){
 				assert.fail();
 			})
 			.catch(PasswordDoesNotExistError, function(err){
-				assert.equal(err.message, 1337);
+				assert.equal(err.message, 'Password ID 1337 was not found');
 			});
 		});
 
@@ -580,7 +602,46 @@ describe('Password', function(){
 	});
 	
 	describe('#del', function(){
+		it('fails when id has been edited to be invalid', function(){
+			return Password.find(6)
+			.then(function(password){
+				password.id = 1337;
+				return password.del();
+			})
+			.then(function(r){
+				assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
+			})
+			.catch(PasswordDoesNotExistError, function(err){
+				assert.equal(err.message, 'Password ID 1337 was not found');
+			});
+		})
 		
+		it('fails validation, when theuser has been tampered with and ID given another type', function(){
+			return Password.find(6)
+			.then(function(password){
+				password.id = true;
+				return password.del();
+			})
+			.then(function(r){
+				assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
+			})
+			.catch(ValidationError, function(err){
+				assert.equal(err.message, 'is the wrong type');
+				assert.equal(err.property, 'data.id');
+			});
+		});
+		
+		it('succeedes in deleting a password', function(){
+			return Password.find(1)
+			.then(function(password){
+				return password.del();
+			})
+			.then(function(r){
+				assert.equal(r, true);
+			});
+		});
+		
+
 	});
     
     
