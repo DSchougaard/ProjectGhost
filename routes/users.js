@@ -16,6 +16,10 @@ const UserDoesNotExistError 	= require(__base + 'errors/UserDoesNotExistError.js
 const PasswordDoesNotExistError 	= require(__base + 'errors/PasswordDoesNotExistError.js');
 
 
+// Models
+var User = require(__base + 'models/user.js');
+
+
 module.exports = function(server, log){
 
 	var knex = require(__base + 'database.js')();
@@ -44,70 +48,8 @@ module.exports = function(server, log){
 			PrivateKey: Binary
 			PublicKey: String
 		*/	
-
 		// Validate Input
-
-
-		if( !validate.username(req.body.username) ){
-			log.debug({ method: 'POST', path: '/api/user', message: 'Missing username' });
-			return next(new restify.errors.BadRequestError("Incomplete request: Missing username"));
-		}
-
-		if( !validate.password(req.body.password) ){
-			log.debug({ method: 'POST', path: '/api/user', message: 'Missing password' });
-			return next(new restify.errors.BadRequestError("Incomplete request: Missing password"));
-		}
-
-		if( !validate.privateKey(req.body.privatekey) ){
-			log.debug({ method: 'POST', path: '/api/user', message: 'Missing private key' });
-			return next(new restify.errors.BadRequestError("Incomplete request: Missing private key"));
-		}
-
-		if( !validate.publicKey(req.body.publickey) ){
-			log.debug({ method: 'POST', path: '/api/user', message: 'Missing public key' });
-			return next(new restify.errors.BadRequestError("Incomplete request: Missing public key"));
-		}
-
-		// Generating a secure salt
-		bcrypt.genSalt(function(err, salt){
-			if(err){
-				log.error({ method: 'POST', path: '/api/user', message: 'Error generating salt', error: err });
-				next(new restify.errors.InternalServerError("Error generating salt"));
-			}
-
-			// Hashing the password
-			bcrypt.hash(req.body.password, salt, function(err, hash){
-				req.body.password = '';
-
-				if(err){
-					log.error({ method: 'POST', path: '/api/user', message: 'Error in producing hash of input', error: err });
-					return next(new restify.errors.InternalServerError("Error in crypto libraries"));
-				}
-
-				var base64encoded = {
-					publickey : base64.encode(req.body.publickey)
-				}
-
-				knex('users').insert({username: req.body.username, password: hash, salt: salt, privatekey: req.body.privatekey, publickey: req.body.publickey})
-				.then(function(rows){
-					log.info({ method: 'POST', path: '/api/user', payload: req.body.username, message: 'Created new user' });
-					res.send(200, 'OK');
-					return next();
-				})
-				.catch(function(error){
-					// SQLite Username Exists error
-					if( error.errno == 19 && error.code === 'SQLITE_CONSTRAINT' ){
-						return next( new restify.errors.BadRequestError('Username already exists'));
-					}else if( error.errno === 5 && error.code === 'SQLITE_BUSY'){
-						return next( new restify.errors.ServiceUnavailable('Database temporaryliy busy. Try again.'));
-					}
-
-					log.error({ method: 'POST', path: '/api/user', payload: req.body.username, message: 'Undefined DB error', error: error });
-					res.send(500, "Unknown database error.");
-					return next();
-				});
-			});
-		});
+		var user = User.create(req.body);
 	});
 
 	server.put('/api/user/:id', function(req, res, next){
@@ -118,120 +60,15 @@ module.exports = function(server, log){
 
 		log.info({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body, auth: req.user });
 
-		autorized.isAuthorized(knex, authorized.types.user, req.user, req.params.id)
-		.then(function(authorized){
-		})
-		.catch(function(err){
-			throw err;
-		})
-
-
-		/*
-			Contents:
-			-----------
-			username
-			password
-			publickey
-			privatekey
-		*/
-
-		// Validate input
-		if( !validate.id(req.params.id) ){
-			log.debug({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body, message: 'Invalid ID'});
-			return next(new restify.errors.BadRequestError('Error: Invalid ID'));
-		}
-
-		if( !validate.json(req.body) ){
-			log.debug({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body, message: 'Invalid format of request'});
-			return next(new restify.errors.BadRequestError('Error: Invalid format of request'));
-		}
-
-		if( username !== undefined && !validate.username(req.body.username) ){
-			log.debug({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body.username, message: 'Invalid username'});
-			return next(new restify.errors.BadRequestError("Incomplete request: Invalid username"));
-		}
-
-		if( password !== undefined && !validate.password(req.body.password) ){
-			log.debug({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body.username, message: 'Invalid password'});
-			return next(new restify.errors.BadRequestError("Incomplete request: Invalid password"));
-		}
-
-		if( privatekey !== undefined && !validate.privatekey(req.body.privatekey) ){
-			log.debug({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body.username, message: 'Invalid private key'});
-			return next(new restify.errors.BadRequestError("Incomplete request: Invalid private key"));
-		}
-
-		if( publickey !== undefined && !validate.publickey(req.body.publickey) ){
-			log.debug({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body.username, message: 'Invalid public key'});
-			return next(new restify.errors.BadRequestError("Incomplete request: Invalid public key"));
-		}
-
-
-		knex('users').where('id', req.user).update(req.body)
-		.then(function(rows){
-			if( rows < 1 ){
-				log.debug({ method: 'PUT', path: '/api/user', payload: req.body, message: 'User ID not found' });
-				return next( new restify.errors.NotFoundError('User ID not found') );
-			}
-
-			if( rows > 1 ){
-				log.error({ method: 'PUT', path: '/api/user', payload: req.body, message: 'Multiple users found with same ID.' });
-				return next( new restify.errors.InternalServerError('Catastropic internal database error') );
-			}
-
-			res.send(200, 'OK');
-			return next();
-
-		})
-		.catch(function(err){
-			log.debug({ method: 'PUT', path: '/api/user', payload: req.body, message: 'Database error', error: err });
-			return next( new restify.errors.InternalServerError('Undefined database error') );
-
-		})
 	});
 
 	server.del('/api/user/:id', authHelpers.ensureAuthenticated, function(req, res, next){
- 		log.info({ method: 'DEL', path: '/api/user/'+req.params.id, auth: 'Authenticated user: '+ req.user });
-		
-		if( !validate.ID(req.params.id) ){
-			return next(new restify.errors.BadRequestError('Incomplete request: Invalid ID'));
-		}
-
-		authorized.isAuthorizedUser(knex, req.user, req.params.id)
-		.then(knex('users').where('id', req.params.id).del().return())
-		.then(function(rows){
-			res.send(200, 'OK');
-			return next();
-		})
-		.catch(UserDoesNotExistError, function(err){
-			return next( new restify.errors.BadRequestError('User ID ' + req.params.id + ' was not found') );
-		})
-		.catch(UnauthorizedError, function(err){
-			return next( new restify.errors.ForbiddenError('Access denied') );
-		});
+ 	
 
 	});	
 
 	server.get('/api/user/:id', function(req, res, next){
-		log.info({method:'GET', path: '/api/users', payload: req.params.id});
-		console.log('GET /api/user/'+req.params.id);
-
-		knex.select('username', 'publickey').from('users').where('id', req.params.id)
-		.then(function(rows){
-			if(rows.length == 0){
-				
-				log.info({method: 'GET', path: '/api/user', payload: req.params.id, message: 'User not found in database.'});
-				return next( new restify.errors.NotFoundError('Username not found'));
-			}
-
-			if( rows.length > 1 ){
-				log.error({method: 'GET', path: '/api/user', payload: req.params.id, message: 'Found several users with same ID. Catastrophic error.'});
-				return next( new restify.errors.InternalServerError('Catastropic internal server error.'));
-			}
-
-			res.send(200, rows[0]);
-			return next();
-		});
+	
 	});
 
 	server.get('/api/user/:id/publickey', function(req, res, next){
