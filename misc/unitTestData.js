@@ -8,24 +8,21 @@ var publicKey  = fs.readFileSync('misc/unittest-public.crt');
 var userData = [
 	{
 		username 	: 'User1',
-		password 	: 'password',
 		isAdmin		: true,
+		salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+		password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
 		privatekey 	: base64.encode(privateKey.toString('utf8')),
 		publickey 	: base64.encode(publicKey.toString('utf8'))
 	},
 	{
 		username 	: 'User2',
-		password 	: 'password',
 		isAdmin		: false,
+		salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
+		password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
 		privatekey 	: base64.encode(privateKey.toString('utf8')),
 		publickey 	: base64.encode(publicKey.toString('utf8'))
 	}
 ];
-
-for (var i in userData) {
-	userData[i].salt = bcrypt.genSaltSync();
-	userData[i].password = bcrypt.hashSync(userData[i].password, userData[i].salt);
-}
 
 var passwordData = [
 	{
