@@ -48,7 +48,7 @@ module.exports = class User{
 		var data = _.clone(input);
 		var validate = schemagic.userInput.validate(data);
 		if( !validate.valid ){
-			return new Promise.reject( new ValidationError(validate.errors[0].message, validate.errors[0].property) );
+			return new Promise.reject( new ValidationError(validate.errors) );
 		}
 	
 		return genSalt()
@@ -87,7 +87,7 @@ module.exports = class User{
 	static find(id){
 
 		if( typeof id !== 'number' ){
-			return new Promise.reject( new ValidationError('wrong type', 'id') )
+			return new Promise.reject( new ValidationError([{message: 'is the wrong type', property: 'user.id'}]) );
 		}
 
 		return knex
@@ -117,7 +117,7 @@ module.exports = class User{
 	update(input){
 		var validate = schemagic.userUpdate.validate(input);
 		if( !validate.valid ){
-			return new Promise.reject( new ValidationError(validate.errors[0].message, validate.errors[0].property) );
+			return new Promise.reject( new ValidationError(validate.errors) );
 		}
 
 		var updated = {}
@@ -208,7 +208,7 @@ module.exports = class User{
 
 	del(){
 		if( typeof this.id !== 'number' ){
-			return new Promise.reject( new ValidationError('is wrong type', 'user.id'));
+			return new Promise.reject( new ValidationError([{message: 'is the wrong type', property: 'user.id'}]) );
 		}
 
 		return knex('users')

@@ -67,8 +67,10 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is required');
-					assert.equal(err.property, 'data');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data is required.');
+					assert.equal(err.errors[0].message, 'is required');
+					assert.equal(err.errors[0].property, 'data');
 				});
 			});
 
@@ -78,8 +80,8 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is required');
-					assert.equal(err.property, 'data.username');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.username is required.');
 				});
 			});
 
@@ -89,8 +91,8 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is required');
-					assert.equal(err.property, 'data.isAdmin');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.isAdmin is required.');
 				});
 			});
 
@@ -100,8 +102,8 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is required');
-					assert.equal(err.property, 'data.password');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.password is required.');
 				});
 			});
 			
@@ -112,8 +114,8 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is required');
-					assert.equal(err.property, 'data.publickey');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.publickey is required.');
 				});
 			});
 
@@ -123,8 +125,8 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is required');
-					assert.equal(err.property, 'data.privatekey');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.privatekey is required.');
 				});
 			});
 		});
@@ -136,8 +138,8 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data is the wrong type.');
 				});
 			});
 
@@ -149,8 +151,8 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data.username');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.username is the wrong type.');
 				});
 			});
 
@@ -162,8 +164,8 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data.isAdmin');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.isAdmin is the wrong type.');
 				});
 			});
 
@@ -175,8 +177,8 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data.password');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.password is the wrong type.');
 				});
 			});
 
@@ -188,8 +190,8 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data.privatekey');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.privatekey is the wrong type.');
 				});
 			});
 
@@ -201,8 +203,8 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data.publickey');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.publickey is the wrong type.');
 				});
 			});
 		});	
@@ -237,8 +239,8 @@ describe("User", function(){
 				assert.fail();
 			})
 			.catch(ValidationError, function(err){
-				assert.equal(err.message, 'wrong type');
-				assert.equal(err.property, 'id');
+				assert.equal(err.num, 1);
+				assert.equal(err.message, '1 error: user.id is the wrong type.');
 			});
 		})
 	});
@@ -432,8 +434,8 @@ describe("User", function(){
 				assert.fail();
 			})
 			.catch(ValidationError, function(err){
-				assert.equal(err.cause, 'is required');
-				assert.equal(err.property, 'data');
+				assert.equal(err.num, 1);
+				assert.equal(err.message, '1 error: data is required.');
 			});
 		});
 	
@@ -447,8 +449,8 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data is the wrong type.');
 				});
 			});
 
@@ -461,8 +463,8 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data.username');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.username is the wrong type.');
 				});
 			});
 
@@ -474,8 +476,8 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data.isAdmin');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.isAdmin is the wrong type.');
 				});
 			});
 
@@ -487,8 +489,8 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data.password');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.password is the wrong type.');
 				});
 			});
 
@@ -500,8 +502,8 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data.privatekey');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.privatekey is the wrong type.');
 				});
 			});
 
@@ -513,8 +515,8 @@ describe("User", function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data.publickey');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.publickey is the wrong type.');
 				});
 			});
 		});
@@ -564,8 +566,8 @@ describe("User", function(){
 				assert.fail();
 			})
 			.catch(ValidationError, function(err){
-				assert.equal(err.message, 'is wrong type');
-				assert.equal(err.property, 'user.id');
+				assert.equal(err.num, 1);
+				assert.equal(err.message, '1 error: user.id is the wrong type.');
 			});
 		});
 
