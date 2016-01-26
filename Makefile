@@ -24,6 +24,10 @@ count:
 	cloc --exclude-dir=node_modules,components,coverage --by-file .
 
 
+tree:
+	tree . -I 'node_modules|components|typings|coverage'
+ 
+
 test:
 	rm -f logs/*
 	rm -f unittest.sqlite
@@ -36,4 +40,4 @@ cov:
 	@NODE_ENV=test istanbul cover _mocha -- -R spec
 
 
-.PHONY: test cov
+.PHONY: test cov count

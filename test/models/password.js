@@ -26,7 +26,7 @@ describe('Password', function(){
 	var Password = require(__base + 'model/password.js');
     
     var validPassword = {
-        'owner': 1,
+        'owner': 2,
         'parent': null,
         'title': 'How to Find the Rebels',
         'username': 'Count Boba Fett',
@@ -36,7 +36,7 @@ describe('Password', function(){
     };
 	
 	var validPasswordWithoutANote = {
-        'owner': 1,
+        'owner': 2,
         'parent': null,
         'title': 'Sarlacc Pit',
         'username': 'Pew Pew',
@@ -80,16 +80,16 @@ describe('Password', function(){
 		it('succeeds in finding existing password', function(){
 			return Password.find(1)
 			.then(function(password){
-				assert.equal(unittestData.passwordData[0].owner, password.owner);
+				assert.equal(unittestData.passwordData[0].owner,	 password.owner);
 				
-				assert.equal(unittestData.passwordData[0].parent, password.parent);
+				assert.equal(unittestData.passwordData[0].parent, 	password.parent);
 
-				assert.equal(unittestData.passwordData[0].title, password.title);
+				assert.equal(unittestData.passwordData[0].title, 	password.title);
 				assert.equal(unittestData.passwordData[0].username, password.username);
 				assert.equal(unittestData.passwordData[0].password, password.password);
-				assert.equal(unittestData.passwordData[0].iv, password.iv);
+				assert.equal(unittestData.passwordData[0].iv, 		password.iv);
 			
-				assert.equal(unittestData.passwordData[0].note, password.note);
+				assert.equal(unittestData.passwordData[0].note, 	password.note);
 			})
 		});
         
@@ -143,7 +143,7 @@ describe('Password', function(){
 			return Password.create(temp)
 			.then(function(password){
 				//Assigned by the system. might have to re-adjust
-				assert.equal(password.id, 5);
+				assert.equal(password.id, 	5);
                 
                 // Actual inserts
                 assert.equal(password.owner , validPassword.owner );
@@ -400,7 +400,7 @@ describe('Password', function(){
 		it('successfully updates single field', function(){
 			
 			var testValue = 'SithCode Online';
-			var testID = 1;
+			var testID = 4;
 			
 			var originalPassword = undefined;
 			return Password.find(testID)
@@ -437,10 +437,10 @@ describe('Password', function(){
 		it('successfully updates several fields', function(){
 			
 			var testValues = [ 'Rebel Dating', 'BlueSaber132' ];
-			var testID = 1;
+			var testID = 4;
 						
 			var originalPassword = undefined;
-			return Password.find(1)
+			return Password.find(testID)
 			.then(function(password){
 				originalPassword = _.clone(password);
 				return password.update({title: testValues[0], username: testValues[1] });
@@ -635,7 +635,7 @@ describe('Password', function(){
 		});
 		
 		it('succeedes in deleting a password', function(){
-			return Password.find(1)
+			return Password.find(6)
 			.then(function(password){
 				return password.del();
 			})
@@ -645,7 +645,7 @@ describe('Password', function(){
 		});
 	});
 	
-	describe.only('#findAll', function(){
+	describe('#findAll', function(){
 		it('successfully finds all of a user\'s passwords', function(){
 			return User.find(1)
 			.then(Password.findAll)
