@@ -33,7 +33,23 @@ describe("User", function(){
 		}
 		done();
 	});
-
+	
+	describe('#findAll', function(){
+		it('should find the contents of the unittest database', function(){
+			return User.findAll()
+			.then(function(users){
+				
+				return knex
+				.select()
+				.from('users')
+				.then(function(dbUsers){
+					assert.deepEqual(users, dbUsers);
+				});
+			});
+		});
+	})
+	
+	
 	describe('#create', function(){
 
 		it('succeeds in creating new user', function(){
@@ -209,7 +225,7 @@ describe("User", function(){
 			});
 		});	
 	});
-
+	
 	describe('#find', function(){
 		it('should fail when trying to find a non-existant id', function(){
 			return User.find(1337)

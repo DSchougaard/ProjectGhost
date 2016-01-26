@@ -29,17 +29,17 @@ module.exports = function(server, log){
 
 	server.get('/api/users', function(req, res, next){
 		log.info({ method: 'GET', path: '/api/users' });
-		
-		knex.select('username', 'publickey').from('users')
-		.then(function(rows){
-			res.send(200, rows);
+	
+		Users.findAll()
+		.then(function(users){
+			res.send(200, users);
 			return next();
 		})
-		.catch(function(error){
-			console.log("GET /api/users DB error");
-			res.send(500, "Internal database error");
+		.catch(SqlError, function(err){
+			console.log(err);
+			res.send(500, 'Internal database error');
 			return next();
-		})
+		});
 	});
 
 	server.post('/api/user', function(req, res, next){
