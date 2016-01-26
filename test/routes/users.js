@@ -8,22 +8,22 @@ var sinon 				= require('sinon');
 var fs 					= require('fs');
 var fse 				= require('fs-extra');
 var rsa 				= require('node-rsa');
-
+var _					= require('underscore');
 var crypto 				= require('crypto');
+var bcrypt 				= require('bcrypt');
 
 var base64 				= require(__base + 'helpers/base64.js');
 var restifyInstance 	= require(__base + 'app.js');
 var server 				= request(restifyInstance.server);
 
 //var server = request.agent('https://localhost:8080');
-
+const unittestData 		= require(__base + 'misc/unitTestData.js');
 // Test user
 var testUser = {
 	username: 				'User3',
 	password: 				'password',
 	privatekey: 			fs.readFileSync('misc/unittest-private.key').toString('utf8'),
 	publickey: 				fs.readFileSync('misc/unittest-public.crt').toString('utf8'),
-
 };
 testUser.base64 = {
 		publickey: base64.encode(testUser.publickey),
@@ -31,6 +31,7 @@ testUser.base64 = {
 }
 //var IV = encrypt.generateIV();
 //var ciphertext = encrypt.encrypt()
+
 
 describe('API /users', function(){
 
@@ -73,8 +74,12 @@ describe('API /users', function(){
 			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
-				(res.body).should.have.length(2);
-				(res.body).should.deepEqual(contents);
+				assert.equal(res.body.length, 2);
+				
+				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'privatekey', 'salt', 'password', 'isAdmin'); });	
+				var usersWithoutIDs = _.map(res.body, function(o) { return _.omit(o, 'id'); });
+				
+				assert.deepEqual(usersWithoutIDs, filteredData);
 				done();
 			})
 		});
@@ -250,8 +255,21 @@ describe("API /user", function(){
 			.expect(200)
 			.end(function(err,res){
 				if(err) return done(err);
-				(res.body).should.have.length(3);
-				(res.body).should.deepEqual([{'username':'User1', 'publickey': testUser.base64.publickey},{'username':'User2', 'publickey': testUser.base64.publickey},{'username':'User3', 'publickey': testUser.base64.publickey}]);
+				
+				assert.equal(res.body.length, 3);
+				var usersWithoutIDs = _.map(res.body, function(o) { return _.omit(o, 'id'); });
+				
+				var expectedInsertedUser = {
+					username: testUser.username,
+					publickey: testUser.base64.publickey
+				}
+				
+				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'privatekey', 'salt', 'password', 'isAdmin'); });	
+				filteredData.push(expectedInsertedUser);
+					
+			
+				assert.deepEqual(usersWithoutIDs, filteredData);
+					
 				done();
 			});
 		});
@@ -280,14 +298,12 @@ describe("API /user", function(){
 		it('should fail when no auth token is passed', function(done){
 			server
 			.del('/api/user/'+testUser.id)
-			//.expect(401)
+			.expect(401)
 			.end(function(err,res){
 				if(err) return done(err);
 
-
 				(res.body.code).should.equal('UnauthorizedError');
 				(res.body.message).should.equal('No Authorization header was found');
-
 
 				return done();
 			});
@@ -318,8 +334,11 @@ describe("API /user", function(){
 				if(err) return done(err);
 
 				(res.body).should.have.length(2);
-				(res.body).should.deepEqual( [{'username':'User1', 'publickey': testUser.base64.publickey}, {'username':'User2', 'publickey': testUser.base64.publickey}] );
-
+				
+				var usersWithoutIDs = _.map(res.body, function(o) { return _.omit(o, 'id'); });
+				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'privatekey', 'salt', 'password', 'isAdmin'); });	
+				
+				assert.deepEqual(usersWithoutIDs, filteredData);
 				return done();
 			});
 		});

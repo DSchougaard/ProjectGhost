@@ -6,7 +6,6 @@ const bcrypt 		= require('bcrypt');
 const argon2 		= require('argon2');
 const schemagic 	= require('schemagic');
 
-
 const validate 		= require(__base + 'helpers/validate.js');
 const base64 		= require(__base + 'helpers/base64.js');
 const authHelpers	= require(__base + 'helpers/authHelpers.js');
@@ -30,8 +29,9 @@ module.exports = function(server, log){
 	server.get('/api/users', function(req, res, next){
 		log.info({ method: 'GET', path: '/api/users' });
 	
-		Users.findAll()
+		User.findAll()
 		.then(function(users){
+			
 			res.send(200, users);
 			return next();
 		})

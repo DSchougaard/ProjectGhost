@@ -92,16 +92,10 @@ module.exports = class User{
 
 	static findAll(){
 		return knex
-		.select()
+		.select('id', 'username', 'publickey')
 		.from('users')
 		.then(function(rows){
-			var users = [];
-			for( var i = 0 ; i < rows.length ; i++ ){
-				rows[i].isAdmin = rows[i].isAdmin === 1 ? true : false; 
-				users.push( new User(rows[i]) );
-			}
-			
-			return new Promise.resolve(users);
+			return new Promise.resolve(rows);
 		}, SQLErrorHandler);
 	}
 
