@@ -1,5 +1,4 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-global.__base 			= __dirname + '/';
 
 var assert 				= require('assert');
 var request 			= require('supertest');  
@@ -12,15 +11,14 @@ var rsa 				= require('node-rsa');
 
 var crypto 				= require('crypto');
 
-var base64 				= require('../helpers/base64.js');
-var restifyInstance 	= require('../app.js');
+var base64 				= require(__base + 'helpers/base64.js');
+var restifyInstance 	= require(__base + 'app.js');
 var server 				= request(restifyInstance.server);
 
 //var server = request.agent('https://localhost:8080');
 
 // Test user
 var testUser = {
-	id: 					3,
 	username: 				'User3',
 	password: 				'password',
 	privatekey: 			fs.readFileSync('misc/unittest-private.key').toString('utf8'),
@@ -28,7 +26,8 @@ var testUser = {
 
 };
 testUser.base64 = {
-		publickey: base64.encode(testUser.publickey)
+		publickey: base64.encode(testUser.publickey),
+		privatekey: base64.encode(testUser.privatekey)
 }
 //var IV = encrypt.generateIV();
 //var ciphertext = encrypt.encrypt()
@@ -125,12 +124,15 @@ describe("API /user", function(){
 			.post('/api/user')
 			.set('Authorization', 'Bearer ' + authToken)
 			.field('username', testUser.username)
-			.field('privatekey', testUser.privatekey)
+			.field('privatekey', testUser.base64.privatekey)
 			.field('publickey', testUser.base64.publickey)
 			.expect(400)
 			.end(function(err, res){
 				if(err) return done(err);
-				(res.body.message).should.equal('Incomplete request: Missing password');
+				assert.equal(res.body.error, 'validation');
+				assert.equal(res.body.errors.length, 1);
+				assert.equal(res.body.errors[0].field, 'password');
+				assert.equal(res.body.errors[0].error, 'is required');
 				done();
 			});
 		});
@@ -140,12 +142,15 @@ describe("API /user", function(){
 			.post('/api/user')
 			.set('Authorization', 'Bearer ' + authToken)
 			.field('password', testUser.password)
-			.field('privatekey', testUser.privatekey)
+			.field('privatekey', testUser.base64.privatekey)
 			.field('publickey', testUser.base64.publickey)
 			.expect(400)
 			.end(function(err,res){
 				if(err) return done(err);
-				(res.body.message).should.equal('Incomplete request: Missing username');
+				assert.equal(res.body.error, 'validation');
+				assert.equal(res.body.errors.length, 1);
+				assert.equal(res.body.errors[0].field, 'username');
+				assert.equal(res.body.errors[0].error, 'is required');
 				done();
 			});
 		});
@@ -160,7 +165,10 @@ describe("API /user", function(){
 			.expect(400)
 			.end(function(err,res){
 				if(err) return done(err);
-				(res.body.message).should.equal('Incomplete request: Missing private key');
+				assert.equal(res.body.error, 'validation');
+				assert.equal(res.body.errors.length, 1);
+				assert.equal(res.body.errors[0].field, 'privatekey');
+				assert.equal(res.body.errors[0].error, 'is required');
 				done();
 			});
 		});
@@ -171,11 +179,14 @@ describe("API /user", function(){
 			.set('Authorization', 'Bearer ' + authToken)
 			.field('username', testUser.username)
 			.field('password', testUser.password)
-			.field('privatekey', testUser.privatekey)
+			.field('privatekey', testUser.base64.privatekey)
 			.expect(400)
 			.end(function(err,res){
 				if(err) return done(err);
-				(res.body.message).should.equal('Incomplete request: Missing public key');
+				assert.equal(res.body.error, 'validation');
+				assert.equal(res.body.errors.length, 1);
+				assert.equal(res.body.errors[0].field, 'publickey');
+				assert.equal(res.body.errors[0].error, 'is required');
 				done();
 			});
 		});
@@ -186,15 +197,15 @@ describe("API /user", function(){
 			.set('Authorization', 'Bearer ' + authToken)
 			.field('username', 'User1')
 			.field('password', testUser.password)
-			.field('privatekey', testUser.privatekey)
+			.field('privatekey', testUser.base64.privatekey)
 			.field('publickey', testUser.base64.publickey)
 			.expect(400)
 			.end(function(err, res){
 				if(err){
 					return done(err);	
 				} 
-				(res.body.code).should.equal('BadRequestError');
-				(res.body.message).should.equal('Username already exists');
+				
+				assert.equal(res.body, 'Username already exists');
 				return done();
 			});
 		});
@@ -210,14 +221,19 @@ describe("API /user", function(){
 			.set('Authorization', 'Bearer ' + authToken)
 			.field('username', testUser.username)
 			.field('password', testUser.password)
-			.field('privatekey', testUser.privatekey)
+			.field('privatekey', testUser.base64.privatekey)
 			.field('publickey', testUser.base64.publickey)
 			.expect(200)
 			.end(function(err,res){
 				if(err){
 					return done(err);
 				}
-				(res.body).should.equal("OK");
+				
+				var returnedID = parseInt(res.body.id);
+				
+				assert.notEqual(returnedID, NaN);
+				testUser.id = returnedID;
+				assert.equal(res.body.message, 'OK');
 
 				var newDB = fs.readFileSync('./unittest.sqlite');
 				var newChecksum = crypto.createHash('sha1').update(newDB).digest('hex');
@@ -254,11 +270,8 @@ describe("API /user", function(){
 					return done(err);
 				} 
 				
-			
-
-				(res.body.code).should.equal('BadRequestError');
-				(res.body.message).should.equal('User ID 1337 was not found');
-
+				assert.equal(res.body, 'User ID 1337 was not found');
+				
 				return done();
 			});
 
@@ -289,9 +302,9 @@ describe("API /user", function(){
 				if(err){
 					return done(err);
 				} 
-
-				(res.body).should.equal('OK');
-
+				
+				assert.equal(res.body, 'OK');
+				
 				return done();
 			});
 		});

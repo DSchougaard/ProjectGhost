@@ -20,6 +20,6 @@ describe('Models', function(){
 	require(__base + 'test/models/password.js');
 });
 
-describe.skip('Routes', function(){
+describe('Routes', function(){
 	require(__base + 'test/routes/users.js');
 })

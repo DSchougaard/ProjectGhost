@@ -25,7 +25,7 @@ describe("User", function(){
 	before(function(done){
 
 		validUser = {
-			username: 'Darth Vader',
+			username: 'Anakin Skywalker',
 			isAdmin: true,
 			password: 'password',
 			privatekey: base64.encode(fs.readFileSync('misc/unittest-private.key').toString('utf8')),
@@ -85,7 +85,7 @@ describe("User", function(){
 				});
 			});
 
-			it('should throw error when creating a new user with undefined admin bool', function(){
+			/*it('should throw error when creating a new user with undefined admin bool', function(){
 				return User.create( _.omit(validUser, 'isAdmin') )
 				.then(function(user){
 					assert.fail();
@@ -94,7 +94,7 @@ describe("User", function(){
 					assert.equal(err.num, 1);
 					assert.equal(err.message, '1 error: data.isAdmin is required.');
 				});
-			});
+			});*/
 
 			it('should throw error when creating a new user with undefined password', function(){
 				return User.create( _.omit(validUser, 'password') )
@@ -287,11 +287,11 @@ describe("User", function(){
 			return User.find(3)
 			.then(function(user){
 				oldValues = _.clone(user);
-				return user.update({username: 'Darth Maul', password: 'DeathToTheJedi'})
+				return user.update({username: 'Darth Vader', password: 'DeathToTheJedi'})
 			})
 			.then(function(updatedUser){
 				// check username, password and salt changed
-				assert.equal(updatedUser.username, 'Darth Maul');
+				assert.equal(updatedUser.username, 'Darth Vader');
 				assert.notEqual(oldValues.salt, updatedUser.salt);
 				assert.notEqual(oldValues.password, updatedUser.password);
 

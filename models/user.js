@@ -46,10 +46,16 @@ module.exports = class User{
 
 	static create(input){
 		var data = _.clone(input);
+		
+		
 		var validate = schemagic.userInput.validate(data);
 		if( !validate.valid ){
 			return new Promise.reject( new ValidationError(validate.errors) );
 		}
+		
+		
+		// Override default isAdmin variable
+		data.isAdmin = data.isAdmin !== undefined ? data.isAdmin : false; 
 	
 		return genSalt()
 		.then(hash.bind(null, data.password))

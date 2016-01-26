@@ -11,8 +11,8 @@ module.exports = {
 		},
 		"isAdmin":{
 			"description": "Denotes if the user is admin",
-			"required": true,
-			"type":"boolean",
+			"required": false,
+			"type":["boolean",'null'],
 			"example":0
 		},
 		"password":{
