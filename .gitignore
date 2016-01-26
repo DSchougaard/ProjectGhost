@@ -1,3 +1,11 @@
+# VS Code
+typings
+.tscache
+.vscode
+
+#misc
+Gruntfile.js
+
 # Ghost Specific items
 crypto
 *.sqlite
