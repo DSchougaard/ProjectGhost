@@ -22,8 +22,8 @@ const unittestData = require(__base + 'misc/unitTestData.js');
 var knex = require(__base + 'database.js');
 
 describe('Password', function(){
-	var User = require(__base + 'model/user.js');
-	var Password = require(__base + 'model/password.js');
+	var User = require(__base + 'models/user.js');
+	var Password = require(__base + 'models/password.js');
     
     var validPassword = {
         'owner': 2,

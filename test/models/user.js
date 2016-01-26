@@ -18,7 +18,7 @@ var knex = require(__base + 'database.js');
 
 describe("User", function(){
 	
-	var User = require(__base + 'model/user.js');
+	var User = require(__base + 'models/user.js');
 
 	var validUser;
 

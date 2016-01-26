@@ -6,7 +6,7 @@ const schemagic = require('schemagic');
 
 
 // Objects
-var User 					= require(__base + 'model/user.js');
+var User 					= require(__base + 'models/user.js');
 
 // Errors
 const PasswordDoesNotExistError = require(__base + 'errors/PasswordDoesNotExistError.js');
