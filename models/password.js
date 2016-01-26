@@ -48,7 +48,7 @@ module.exports = class Password{
 
 	static find(id){
 		if( typeof id !== 'number' ){
-			return new Promise.reject( new ValidationError('is wrong type', 'id') );
+			return new Promise.reject( new ValidationError([{property: 'password.id', message:'is the wrong type'}]) );
 		}
 
 		return knex
@@ -76,7 +76,7 @@ module.exports = class Password{
 	static findAll(user){
 		var validate = schemagic.user.validate(user);
 		if( !validate.valid ){
-			return new Promise.reject( new ValidationError(validate.errors[0].message, validate.errors[0].property) );
+			return new Promise.reject( new ValidationError(validate.errors) );
 		}
 		
 		return knex('passwords')
@@ -90,7 +90,7 @@ module.exports = class Password{
     static create(input){
         var validate = schemagic.passwordInput.validate(input);
         if( !validate.valid ){
-            return new Promise.reject( new ValidationError(validate.errors[0].message, validate.errors[0].property) );
+			return new Promise.reject( new ValidationError(validate.errors) );
         }
 
         return User.find(input.owner)
@@ -115,7 +115,7 @@ module.exports = class Password{
 		
 		var validate = schemagic.passwordUpdate.validate(input);
 		if( !validate.valid ){
-			return new Promise.reject( new ValidationError(validate.errors[0].message, validate.errors[0].property) );
+			return new Promise.reject( new ValidationError(validate.errors) );
 		}
 		
 		return knex('passwords').where('id', self.id).update(input)
@@ -143,7 +143,7 @@ module.exports = class Password{
 		var validate = schemagic.password.validate(self);
 
 		if( !validate.valid ){
-			return new Promise.reject( new ValidationError(validate.errors[0].message, validate.errors[0].property) );
+			return new Promise.reject( new ValidationError(validate.errors) );
 		}
 		
 		return knex('passwords')

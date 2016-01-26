@@ -15,7 +15,7 @@ describe('Errors', function(){
 	require(__base + 'test/errors.js');
 })
 
-describe.skip('Models', function(){
+describe('Models', function(){
 	require(__base + 'test/models/user.js');
 	require(__base + 'test/models/password.js');
 });

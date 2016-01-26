@@ -99,8 +99,8 @@ describe('Password', function(){
                 assert.fail();
             })
             .catch(ValidationError, function(err){
-               assert.equal(err.message, 'is wrong type');
-               assert.equal(err.property, 'id'); 
+				assert.equal(err.num, 1);
+				assert.equal(err.message, '1 error: password.id is the wrong type.');
             });
         });
         
@@ -116,8 +116,8 @@ describe('Password', function(){
                 assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
             })
             .catch(ValidationError, function(err){
-                assert.equal(err.message, 'has additional properties');
-                assert.equal(err.property, 'data');
+				assert.equal(err.num, 1);
+				assert.equal(err.message, '1 error: data has additional properties.');
             });
         });
 
@@ -215,8 +215,8 @@ describe('Password', function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is required');
-					assert.equal(err.property, 'data');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data is required.');
 				});
 			});
 
@@ -226,8 +226,8 @@ describe('Password', function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is required');
-					assert.equal(err.property, 'data.owner');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.owner is required.');
 				});
 			});
 
@@ -237,8 +237,8 @@ describe('Password', function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is required');
-					assert.equal(err.property, 'data.parent');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.parent is required.');
 				});
 			});
 			
@@ -248,8 +248,8 @@ describe('Password', function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is required');
-					assert.equal(err.property, 'data.title');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.title is required.');
 				});
 			});
 			
@@ -260,8 +260,8 @@ describe('Password', function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is required');
-					assert.equal(err.property, 'data.username');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.username is required.');
 				});
 			});
 
@@ -271,8 +271,8 @@ describe('Password', function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is required');
-					assert.equal(err.property, 'data.password');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.password is required.');
 				});
 			});
 
@@ -282,8 +282,8 @@ describe('Password', function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is required');
-					assert.equal(err.property, 'data.iv');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.iv is required.');
 				});
 			});
 		});
@@ -295,8 +295,8 @@ describe('Password', function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data is the wrong type.');
 				});
 			});
 
@@ -308,8 +308,8 @@ describe('Password', function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data.owner');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.owner is the wrong type.');
 				});
 			});
 
@@ -321,8 +321,8 @@ describe('Password', function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data.parent');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.parent is the wrong type.');
 				});
 			});
 			
@@ -334,8 +334,8 @@ describe('Password', function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data.title');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.title is the wrong type.');
 				});
 			});
 			
@@ -348,8 +348,8 @@ describe('Password', function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data.username');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.username is the wrong type.');
 				});
 			});
 
@@ -361,8 +361,8 @@ describe('Password', function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data.password');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.password is the wrong type.');
 				});
 			});
 
@@ -374,8 +374,8 @@ describe('Password', function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data.iv');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.iv is the wrong type.');
 				});
 			});
 
@@ -387,8 +387,8 @@ describe('Password', function(){
 					assert.fail();
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.cause, 'is the wrong type');
-					assert.equal(err.property, 'data.note');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.note is the wrong type.');
 				});
 			});
 
@@ -481,8 +481,8 @@ describe('Password', function(){
 				assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
 			})
 			.catch(ValidationError, function(err){
-				assert.equal(err.message, 'has additional properties');
-				assert.equal(err.property, 'data');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data has additional properties.');
 			});
 		})
 		
@@ -497,8 +497,8 @@ describe('Password', function(){
 					assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.message, 'is the wrong type');
-					assert.equal(err.property, 'data');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data is the wrong type.');
 				});
 			});
 			
@@ -511,8 +511,8 @@ describe('Password', function(){
 					assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.message, 'is the wrong type');
-					assert.equal(err.property, 'data.owner');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.owner is the wrong type.');
 				});
 			});
 			
@@ -525,8 +525,8 @@ describe('Password', function(){
 					assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.message, 'is the wrong type');
-					assert.equal(err.property, 'data.parent');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.parent is the wrong type.');
 				});
 			});		
 			
@@ -539,8 +539,8 @@ describe('Password', function(){
 					assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.message, 'is the wrong type');
-					assert.equal(err.property, 'data.title');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.title is the wrong type.');
 				});
 			});		
 						
@@ -553,8 +553,8 @@ describe('Password', function(){
 					assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.message, 'is the wrong type');
-					assert.equal(err.property, 'data.username');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.username is the wrong type.');
 				});
 			});			
 		
@@ -567,8 +567,8 @@ describe('Password', function(){
 					assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.message, 'is the wrong type');
-					assert.equal(err.property, 'data.password');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.password is the wrong type.');
 				});
 			});	
 			
@@ -581,8 +581,8 @@ describe('Password', function(){
 					assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.message, 'is the wrong type');
-					assert.equal(err.property, 'data.iv');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.iv is the wrong type.');
 				});
 			});					
 			
@@ -595,8 +595,8 @@ describe('Password', function(){
 					assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
 				})
 				.catch(ValidationError, function(err){
-					assert.equal(err.message, 'is the wrong type');
-					assert.equal(err.property, 'data.note');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.note is the wrong type.');
 				});
 			});		
 				
@@ -629,8 +629,8 @@ describe('Password', function(){
 				assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
 			})
 			.catch(ValidationError, function(err){
-				assert.equal(err.message, 'is the wrong type');
-				assert.equal(err.property, 'data.id');
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.id is the wrong type.');
 			});
 		});
 		
@@ -683,8 +683,8 @@ describe('Password', function(){
 				assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
 			})
 			.catch(ValidationError, function(err){
-				assert.equal(err.message, 'is required');
-				assert.equal(err.property, 'data.id');	
+				assert.equal(err.num, 6);
+				assert.equal(err.message, '6 errors: data.id is required. data.isAdmin is required. data.salt is required. data.password is required. data.publickey is required. data.privatekey is required.');
 			});
 		});
 		
