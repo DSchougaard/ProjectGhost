@@ -4,6 +4,8 @@ const validator 	= require('validator');
 const crypto 		= require('crypto');
 const bcrypt 		= require('bcrypt');
 const argon2 		= require('argon2');
+const schemagic 	= require('schemagic');
+
 
 const validate 		= require(__base + 'helpers/validate.js');
 const base64 		= require(__base + 'helpers/base64.js');
@@ -49,6 +51,10 @@ module.exports = function(server, log){
 			PublicKey: String
 		*/	
 		// Validate Input
+		
+		var validate = schemagic.user.validate(req.body);
+		
+		
 		var user = User.create(req.body);
 	});
 
