@@ -100,15 +100,16 @@ module.exports = class User{
 	}
 
 	static find(id){
-
 		if( typeof id !== 'number' ){
+		//if( isNaN(id) ){
 			return new Promise.reject( new ValidationError([{message: 'is the wrong type', property: 'user.id'}]) );
 		}
+		id = parseInt(id);
 
 		return knex
 			.select()
 			.from('users')
-			.where('id',id)
+			.where('id', id)
 			.then(function(rows){
 				if( rows.length === 0 ){
 					return new Promise.reject( new UserDoesNotExistError(id) );
@@ -122,7 +123,7 @@ module.exports = class User{
 				}
 				var validate = schemagic.user.validate(rows[0]);
 				if( !validate.valid ){
-					return new Promise.reject( new ValidationError(validate.errors[0].message, validate.errors[0].property) );
+					return new Promise.reject( new ValidationError(validate.errors) );
 				}
 
 				return new Promise.resolve(new User(rows[0]));

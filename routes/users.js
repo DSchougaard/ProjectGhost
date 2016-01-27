@@ -5,6 +5,7 @@ const crypto 		= require('crypto');
 const bcrypt 		= require('bcrypt');
 const argon2 		= require('argon2');
 const schemagic 	= require('schemagic');
+const _				= require('underscore');
 
 const validate 		= require(__base + 'helpers/validate.js');
 const base64 		= require(__base + 'helpers/base64.js');
@@ -105,8 +106,10 @@ module.exports = function(server, log){
 
 	server.del('/api/user/:id', authHelpers.ensureAuthenticated, function(req, res, next){
 		if( !validate.ID(req.params.id) ){
-			return next(new restify.errors.BadRequestError('Incomplete request: Invalid ID'));
+			res.send(400, {error: 'validation', errors:[{field: 'id', error: 'is the wrong type'}]} );
+			return next();
 		}
+		
 		log.info({ method: 'DEL', path: '/api/user/'+req.params.id, payload: req.body, auth: req.user });
 		
 		User.find( parseInt(req.params.id) )
@@ -126,7 +129,8 @@ module.exports = function(server, log){
 			res.send(400, 'User ID ' + req.params.id + ' was not found');
 			return next();
 		})
-		.catch(SqlError, function(){
+		.catch(SqlError, function(err){
+			log.error({method: 'DEL', path: '/api/user'+req.params.id, error: err});
 			res.send(500, 'Internal database error');
 			return next();
 		})
@@ -141,7 +145,42 @@ module.exports = function(server, log){
 	});	
 
 	server.get('/api/user/:id', function(req, res, next){
-	
+		log.info({ method: 'GET', path: '/api/user/'+req.params.id });
+		if( isNaN(req.params.id) ){
+			res.send(400, {error: 'validation', errors:[{field: 'id', error: 'is the wrong type'}]} );
+			return next();
+		}else if( req.params.id === '' ){
+			res.send(400, {error: 'validation', errors:[{field: 'id', error: 'is required'}]} );
+			return next();
+		}
+		
+		var id = parseInt(req.params.id);
+		
+		User.find(id)
+		.then(function(user){
+			res.send(200, _.omit(user, ['password', 'salt', 'privatekey', 'isAdmin']));
+			return next();
+		})
+		.catch(UserDoesNotExistError, function(err){
+			res.send(404, 'User with ID ' + err.id + ' was not found');
+			return next();
+		})
+		.catch(ValidationError, function(err){
+			var parsedErrors = [];
+			for( var i = 0 ; i < err.errors.length ; i++ ){				
+				parsedErrors.push({ field: (err.errors[i].property).split('.')[1], error: err.errors[i].message } );
+			}
+			res.send(400, {error:'validation', errors:parsedErrors});
+			
+			return next();
+		})
+		.catch(SqlError, function(err){
+			log.error({method: 'GET', path: '/api/user'+req.params.id, error: err});
+			res.send(500, 'Internal database error');
+			return next();
+		});
+		
+		
 	});
 
 	server.get('/api/user/:id/publickey', function(req, res, next){

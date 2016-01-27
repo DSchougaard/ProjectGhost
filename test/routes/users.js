@@ -278,7 +278,6 @@ describe("API /user", function(){
 	describe("DELETE: Delete a user", function(){
 
 		it('should fail on deleting non-existant user', function(done){
-
 			server
 			.del('/api/user/'+1337)
 			.set('Authorization', 'Bearer ' + authToken)
@@ -294,6 +293,21 @@ describe("API /user", function(){
 			});
 
 		});
+		
+		it('should fail when passed id is of the wrong type', function(done){
+			server
+			.del('/api/user/true')
+			.set('Authorization', 'Bearer ' + authToken)
+			.expect(400)
+			.end(function(err, res){
+				if(err) return done(err);
+				assert.equal(res.body.error, 'validation');
+				assert.equal(res.body.errors.length, 1);
+				assert.equal(res.body.errors[0].field, 'id');
+				assert.equal(res.body.errors[0].error, 'is the wrong type');
+				return done();
+			})
+		})
 
 		it('should fail when no auth token is passed', function(done){
 			server
@@ -351,6 +365,65 @@ describe("API /user", function(){
 	});
 
 	describe('GET: Get a single user', function(){
+		
+		it('should succeed in getting a user', function(done){
+			var id = 1;
+			server
+			.get('/api/user/' + id)
+			//.expect(200)
+			.end(function(err,res){
+				if(err) return done(err);
+				
+				assert.equal(res.body.username, unittestData.userData[0].username);
+				assert.equal(res.body.publickey, unittestData.userData[0].publickey);
+				assert.equal(res.body.id, id);
+				return done();
+			});
+		});
+		
+		it('should fail at getting non-existant user', function(done){
+			var id = 1337;
+			server
+			.get('/api/user/' + id)
+			.expect(404)
+			.end(function(err,res){
+				if(err) return done(err);
+				
+				assert.equal(res.body, 'User with ID ' + id + ' was not found');
+				return done();
+			});
+		});
+		
+		it('should fail when no id is passed', function(done){
+			server
+			.get('/api/user/')
+			.expect(400)
+			.end(function(err,res){
+				if(err) return done(err);
+			
+				assert.equal(res.body.error, 'validation');
+				assert.equal(res.body.errors.length, 1);
+				assert.equal(res.body.errors[0].field, 'id');
+				assert.equal(res.body.errors[0].error, 'is required');
+				return done();
+			});
+		});
+		
+		it('should fail when a id of wrong type is passed', function(done){
+			server
+			.get('/api/user/true')
+			.expect(400)
+			.end(function(err,res){
+				if(err) return done(err);
+			
+				assert.equal(res.body.error, 'validation');
+				assert.equal(res.body.errors.length, 1);
+				assert.equal(res.body.errors[0].field, 'id');
+				assert.equal(res.body.errors[0].error, 'is the wrong type');
+				return done();
+			});
+		});
+
 
 	});
 
