@@ -8,21 +8,21 @@ var sinon 	= require('sinon');
 
 
 var fs 		= require('fs');
-var base64 	= require('../helpers/base64.js');
+var base64 	= require(__base + 'helpers/base64.js');
 var jwt 	= require('jsonwebtoken');
 var moment 	= require('moment');
 
 // SuperTest Connection
-var server 	= request(require('../app.js').server);
+var server 	= request(require(__base + 'app.js').server);
 
 // Test user
 var testUser = {
 	id: 					1,
 	username: 				'User1',
 	password: 				'password',
-	privatekey_raw: 		fs.readFileSync('misc/unittest-private.key'),
-	privatekey: 			fs.readFileSync('misc/unittest-private.key').toString('utf8'),
-	publickey: 				fs.readFileSync('misc/unittest-public.crt').toString('utf8'),
+	privatekey_raw: 		fs.readFileSync(__base + 'misc/unittest-private.key'),
+	privatekey: 			fs.readFileSync(__base + 'misc/unittest-private.key').toString('utf8'),
+	publickey: 				fs.readFileSync(__base + 'misc/unittest-public.crt').toString('utf8'),
 	
 };
 testUser.base64 = {

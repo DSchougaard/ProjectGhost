@@ -100,12 +100,25 @@ module.exports = class User{
 	}
 
 	static find(id){
-		if( typeof id !== 'number' ){
+		//id = parseInt(id);
+		var validID = schemagic.id.validate(id);
+		
+		if( !validID.valid ){
+			// Dirty dirty hack, to make schemagic accept strings being in int form.
+			if( validID.errors.length === 1 && validID.errors[0].message === 'pattern mismatch'){
+				validID.errors[0].property = 'user.id';
+				validID.errors[0].message = 'is the wrong type';
+			}
+			
+			return new Promise.reject( new ValidationError(validID.errors) );
+		}
+		
+		/*if( typeof id !== 'number' ){
 		//if( isNaN(id) ){
 			return new Promise.reject( new ValidationError([{message: 'is the wrong type', property: 'user.id'}]) );
-		}
-		id = parseInt(id);
+		}*/
 
+		
 		return knex
 			.select()
 			.from('users')

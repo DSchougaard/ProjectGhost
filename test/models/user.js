@@ -256,7 +256,7 @@ describe("User", function(){
 			})
 			.catch(ValidationError, function(err){
 				assert.equal(err.num, 1);
-				assert.equal(err.message, '1 error: user.id is the wrong type.');
+				assert.equal(err.message, '1 error: data is the wrong type.');
 			});
 		})
 	});

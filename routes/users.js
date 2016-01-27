@@ -70,18 +70,7 @@ module.exports = function(server, log){
 			res.send(400, err.message);
 			return next();
 		});
-	});
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	});	
 
 	server.put('/api/user/:id', function(req, res, next){
 		if( !validate.ID(req.params.id) ){
@@ -146,17 +135,17 @@ module.exports = function(server, log){
 
 	server.get('/api/user/:id', function(req, res, next){
 		log.info({ method: 'GET', path: '/api/user/'+req.params.id });
-		if( isNaN(req.params.id) ){
+		/*if( isNaN(req.params.id) ){
 			res.send(400, {error: 'validation', errors:[{field: 'id', error: 'is the wrong type'}]} );
 			return next();
 		}else if( req.params.id === '' ){
 			res.send(400, {error: 'validation', errors:[{field: 'id', error: 'is required'}]} );
 			return next();
-		}
+		}*/
 		
-		var id = parseInt(req.params.id);
+		//var id = parseInt(req.params.id);
 		
-		User.find(id)
+		User.find(req.params.id)
 		.then(function(user){
 			res.send(200, _.omit(user, ['password', 'salt', 'privatekey', 'isAdmin']));
 			return next();
@@ -167,8 +156,10 @@ module.exports = function(server, log){
 		})
 		.catch(ValidationError, function(err){
 			var parsedErrors = [];
-			for( var i = 0 ; i < err.errors.length ; i++ ){				
-				parsedErrors.push({ field: (err.errors[i].property).split('.')[1], error: err.errors[i].message } );
+			for( var i = 0 ; i < err.errors.length ; i++ ){
+				var t = (err.errors[i].property).split('.');
+				var field = t.length === 2 ? t[1] : t[0];
+				parsedErrors.push({ field: field, error: err.errors[i].message } );
 			}
 			res.send(400, {error:'validation', errors:parsedErrors});
 			
