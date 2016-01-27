@@ -301,6 +301,7 @@ describe("API /user", function(){
 			.expect(400)
 			.end(function(err, res){
 				if(err) return done(err);
+
 				assert.equal(res.body.error, 'validation');
 				assert.equal(res.body.errors.length, 1);
 				assert.equal(res.body.errors[0].field, 'id');
@@ -370,7 +371,8 @@ describe("API /user", function(){
 			var id = 1;
 			server
 			.get('/api/user/' + id)
-			//.expect(200)
+			.set('Authorization', 'Bearer ' + authToken)
+			.expect(200)
 			.end(function(err,res){
 				if(err) return done(err);
 
@@ -385,6 +387,7 @@ describe("API /user", function(){
 			var id = 1337;
 			server
 			.get('/api/user/' + id)
+			.set('Authorization', 'Bearer ' + authToken)
 			.expect(404)
 			.end(function(err,res){
 				if(err) return done(err);
@@ -397,7 +400,8 @@ describe("API /user", function(){
 		it('should fail when no id is passed', function(done){
 			server
 			.get('/api/user/')
-			//.expect(400)
+			.set('Authorization', 'Bearer ' + authToken)
+			.expect(400)
 			.end(function(err,res){
 				if(err) return done(err);
 
@@ -412,7 +416,8 @@ describe("API /user", function(){
 		it('should fail when a id of wrong type is passed', function(done){
 			server
 			.get('/api/user/true')
-			//.expect(400)
+			.set('Authorization', 'Bearer ' + authToken)
+			.expect(400)
 			.end(function(err,res){
 				if(err) return done(err);
 

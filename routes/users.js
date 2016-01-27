@@ -7,7 +7,6 @@ const argon2 		= require('argon2');
 const schemagic 	= require('schemagic');
 const _				= require('underscore');
 
-const validate 		= require(__base + 'helpers/validate.js');
 const base64 		= require(__base + 'helpers/base64.js');
 const authHelpers	= require(__base + 'helpers/authHelpers.js');
 const authorized 	= require(__base + 'helpers/authorization.js');
@@ -27,7 +26,7 @@ module.exports = function(server, log){
 
 	var knex = require(__base + 'database.js')();
 
-	server.get('/api/users', function(req, res, next){
+	server.get('/api/users', authHelpers.ensureAuthenticated, function(req, res, next){
 		log.info({ method: 'GET', path: '/api/users' });
 	
 		User.findAll()
@@ -72,10 +71,7 @@ module.exports = function(server, log){
 		});
 	});	
 
-	server.put('/api/user/:id', function(req, res, next){
-		if( !validate.ID(req.params.id) ){
-			return next(new restify.errors.BadRequestError('Incomplete request: Invalid ID'));
-		}
+	server.put('/api/user/:id', authHelpers.ensureAuthenticated, function(req, res, next){
 		log.info({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body, auth: req.user });
 		
 		User.find(req.params.id)
@@ -94,14 +90,9 @@ module.exports = function(server, log){
 	});
 
 	server.del('/api/user/:id', authHelpers.ensureAuthenticated, function(req, res, next){
-		if( !validate.ID(req.params.id) ){
-			res.send(400, {error: 'validation', errors:[{field: 'id', error: 'is the wrong type'}]} );
-			return next();
-		}
-		
 		log.info({ method: 'DEL', path: '/api/user/'+req.params.id, payload: req.body, auth: req.user });
 		
-		User.find( parseInt(req.params.id) )
+		User.find( req.params.id )
 		.then(function(user){
 			return user.del();
 		})
@@ -133,7 +124,7 @@ module.exports = function(server, log){
 		});
 	});	
 
-	server.get('/api/user/:id', function(req, res, next){
+	server.get('/api/user/:id', authHelpers.ensureAuthenticated, function(req, res, next){
 		log.info({ method: 'GET', path: '/api/user/'+req.params.id });
 		/*if( isNaN(req.params.id) ){
 			res.send(400, {error: 'validation', errors:[{field: 'id', error: 'is the wrong type'}]} );
@@ -172,9 +163,5 @@ module.exports = function(server, log){
 		});
 		
 		
-	});
-
-	server.get('/api/user/:id/publickey', function(req, res, next){
-
 	});
 };
