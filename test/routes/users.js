@@ -32,6 +32,7 @@ testUser.base64 = {
 //var IV = encrypt.generateIV();
 //var ciphertext = encrypt.encrypt()
 
+var knex = require(__base + 'database.js');
 
 describe('API /users', function(){
 
@@ -275,6 +276,140 @@ describe("API /user", function(){
 		});
 	});
 	
+
+	describe('PUT: Updating a user', function(){
+
+		var testUpdatedUsername = 'NotAUnitTestUser';
+
+		it('successfully updates a single field, non-password', function(done){
+			server
+			.put('/api/user/' + testUser.id)
+			.set('Authorization', 'Bearer ' + authToken)
+			.field('username', testUpdatedUsername)
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+				assert.equal(res.body, 'OK');
+				return done();
+			});
+		});
+
+		it('should have updated the database entry, after the previous test', function(){
+			return knex('users')
+			.select()
+			.where('username', testUpdatedUsername)
+			.then(function(user){
+				assert.equal(user.length, 1);
+
+				assert.equal(user[0].username,		testUpdatedUsername);
+
+				assert.equal(user[0].id, 			testUser.id);
+				assert.equal(user[0].privatekey, 	testUser.base64.privatekey)
+				assert.equal(user[0].publickey, 	testUser.base64.publickey)
+				assert.equal(user[0].isAdmin, 		false);	
+			});
+		});
+
+		it('successfully updates password and generates new salt', function(done){
+			server
+			.put('/api/user/' + testUser.id)
+			.set('Authorization', 'Bearer ' + authToken)
+			.field('password', 'totallysecure')
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+				assert.equal(res.body, 'OK');
+				return done();
+			});
+		});
+
+		it('should have updated the database entry, after the previous test', function(){
+			return knex('users')
+			.select()
+			.where('username', testUpdatedUsername)
+			.then(function(user){
+				assert.equal(user.length, 1);
+
+				var expectedPassword = bcrypt.hashSync('totallysecure', user[0].salt);
+				assert.equal(user[0].password, expectedPassword);
+
+				assert.equal(user[0].username, 		testUpdatedUsername);
+				assert.equal(user[0].id, 			testUser.id);
+				assert.equal(user[0].privatekey, 	testUser.base64.privatekey)
+				assert.equal(user[0].publickey, 	testUser.base64.publickey)
+				assert.equal(user[0].isAdmin, 		false);	
+			});
+		})
+
+		it('fails when trying to update id', function(done){
+			server
+			.put('/api/user/' + testUser.id)
+			.set('Authorization', 'Bearer ' + authToken)
+			.field('id', 1337)
+			.expect(400)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.error, 'validation');
+				assert.equal(res.body.errors.length, 1);
+				assert.equal(res.body.errors[0].field, 'data');
+				assert.equal(res.body.errors[0].error, 'has additional properties')
+				return done();
+			});
+		});
+
+		it('fails when payload has invalid values', function(done){
+			server
+			.put('/api/user/' + testUser.id)
+			.set('Authorization', 'Bearer ' + authToken)
+			.field('privatekey', 'this is not base64')
+			.expect(400)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.error, 'validation');
+				assert.equal(res.body.errors.length, 1);
+				assert.equal(res.body.errors[0].field, 'privatekey');
+				assert.equal(res.body.errors[0].error, 'pattern mismatch');
+
+				return done();
+			});
+		});
+
+		it('fails when payload is empty', function(done){
+			server
+			.put('/api/user/' + testUser.id)
+			.set('Authorization', 'Bearer ' + authToken)
+			.expect(400)
+			.end(function(err, res){
+				if(err) return done(err);
+				
+				assert.equal(res.body.error, 'validation');
+				assert.equal(res.body.errors.length, 1);
+				assert.equal(res.body.errors[0].field, 'data');
+				assert.equal(res.body.errors[0].error, 'is required');
+
+				return done();
+			});
+		});
+
+		it('fails when updating non-existant user', function(done){
+			server
+			.put('/api/user/' + 1337)
+			.set('Authorization', 'Bearer ' + authToken)
+			.expect(404)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.error, 'User does not exist');
+
+				return done();
+			});
+		});
+
+	});
+
+
 	describe("DELETE: Delete a user", function(){
 
 		it('should fail on deleting non-existant user', function(done){
@@ -361,10 +496,6 @@ describe("API /user", function(){
 	});
 
 
-	describe('PUT: Updating a user', function(){
-
-	});
-
 	describe('GET: Get a single user', function(){
 		
 		it('should succeed in getting a user', function(done){
@@ -372,7 +503,7 @@ describe("API /user", function(){
 			server
 			.get('/api/user/' + id)
 			.set('Authorization', 'Bearer ' + authToken)
-			.expect(200)
+			//.expect(200)
 			.end(function(err,res){
 				if(err) return done(err);
 
@@ -429,10 +560,6 @@ describe("API /user", function(){
 			});
 		});
 
-
-	});
-
-	describe('GET: Get users public cert', function(){
 
 	});
 });

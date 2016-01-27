@@ -42,6 +42,7 @@ module.exports = function(server, log){
 		});
 	});
 
+
 	server.post('/api/user', function(req, res, next){
 		log.info({ method: 'POST', path: '/api/user', payload: req.body.username });
 		/*
@@ -73,19 +74,29 @@ module.exports = function(server, log){
 
 	server.put('/api/user/:id', authHelpers.ensureAuthenticated, function(req, res, next){
 		log.info({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body, auth: req.user });
-		
+
+
 		User.find(req.params.id)
 		.then(function(user){
 			return user.update(req.body);
 		})
 		.then(function(udpdatedUser){
-			res.send(200, {message: 'OK'} );
+			res.send(200, 'OK');
+			return next();
 		})
 		.catch(UserDoesNotExistError, function(err){
-			console.log(err);
+			res.send(404, {error: 'User does not exist'});
+			return next();
 		})
 		.catch(ValidationError, function(err){
-			console.log(err);
+			var parsedErrors = [];
+			for( var i = 0 ; i < err.errors.length ; i++ ){
+				var t = (err.errors[i].property).split('.');
+				var field = t.length === 2 ? t[1] : t[0];
+				parsedErrors.push({ field: field, error: err.errors[i].message } );
+			}
+			res.send(400, {error:'validation', errors:parsedErrors});
+			return next();
 		});
 	});
 
@@ -153,7 +164,6 @@ module.exports = function(server, log){
 				parsedErrors.push({ field: field, error: err.errors[i].message } );
 			}
 			res.send(400, {error:'validation', errors:parsedErrors});
-			
 			return next();
 		})
 		.catch(SqlError, function(err){

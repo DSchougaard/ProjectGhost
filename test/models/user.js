@@ -523,6 +523,19 @@ describe("User", function(){
 				});
 			});
 
+			it('should throw an error when creating a new user with privatekey of wrong pattern', function(){
+				return User.find(3)
+				.then(function(user){
+					return user.update({privatekey: 'this is not base 64'})
+				}).then(function(u){
+					assert.fail();
+				})
+				.catch(ValidationError, function(err){
+					assert.equal(err.num, 1);
+					assert.equal(err.message, '1 error: data.privatekey pattern mismatch.');
+				});
+			});
+
 			it('should throw an error when creating a new user with publickey of wrong type', function(){
 				return User.find(3)
 				.then(function(user){
