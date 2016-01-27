@@ -156,7 +156,6 @@ server.get('/api/ping', function(req, res, next){
 users(server, log);
 auth(server, knex, log);
 passwords(server, knex, log);
-category(server, knex, log);
 
 // Finally catch all routes for static content.
 server.get('/', restify.serveStatic({

@@ -1,11 +1,82 @@
 const restify 			= require('restify');
 const knex 				= require('knex');
+const _ 				= require('underscore');
 
 const authHelpers 		= require(__base + 'helpers/authHelpers.js');
 const constants 		= require(__base + 'helpers/constants.json');
 
+const Password 			= require(__base + 'models/password.js');
+const User 				= require(__base + 'models/user.js');
+
+// Errors
+const PasswordDoesNotExistError = require(__base + 'errors/PasswordDoesNotExistError.js');
+const ValidationError 		= require(__base + 'errors/ValidationError.js');
+const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js');
+const SqlError 				= require(__base + 'errors/SqlError.js');
 
 module.exports = function(server, knex, log){
+
+	server.get('/api/passwords', authHelpers.ensureAuthenticated, function(req, res, next){
+		log.info({ method: 'GET', path: '/api/passwords', payload: req.user });
+
+		User.find(res.user)
+		.then(Password.findAll)
+		.then(function(passwords){
+			res.send(200, passwords);
+			return next();
+		})
+		.catch(PasswordDoesNotExistError, function(err){
+			res.send(404, {error: 'Password does not exist'});
+			return next();
+		})
+		.catch(ValidationError, function(err){
+			var parsedErrors = [];
+			for( var i = 0 ; i < err.errors.length ; i++ ){				
+				parsedErrors.push({ field: (err.errors[i].property).split('.')[1], error: err.errors[i].message } );
+			}
+			res.send(400, {error:'validation', errors:parsedErrors});
+			return next();
+		})
+		.catch(SqlError, function(err){
+			res.send(500, 'Internal database error');
+			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
+			return next();
+		})
+	});
+
+	server.get('/api/password/:id', authHelpers.ensureAuthenticated, function(req, res, next){
+		User.find(req.user)
+		.then(function(user){
+			// Auth thingy
+			return Password.find(req.params.id);
+		})
+		.then(function(password){
+			res.send(200, password);
+			return next();
+		})
+		.catch(PasswordDoesNotExistError, function(err){
+			res.send(404, {error:'Password was not found'});
+			return next();
+		})
+		.catch(ValidationError, function(err){
+			var parsedErrors = [];
+			for( var i = 0 ; i < err.errors.length ; i++ ){
+				var t = (err.errors[i].property).split('.');
+				var field = t.length === 2 ? t[1] : t[0];
+				parsedErrors.push({ field: field, error: err.errors[i].message } );
+			}
+			res.send(400, {error:'validation', errors:parsedErrors});
+			return next();
+		})
+		.catch(SqlError, function(err){
+			res.send(500, 'Internal database error');
+			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
+			return next();
+		});		
+	});
+
+
+
 	server.post('/api/password', authHelpers.ensureAuthenticated, function(req, res, next){
 		log.info({ method: 'POST', path: '/api/password', payload: req.body });
 		/*
@@ -22,63 +93,109 @@ module.exports = function(server, knex, log){
 			note
 		*/
 
-		var password = {
-			title 		: req.body.title,
-			username 	: req.body.username,
-			iv 			: req.body.iv,
-			password 	: req.body.password,
 
-			// Insert request's user ID into the password
-			owner 		: req.user,
+		var password 	= _.pick(req.body, ['title', 'username', 'iv', 'password', 'parent', 'note']);
+		password.owner 	= req.user;
+		password 		= _.defaults(password, {parent: null, note: null});
 
-			// Cover for the optional values
-			parent 		: typeof req.body.parent !== undefined ? req.body.parent 	: null,
-			note 		: typeof req.body.note 	 !== undefined ? req.body.note 		: null
-		}
 
-		// Insert into DB
-		knex('passwords').insert(password)
-		.then(function(rows){
-			log.info({ method: 'POST', path: '/api/password', payload: req.body, message: 'Password added' });
+		Password.create(password)
+		.then(function(password){
+			log.info({ method: 'POST', path: '/api/password', user: req.user, message: 'Password added' });
+			res.send(201, {message: 'OK', id: password.id});
+			return next();
+		})
+		.catch(ValidationError, function(err){
+			var parsedErrors = [];
+			for( var i = 0 ; i < err.errors.length ; i++ ){				
+				parsedErrors.push({ field: (err.errors[i].property).split('.')[1], error: err.errors[i].message } );
+			}
+			res.send(400, {error:'validation', errors:parsedErrors});
+			return next();
+		})
+		.catch(SqlError, function(err){
+			res.send(500, 'Internal database error');
+			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
+			return next();
+		});
+	});
+
+	
+	server.del('/api/password/:id', authHelpers.ensureAuthenticated, function(req, res, next){
+		log.info({ method: 'DEL', path: '/api/passwords', payload: req.params.id });
+
+		User.find(req.user)
+		.then(function(user){
+			// Do some authorization check?!
+			return Password.find(req.params.id);
+		})
+		.then(function(password){
+			log.info({ method: 'DEL', path: '/api/passwords', message: 'Deleting password', id: password.id });
+			password.del();
 			res.send(200, 'OK');
 			return next();
 		})
-		.catch(function(err){
-			if( err.code === 19 ){
-				// SQLite Constraint Violation
-				log.debug({ method: 'POST', path: '/api/password', payload: req.body, message: 'Parent category does not exist'});
-				return (new restify.errors.BadRequestError("Parent category does not exist"));
+		.catch(ValidationError, function(err){
+			var parsedErrors = [];
+			for( var i = 0 ; i < err.errors.length ; i++ ){
+				var t = (err.errors[i].property).split('.');
+				var field = t.length === 2 ? t[1] : t[0];
+				parsedErrors.push({ field: field, error: err.errors[i].message } );
 			}
-
-
-			console.log("POST /api/password DB error: " + err);
-			//console.log("POST /api/password DB error: " + JSON.stringify(err, null, 4));
-			return next(new restify.errors.InternalServerError('Internal database error'));
-		});
-	});
-
-
-
-	server.get('/api/passwords/', authHelpers.ensureAuthenticated, function(req, res, next){
-		log.info({ method: 'GET', path: '/api/passwords', payload: req.user });
-
-		knex.select('id', 'parent', 'title', 'username', 'note' ).from('passwords').where('owner', req.user)
-		.then(function(rows){
-			res.send(200, rows);
+			res.send(400, {error:'validation', errors:parsedErrors});
+			return next();
 		})
-		.catch(function(err){
-
+		.catch(PasswordDoesNotExistError, function(err){
+			res.send(404, {error: 'Password was not found'});
+			return next();
+		})
+		.catch(SqlError, function(err){
+			res.send(500, 'Internal database error');
+			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
+			return next();
 		});
-	
+
 	});
 
-	
-	server.del('/api/password', authHelpers.ensureAuthenticated, function(req, res, next){
-		return next(new restify.errors.NotImplementedYet('API endpoint not implemented yet'));
-	});
+	server.put('/api/password/:id', authHelpers.ensureAuthenticated, function(req, res, next){
+		log.info({ method: 'PUT', path: '/api/passwords', id: req.params.id, payload: req.body });
 
-	server.put('/api/password', authHelpers.ensureAuthenticated, function(req, res, next){
-		return next(new restify.errors.NotImplementedYet('API endpoint not implemented yet'));
+		User.find(req.user)
+		.then(function(user){
+			// Do some authorization
+			return Password.find(req.params.id);
+		})
+		.then(function(password){
+			return password.update(req.body);
+		})
+		.then(function(success){
+			if( success ){
+				res.send(200, 'OK');
+			}else{
+				// Not expected...
+				res.send(500, 'Error updating user');
+			}
+			return next();
+		})
+		.catch(ValidationError, function(err){
+			var parsedErrors = [];
+			for( var i = 0 ; i < err.errors.length ; i++ ){
+				var t = (err.errors[i].property).split('.');
+				var field = t.length === 2 ? t[1] : t[0];
+				parsedErrors.push({ field: field, error: err.errors[i].message } );
+			}
+			res.send(400, {error:'validation', errors:parsedErrors});
+			return next();
+		})
+		.catch(PasswordDoesNotExistError, function(err){
+			res.send(404, 'Password was not found');
+			return next();
+		})
+		.catch(SqlError, function(err){
+			res.send(500, 'Internal database error');
+			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
+			return next();
+		});
 	});
 
 }

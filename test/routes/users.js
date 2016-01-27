@@ -52,6 +52,7 @@ describe('API /users', function(){
 		});
 	});
 
+
 	describe("GET", function(){
 
 		it.skip("Timeout without https", function(done){
@@ -101,6 +102,7 @@ describe('API /users', function(){
 describe("API /user", function(){
 
 	var authToken = '';
+	var otherAuthToken = '';
 
 	before(function(done){
 		// Obtain auth token
@@ -112,6 +114,21 @@ describe("API /user", function(){
 		.end(function(err, res){
 			if(err) return done(err);
 			authToken = res.body.token;
+			return done();
+		});
+	});
+
+
+	before(function(done){
+		// Obtain auth token
+		server
+		.post('/api/auth/login')
+		.field('username', 'User2')
+		.field('password', 'password')
+		.expect(200)
+		.end(function(err, res){
+			if(err) return done(err);
+			otherAuthToken = res.body.token;
 			return done();
 		});
 	});
@@ -281,6 +298,7 @@ describe("API /user", function(){
 
 		var testUpdatedUsername = 'NotAUnitTestUser';
 
+
 		it('successfully updates a single field, non-password', function(done){
 			server
 			.put('/api/user/' + testUser.id)
@@ -339,7 +357,7 @@ describe("API /user", function(){
 				assert.equal(user[0].publickey, 	testUser.base64.publickey)
 				assert.equal(user[0].isAdmin, 		false);	
 			});
-		})
+		});
 
 		it('fails when trying to update id', function(done){
 			server
@@ -403,6 +421,20 @@ describe("API /user", function(){
 
 				assert.equal(res.body.error, 'User does not exist');
 
+				return done();
+			});
+		});
+
+		it.skip('should fail when trying to get another user\'s data', function(done){
+			server
+			.get('/api/user/' + 1)
+			.set('Authorization', 'Bearer ' + otherAuthToken)
+			.field('username', 'SomethingSilly')
+			.expect(403)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.error, 'insufficient priveleges');
 				return done();
 			});
 		});

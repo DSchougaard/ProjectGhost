@@ -12,7 +12,7 @@ module.exports = {
 		"parent":{
 			"description" : "ID of the parent category",
 			"required": true,
-			"type": ["number", 'null'],
+			"type": ["number", "null"],
 			"example": 1
 		},
 		"title":{

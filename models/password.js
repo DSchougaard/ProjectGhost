@@ -47,10 +47,21 @@ module.exports = class Password{
 	}
 
 	static find(id){
-		if( typeof id !== 'number' ){
-			return new Promise.reject( new ValidationError([{property: 'password.id', message:'is the wrong type'}]) );
-		}
+		var validID = schemagic.id.validate(id);
+		
+		if( !validID.valid ){
+			// Dirty dirty hack, to make schemagic accept strings being in int form.
+			if( validID.errors.length === 1 ){
+				validID.errors[0].property = 'data.id';
 
+				if( validID.errors[0].message === 'pattern mismatch'){
+					validID.errors[0].message = 'is the wrong type';
+				}
+			}
+			
+			return new Promise.reject( new ValidationError(validID.errors) );
+		}
+		
 		return knex
 		.select()
 		.from('passwords')

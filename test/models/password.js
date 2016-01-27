@@ -100,7 +100,7 @@ describe('Password', function(){
             })
             .catch(ValidationError, function(err){
 				assert.equal(err.num, 1);
-				assert.equal(err.message, '1 error: password.id is the wrong type.');
+				assert.equal(err.message, '1 error: data.id is the wrong type.');
             });
         });
         
