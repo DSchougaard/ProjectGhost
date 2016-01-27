@@ -24,6 +24,24 @@ var userData = [
 	}
 ];
 
+var categoryData = [
+	{
+		owner: 1,
+		parent: null,
+		label: 'Category1'
+	},
+	{
+		owner: 1,
+		parent: null,
+		label: 'Category2'
+	},
+	{
+		owner: 1,
+		parent: 1,
+		label: 'Category1.1'
+	}
+]
+
 var passwordData = [
 	{
 		parent 		: null,
@@ -92,4 +110,5 @@ var structuresData = [
 
 
 module.exports.userData = userData;
+module.exports.categoryData = categoryData;
 module.exports.passwordData = passwordData;

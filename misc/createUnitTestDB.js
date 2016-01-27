@@ -15,7 +15,7 @@ const data = require('../misc/unitTestData.js');
 
 knex.raw('PRAGMA foreign_keys = ON').then();
 
-sleep.sleep(1);
+sleep.sleep(5);
 
 console.log('Creating unittest DB');
 
@@ -30,10 +30,17 @@ knex.schema.createTableIfNotExists('users', function(table){
 	table.binary("publickey").notNullable();
 }).then();
 
+knex.schema.createTableIfNotExists('categories', function(table){
+	table.increments('id').primary();
+	table.integer('owner').unsigned().references('id').inTable('users').notNullable();
+	table.integer('parent').unsigned().references('id').inTable('categories').nullable();
+	table.string('label').notNullable();
+}).then();
+
 knex.schema.createTableIfNotExists('passwords', function(table){
 	table.increments('id').primary();
 	table.integer('owner').unsigned().references('id').inTable('users');
-	table.integer('parent').unsigned()/*.references('id').inTable('structures')*/;
+	table.integer('parent').unsigned().references('id').inTable('categories');
 	table.string('title').notNullable();
 	table.string('password').notNullable();
 	table.binary('iv', 16).notNullable();
@@ -41,12 +48,21 @@ knex.schema.createTableIfNotExists('passwords', function(table){
 	table.string('note').nullable();
 }).then();
 
+
 knex('users').insert(data.userData)
 .then(function(r){
 })
 .catch(function(e){
 	console.log(e);
 });
+
+knex('categories').insert(data.categoryData)
+.then(function(r){
+})
+.catch(function(e){
+	console.log(e);
+});
+
 
 knex('passwords').insert(data.passwordData)
 .then(function(r){
