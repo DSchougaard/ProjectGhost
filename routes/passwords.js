@@ -25,6 +25,10 @@ module.exports = function(server, knex, log){
 			res.send(200, passwords);
 			return next();
 		})
+		.catch(UserDoesNotExistError, function(err){
+			res.send(404, {error: 'User does not exist'});
+			return next();
+		})
 		.catch(PasswordDoesNotExistError, function(err){
 			res.send(404, {error: 'Password does not exist'});
 			return next();
@@ -53,6 +57,10 @@ module.exports = function(server, knex, log){
 		})
 		.then(function(password){
 			res.send(200, password);
+			return next();
+		})
+		.catch(UserDoesNotExistError, function(err){
+			res.send(404, {error: 'User does not exist'});
 			return next();
 		})
 		.catch(PasswordDoesNotExistError, function(err){
@@ -103,6 +111,10 @@ module.exports = function(server, knex, log){
 			res.send(201, {message: 'OK', id: password.id});
 			return next();
 		})
+		.catch(UserDoesNotExistError, function(err){
+			res.send(404, {error: 'User does not exist'});
+			return next();
+		})
 		.catch(ValidationError, function(err){
 			var parsedErrors = [];
 			for( var i = 0 ; i < err.errors.length ; i++ ){				
@@ -141,6 +153,10 @@ module.exports = function(server, knex, log){
 				parsedErrors.push({ field: field, error: err.errors[i].message } );
 			}
 			res.send(400, {error:'validation', errors:parsedErrors});
+			return next();
+		})
+		.catch(UserDoesNotExistError, function(err){
+			res.send(404, {error: 'User does not exist'});
 			return next();
 		})
 		.catch(PasswordDoesNotExistError, function(err){
@@ -183,6 +199,10 @@ module.exports = function(server, knex, log){
 				parsedErrors.push({ field: field, error: err.errors[i].message } );
 			}
 			res.send(400, {error:'validation', errors:parsedErrors});
+			return next();
+		})
+		.catch(UserDoesNotExistError, function(err){
+			res.send(404, {error: 'User does not exist'});
 			return next();
 		})
 		.catch(PasswordDoesNotExistError, function(err){

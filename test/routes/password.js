@@ -68,7 +68,7 @@ describe("API /password", function(){
 		note: 'Darth Maul is a meanie!'
 	};
 
-	describe('GET', function(){
+	describe('GET/id', function(){
 
 		var testID = 1;
 
@@ -91,6 +91,18 @@ describe("API /password", function(){
 				return done();
 			})
 		});
+
+		it('should fail when trying to get a password, for a user that does not exist', function(done){
+			server
+			.get('/api/users/' + 1337 + '/passwords/' + testID)
+			.set('Authorization', 'Bearer ' + authToken)	
+			.expect(404)
+			.end(function(err, res){
+				if(err) return done(err);
+				assert.equal(res.body.error, 'User does not exist');
+				return done();
+			});		
+		})
 
 		it('should fail trying to get a password that does not exist', function(done){
 			server
@@ -135,6 +147,77 @@ describe("API /password", function(){
 		});
 	});
 
+	describe('GET', function(){
+		it('should get all passwords for user id 1', function(done){
+			server
+			.get('/api/users/' + 1 + '/passwords')
+			.set('Authorization', 'Bearer ' + authToken)	
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				// Grap expected data
+				var comparisonData = _.where(unittestData.passwordData, {owner: 1});
+
+				// Check for length
+				assert.equal(res.body.length, comparisonData.length);
+
+				// Filter DB ids from the response
+				var passwordsWithoutIDs = _.map(res.body, function(o) { return _.omit(o, 'id'); });
+
+				assert.deepEqual(passwordsWithoutIDs, comparisonData);
+				assert.notDeepEqual(passwordsWithoutIDs, unittestData.passwordData);
+
+				return done();
+			});
+		});
+
+		it.skip('should fail when user tries to get all admins passwords', function(done){
+			server
+			.get('/api/users/' + 1 + '/passwords')
+			.set('Authorization', 'Bearer ' + otherAuthToken)	
+			.expect(404)
+			.end(function(err, res){
+				if(err) return done(err);
+				assert.equal(res.body.error, 'insufficient priveleges');
+				return done();
+			});		
+		});
+
+		it('should fail when trying to get non-existant users passwords', function(done){
+			server
+			.get('/api/users/' + 1337 + '/passwords')
+			.set('Authorization', 'Bearer ' + authToken)	
+			.expect(404)
+			.end(function(err, res){
+				if(err) return done(err);
+				assert.equal(res.body.error, 'User does not exist');
+				return done();
+			});				
+		});
+
+
+		it('should fail when trying passed invalid user id', function(done){
+			server
+			.get('/api/users/' + 'true' + '/passwords')
+			.set('Authorization', 'Bearer ' + authToken)	
+			.expect(400)
+			.end(function(err, res){
+				if(err) return done(err);
+				
+				assert.equal(res.body.error, 'validation');
+				assert.equal(res.body.errors.length, 1);
+				assert.equal(res.body.errors[0].field, 'id');
+				assert.equal(res.body.errors[0].error, 'is the wrong type');
+					
+				return done();
+			});	
+		});
+	});
+
+
+
+
 	describe('POST', function(){
 
 
@@ -143,7 +226,7 @@ describe("API /password", function(){
 			.post('/api/users/'+idAuthToken+'/passwords')
 			.set('Authorization', 'Bearer ' + authToken)	
 			.send(validPassword)
-			//.expect(201)
+			.expect(201)
 			.end(function(err, res){
 				if(err) return done(err);
 
