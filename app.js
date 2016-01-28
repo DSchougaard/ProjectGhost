@@ -9,8 +9,7 @@ const bunyan 			= require('bunyan');
 // Routes
 const users 			= require(__base + 'routes/users.js');
 const auth 				= require(__base + 'routes/auth.js');
-const passwords			= require(__base + 'routes/password.js');
-const category 			= require(__base + 'routes/category.js');
+const passwords			= require(__base + 'routes/passwords.js');
 
 //Helpers
 const authHelpers 		= require(__base + 'helpers/authHelpers.js');
