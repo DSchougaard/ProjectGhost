@@ -144,7 +144,7 @@ describe("API /user", function(){
 
 		it('should fail when a password is not supplied', function(done){
 			server
-			.post('/api/user')
+			.post('/api/users')
 			.set('Authorization', 'Bearer ' + authToken)
 			.field('username', testUser.username)
 			.field('privatekey', testUser.base64.privatekey)
@@ -162,7 +162,7 @@ describe("API /user", function(){
 
 		it('should fail when a username is not supplied', function(done){
 			server
-			.post('/api/user')
+			.post('/api/users')
 			.set('Authorization', 'Bearer ' + authToken)
 			.field('password', testUser.password)
 			.field('privatekey', testUser.base64.privatekey)
@@ -180,7 +180,7 @@ describe("API /user", function(){
 
 		it('should fail when a private key is not supplied', function(done){
 			server
-			.post('/api/user')
+			.post('/api/users')
 			.set('Authorization', 'Bearer ' + authToken)
 			.field('username', testUser.username)
 			.field('password', testUser.password)
@@ -198,7 +198,7 @@ describe("API /user", function(){
 
 		it('should fail when a public key is not supplied', function(done){
 			server
-			.post('/api/user')
+			.post('/api/users')
 			.set('Authorization', 'Bearer ' + authToken)
 			.field('username', testUser.username)
 			.field('password', testUser.password)
@@ -216,7 +216,7 @@ describe("API /user", function(){
 
 		it("Should fail at creating a user that already exists", function(done){
 			server
-			.post('/api/user')
+			.post('/api/users')
 			.set('Authorization', 'Bearer ' + authToken)
 			.field('username', 'User1')
 			.field('password', testUser.password)
@@ -240,7 +240,7 @@ describe("API /user", function(){
 
 			// Insert user
 			server
-			.post('/api/user')
+			.post('/api/users')
 			.set('Authorization', 'Bearer ' + authToken)
 			.field('username', testUser.username)
 			.field('password', testUser.password)
@@ -301,7 +301,7 @@ describe("API /user", function(){
 
 		it('successfully updates a single field, non-password', function(done){
 			server
-			.put('/api/user/' + testUser.id)
+			.put('/api/users/' + testUser.id)
 			.set('Authorization', 'Bearer ' + authToken)
 			.field('username', testUpdatedUsername)
 			.expect(200)
@@ -330,7 +330,7 @@ describe("API /user", function(){
 
 		it('successfully updates password and generates new salt', function(done){
 			server
-			.put('/api/user/' + testUser.id)
+			.put('/api/users/' + testUser.id)
 			.set('Authorization', 'Bearer ' + authToken)
 			.field('password', 'totallysecure')
 			.expect(200)
@@ -361,7 +361,7 @@ describe("API /user", function(){
 
 		it('fails when trying to update id', function(done){
 			server
-			.put('/api/user/' + testUser.id)
+			.put('/api/users/' + testUser.id)
 			.set('Authorization', 'Bearer ' + authToken)
 			.field('id', 1337)
 			.expect(400)
@@ -378,7 +378,7 @@ describe("API /user", function(){
 
 		it('fails when payload has invalid values', function(done){
 			server
-			.put('/api/user/' + testUser.id)
+			.put('/api/users/' + testUser.id)
 			.set('Authorization', 'Bearer ' + authToken)
 			.field('privatekey', 'this is not base64')
 			.expect(400)
@@ -396,7 +396,7 @@ describe("API /user", function(){
 
 		it('fails when payload is empty', function(done){
 			server
-			.put('/api/user/' + testUser.id)
+			.put('/api/users/' + testUser.id)
 			.set('Authorization', 'Bearer ' + authToken)
 			.expect(400)
 			.end(function(err, res){
@@ -413,7 +413,7 @@ describe("API /user", function(){
 
 		it('fails when updating non-existant user', function(done){
 			server
-			.put('/api/user/' + 1337)
+			.put('/api/users/' + 1337)
 			.set('Authorization', 'Bearer ' + authToken)
 			.expect(404)
 			.end(function(err, res){
@@ -427,7 +427,7 @@ describe("API /user", function(){
 
 		it.skip('should fail when trying to get another user\'s data', function(done){
 			server
-			.get('/api/user/' + 1)
+			.get('/api/users/' + 1)
 			.set('Authorization', 'Bearer ' + otherAuthToken)
 			.field('username', 'SomethingSilly')
 			.expect(403)
@@ -446,7 +446,7 @@ describe("API /user", function(){
 
 		it('should fail on deleting non-existant user', function(done){
 			server
-			.del('/api/user/'+1337)
+			.del('/api/users/'+1337)
 			.set('Authorization', 'Bearer ' + authToken)
 			.expect(400)
 			.end(function(err,res){
@@ -463,7 +463,7 @@ describe("API /user", function(){
 		
 		it('should fail when passed id is of the wrong type', function(done){
 			server
-			.del('/api/user/true')
+			.del('/api/users/true')
 			.set('Authorization', 'Bearer ' + authToken)
 			.expect(400)
 			.end(function(err, res){
@@ -479,7 +479,7 @@ describe("API /user", function(){
 
 		it('should fail when no auth token is passed', function(done){
 			server
-			.del('/api/user/'+testUser.id)
+			.del('/api/users/'+testUser.id)
 			.expect(401)
 			.end(function(err,res){
 				if(err) return done(err);
@@ -493,7 +493,7 @@ describe("API /user", function(){
 		
 		it('should successfully delete a user', function(done){
 			server
-			.del('/api/user/'+testUser.id)
+			.del('/api/users/'+testUser.id)
 			.set('Authorization', 'Bearer ' + authToken)
 			.expect(200)
 			.end(function(err,res){
@@ -533,7 +533,7 @@ describe("API /user", function(){
 		it('should succeed in getting a user', function(done){
 			var id = 1;
 			server
-			.get('/api/user/' + id)
+			.get('/api/users/' + id)
 			.set('Authorization', 'Bearer ' + authToken)
 			//.expect(200)
 			.end(function(err,res){
@@ -549,7 +549,7 @@ describe("API /user", function(){
 		it('should fail at getting non-existant user', function(done){
 			var id = 1337;
 			server
-			.get('/api/user/' + id)
+			.get('/api/users/' + id)
 			.set('Authorization', 'Bearer ' + authToken)
 			.expect(404)
 			.end(function(err,res){
@@ -562,7 +562,7 @@ describe("API /user", function(){
 		
 		it('should fail when no id is passed', function(done){
 			server
-			.get('/api/user/')
+			.get('/api/users/')
 			.set('Authorization', 'Bearer ' + authToken)
 			.expect(400)
 			.end(function(err,res){
@@ -578,7 +578,7 @@ describe("API /user", function(){
 		
 		it('should fail when a id of wrong type is passed', function(done){
 			server
-			.get('/api/user/true')
+			.get('/api/users/true')
 			.set('Authorization', 'Bearer ' + authToken)
 			.expect(400)
 			.end(function(err,res){

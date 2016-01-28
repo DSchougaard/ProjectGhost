@@ -42,8 +42,37 @@ module.exports = function(server, log){
 		});
 	});
 
+	server.get('/api/users/:id', authHelpers.ensureAuthenticated, function(req, res, next){
+		log.info({ method: 'GET', path: '/api/user/'+req.params.id });
+		
+		User.find(req.params.id)
+		.then(function(user){
+			res.send(200, _.omit(user, ['password', 'salt', 'privatekey', 'isAdmin']));
+			return next();
+		})
+		.catch(UserDoesNotExistError, function(err){
+			res.send(404, 'User with ID ' + err.id + ' was not found');
+			return next();
+		})
+		.catch(ValidationError, function(err){
+			var parsedErrors = [];
+			for( var i = 0 ; i < err.errors.length ; i++ ){
+				var t = (err.errors[i].property).split('.');
+				var field = t.length === 2 ? t[1] : t[0];
+				parsedErrors.push({ field: field, error: err.errors[i].message } );
+			}
+			res.send(400, {error:'validation', errors:parsedErrors});
+			return next();
+		})
+		.catch(SqlError, function(err){
+			log.error({method: 'GET', path: '/api/user'+req.params.id, error: err});
+			res.send(500, 'Internal database error');
+			return next();
+		});		
+	});
 
-	server.post('/api/user', function(req, res, next){
+
+	server.post('/api/users', function(req, res, next){
 		log.info({ method: 'POST', path: '/api/user', payload: req.body.username });
 		/*
 			Request Content
@@ -72,7 +101,7 @@ module.exports = function(server, log){
 		});
 	});	
 
-	server.put('/api/user/:id', authHelpers.ensureAuthenticated, function(req, res, next){
+	server.put('/api/users/:id', authHelpers.ensureAuthenticated, function(req, res, next){
 		log.info({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body, auth: req.user });
 
 
@@ -100,7 +129,7 @@ module.exports = function(server, log){
 		});
 	});
 
-	server.del('/api/user/:id', authHelpers.ensureAuthenticated, function(req, res, next){
+	server.del('/api/users/:id', authHelpers.ensureAuthenticated, function(req, res, next){
 		log.info({ method: 'DEL', path: '/api/user/'+req.params.id, payload: req.body, auth: req.user });
 		
 		User.find( req.params.id )
@@ -135,43 +164,4 @@ module.exports = function(server, log){
 		});
 	});	
 
-	server.get('/api/user/:id', authHelpers.ensureAuthenticated, function(req, res, next){
-		log.info({ method: 'GET', path: '/api/user/'+req.params.id });
-		/*if( isNaN(req.params.id) ){
-			res.send(400, {error: 'validation', errors:[{field: 'id', error: 'is the wrong type'}]} );
-			return next();
-		}else if( req.params.id === '' ){
-			res.send(400, {error: 'validation', errors:[{field: 'id', error: 'is required'}]} );
-			return next();
-		}*/
-		
-		//var id = parseInt(req.params.id);
-		
-		User.find(req.params.id)
-		.then(function(user){
-			res.send(200, _.omit(user, ['password', 'salt', 'privatekey', 'isAdmin']));
-			return next();
-		})
-		.catch(UserDoesNotExistError, function(err){
-			res.send(404, 'User with ID ' + err.id + ' was not found');
-			return next();
-		})
-		.catch(ValidationError, function(err){
-			var parsedErrors = [];
-			for( var i = 0 ; i < err.errors.length ; i++ ){
-				var t = (err.errors[i].property).split('.');
-				var field = t.length === 2 ? t[1] : t[0];
-				parsedErrors.push({ field: field, error: err.errors[i].message } );
-			}
-			res.send(400, {error:'validation', errors:parsedErrors});
-			return next();
-		})
-		.catch(SqlError, function(err){
-			log.error({method: 'GET', path: '/api/user'+req.params.id, error: err});
-			res.send(500, 'Internal database error');
-			return next();
-		});
-		
-		
-	});
 };
