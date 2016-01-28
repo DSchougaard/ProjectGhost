@@ -6,7 +6,8 @@ module.exports = {
 		"owner":{
 			"description": "User ID of the user owning the Password Entry",
 			"required":true,
-			"type":"number",
+			"type": ["number", "string"],
+			"pattern":/[0-9]+/,
 			"example":1
 		},
 		"parent":{
