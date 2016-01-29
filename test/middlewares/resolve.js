@@ -8,6 +8,7 @@ var base64 = require(__base + 'helpers/base64.js');
 var knex = require(__base + 'database.js');
 var resolve = require(__base + 'middlewares/resolve.js');
 
+
 describe('Resolve', function(){
 
 	var testUser, testPassword;
@@ -131,5 +132,4 @@ describe('Resolve', function(){
 			});
 		});
 	});
-
 });
