@@ -14,6 +14,9 @@ const ValidationError 		= require(__base + 'errors/ValidationError.js');
 const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js');
 const SqlError 				= require(__base + 'errors/SqlError.js');
 
+// Middleware
+const authorized 			= require(__base + 'middlewares/authorization.js');
+
 module.exports = function(server, knex, log){
 
 	server.get('/api/users/:userId/passwords', authHelpers.ensureAuthenticated, function(req, res, next){
@@ -48,7 +51,7 @@ module.exports = function(server, knex, log){
 		});
 	});
 
-	server.get('/api/users/:userId/passwords/:passwordId', authHelpers.ensureAuthenticated, function(req, res, next){
+	server.get('/api/users/:userId/passwords/:passwordId', authHelpers.ensureAuthenticated, authorized, function(req, res, next){
 		
 		User.find(req.params.userId)
 		.then(function(user){

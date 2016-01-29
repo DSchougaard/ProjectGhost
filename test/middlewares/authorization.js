@@ -114,9 +114,9 @@ describe('Authorization', function(){
 			authorization(req, null, function(res){
 
 				assert.equal(res.message, 'Insufficient privileges');
-				assert.equal(res.statusCode, 401);
+				assert.equal(res.statusCode, 403);
 
-				assert.equal(res.body.code, 'UnauthorizedError');
+				assert.equal(res.body.code, 'ForbiddenError');
 				assert.equal(res.body.message, 'Insufficient privileges');
 
 				return done();
@@ -184,9 +184,9 @@ describe('Authorization', function(){
 
 			authorization(req, null, function(res){
 				assert.equal(res.message, 'Insufficient privileges');
-				assert.equal(res.statusCode, 401);
+				assert.equal(res.statusCode, 403);
 
-				assert.equal(res.body.code, 'UnauthorizedError');
+				assert.equal(res.body.code, 'ForbiddenError');
 				assert.equal(res.body.message, 'Insufficient privileges');
 				return done();
 			});
@@ -201,9 +201,9 @@ describe('Authorization', function(){
 
 			authorization(req, null, function(res){
 				assert.equal(res.message, 'Insufficient privileges');
-				assert.equal(res.statusCode, 401);
+				assert.equal(res.statusCode, 403);
 
-				assert.equal(res.body.code, 'UnauthorizedError');
+				assert.equal(res.body.code, 'ForbiddenError');
 				assert.equal(res.body.message, 'Insufficient privileges');
 				return done();
 			});
@@ -218,9 +218,9 @@ describe('Authorization', function(){
 
 			authorization(req, null, function(res){
 				assert.equal(res.message, 'Insufficient privileges');
-				assert.equal(res.statusCode, 401);
+				assert.equal(res.statusCode, 403);
 
-				assert.equal(res.body.code, 'UnauthorizedError');
+				assert.equal(res.body.code, 'ForbiddenError');
 				assert.equal(res.body.message, 'Insufficient privileges');
 				return done();
 			});

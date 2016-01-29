@@ -133,7 +133,7 @@ describe("API /password", function(){
 			});
 		});
 
-		it.skip('should fail when trying to get another user\'s password', function(done){
+		it('should fail when trying to get another user\'s password', function(done){
 			server
 			.get('/api/users/'+idAuthToken+'/passwords/' + 4)
 			.set('Authorization', 'Bearer ' + authToken)
@@ -141,7 +141,7 @@ describe("API /password", function(){
 			.end(function(err, res){
 				if(err) return done(err);
 
-				assert.equal(res.body.error, 'insufficient priveleges');
+				assert.equal(res.body.message, 'Insufficient privileges');
 				return done();
 			});
 		});
