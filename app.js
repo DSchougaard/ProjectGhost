@@ -68,6 +68,9 @@ var server = restify.createServer({
 });
 server.use(restify.bodyParser());
 server.use(restify.queryParser());
+server.on('uncaughtException', function (req, res, route, err) {
+    console.log('uncaughtException', err.stack);
+});
 
 // Database through Knex
 /*var knex = require('knex')({
