@@ -16,10 +16,10 @@ const SqlError 				= require(__base + 'errors/SqlError.js');
 
 module.exports = function(server, knex, log){
 
-	server.get('/api/users/:userID/passwords', authHelpers.ensureAuthenticated, function(req, res, next){
+	server.get('/api/users/:userId/passwords', authHelpers.ensureAuthenticated, function(req, res, next){
 		log.info({ method: 'GET', path: '/api/passwords', payload: req.user });
 
-		User.find(req.params.userID)
+		User.find(req.params.userId)
 		.then(Password.findAll)
 		.then(function(passwords){
 			res.send(200, passwords);
@@ -48,12 +48,12 @@ module.exports = function(server, knex, log){
 		});
 	});
 
-	server.get('/api/users/:userID/passwords/:id', authHelpers.ensureAuthenticated, function(req, res, next){
+	server.get('/api/users/:userId/passwords/:passwordId', authHelpers.ensureAuthenticated, function(req, res, next){
 		
-		User.find(req.params.userID)
+		User.find(req.params.userId)
 		.then(function(user){
 			// Auth thingy
-			return Password.find(req.params.id);
+			return Password.find(req.params.passwordId);
 		})
 		.then(function(password){
 			res.send(200, password);
@@ -84,7 +84,7 @@ module.exports = function(server, knex, log){
 		});		
 	});
 
-	server.post('/api/users/:userID/passwords', authHelpers.ensureAuthenticated, function(req, res, next){
+	server.post('/api/users/:userId/passwords', authHelpers.ensureAuthenticated, function(req, res, next){
 		log.info({ method: 'POST', path: '/api/passwords', payload: req.body });
 		/*
 			Content:
@@ -101,7 +101,7 @@ module.exports = function(server, knex, log){
 		*/
 
 		var password 	= _.pick(req.body, ['title', 'username', 'iv', 'password', 'parent', 'note']);
-		password.owner 	= req.params.userID;
+		password.owner 	= req.params.userId;
 		password 		= _.defaults(password, {parent: null, note: null});
 
 
@@ -131,13 +131,13 @@ module.exports = function(server, knex, log){
 	});
 
 	
-	server.del('/api/users/:userID/passwords/:id', authHelpers.ensureAuthenticated, function(req, res, next){
-		log.info({ method: 'DEL', path: '/api/passwords', payload: req.params.id });
+	server.del('/api/users/:userId/passwords/:passwordId', authHelpers.ensureAuthenticated, function(req, res, next){
+		log.info({ method: 'DEL', path: '/api/passwords', payload: req.params.passwordId });
 
-		User.find(req.params.userID)
+		User.find(req.params.userId)
 		.then(function(user){
 			// Do some authorization check?!
-			return Password.find(req.params.id);
+			return Password.find(req.params.passwordId);
 		})
 		.then(function(password){
 			log.info({ method: 'DEL', path: '/api/passwords', message: 'Deleting password', id: password.id });
@@ -171,13 +171,13 @@ module.exports = function(server, knex, log){
 
 	});
 
-	server.put('/api/users/:userID/passwords/:id', authHelpers.ensureAuthenticated, function(req, res, next){
-		log.info({ method: 'PUT', path: '/api/passwords', id: req.params.id, payload: req.body });
+	server.put('/api/users/:userId/passwords/:passwordId', authHelpers.ensureAuthenticated, function(req, res, next){
+		log.info({ method: 'PUT', path: '/api/passwords', id: req.params.passwordId, payload: req.body });
 
-		User.find(req.params.userID)
+		User.find(req.params.userId)
 		.then(function(user){
 			// Do some authorization
-			return Password.find(req.params.id);
+			return Password.find(req.params.passwordId);
 		})
 		.then(function(password){
 			return password.update(req.body);

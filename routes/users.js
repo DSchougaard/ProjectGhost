@@ -18,6 +18,8 @@ const PasswordDoesNotExistError 	= require(__base + 'errors/PasswordDoesNotExist
 const ValidationError 				= require(__base + 'errors/ValidationError.js');
 const SqlError 						= require(__base + 'errors/SqlError.js');
 
+
+
 // Models
 var User = require(__base + 'models/user.js');
 
@@ -42,10 +44,10 @@ module.exports = function(server, log){
 		});
 	});
 
-	server.get('/api/users/:id', authHelpers.ensureAuthenticated, function(req, res, next){
-		log.info({ method: 'GET', path: '/api/user/'+req.params.id });
+	server.get('/api/users/:userId', authHelpers.ensureAuthenticated, function(req, res, next){
+		log.info({ method: 'GET', path: '/api/user/'+req.params.userId });
 		
-		User.find(req.params.id)
+		User.find(req.params.userId)
 		.then(function(user){
 			res.send(200, _.omit(user, ['password', 'salt', 'privatekey', 'isAdmin']));
 			return next();
@@ -65,7 +67,7 @@ module.exports = function(server, log){
 			return next();
 		})
 		.catch(SqlError, function(err){
-			log.error({method: 'GET', path: '/api/user'+req.params.id, error: err});
+			log.error({method: 'GET', path: '/api/user'+req.params.userId, error: err});
 			res.send(500, 'Internal database error');
 			return next();
 		});		
@@ -101,11 +103,10 @@ module.exports = function(server, log){
 		});
 	});	
 
-	server.put('/api/users/:id', authHelpers.ensureAuthenticated, function(req, res, next){
-		log.info({ method: 'PUT', path: '/api/user/'+req.params.id, payload: req.body, auth: req.user });
-
-
-		User.find(req.params.id)
+	server.put('/api/users/:userId', authHelpers.ensureAuthenticated, function(req, res, next){
+		log.info({ method: 'PUT', path: '/api/user/'+req.params.userId, payload: req.body, auth: req.user });
+		
+		User.find(req.params.userId)
 		.then(function(user){
 			return user.update(req.body);
 		})
@@ -129,10 +130,10 @@ module.exports = function(server, log){
 		});
 	});
 
-	server.del('/api/users/:id', authHelpers.ensureAuthenticated, function(req, res, next){
-		log.info({ method: 'DEL', path: '/api/user/'+req.params.id, payload: req.body, auth: req.user });
+	server.del('/api/users/:userId', authHelpers.ensureAuthenticated, function(req, res, next){
+		log.info({ method: 'DEL', path: '/api/user/'+req.params.userId, payload: req.body, auth: req.user });
 		
-		User.find( req.params.id )
+		User.find( req.params.userId )
 		.then(function(user){
 			return user.del();
 		})
@@ -146,11 +147,11 @@ module.exports = function(server, log){
 			return next();
 		})
 		.catch(UserDoesNotExistError, function(err){
-			res.send(400, 'User ID ' + req.params.id + ' was not found');
+			res.send(400, 'User ID ' + req.params.userId + ' was not found');
 			return next();
 		})
 		.catch(SqlError, function(err){
-			log.error({method: 'DEL', path: '/api/user'+req.params.id, error: err});
+			log.error({method: 'DEL', path: '/api/user'+req.params.userId, error: err});
 			res.send(500, 'Internal database error');
 			return next();
 		})
