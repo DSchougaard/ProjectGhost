@@ -20,6 +20,10 @@ describe('Models', function(){
 	require(__base + 'test/models/password.js');
 });
 
+describe('Middlewares', function(){
+	require(__base + 'test/middlewares/authorization.js');
+});
+
 describe('Routes', function(){
 	require(__base + 'test/routes/auth.js');
 	require(__base + 'test/routes/users.js');
