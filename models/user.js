@@ -132,7 +132,7 @@ module.exports = class User{
 				}
 
 				if( typeof rows[0].isAdmin === 'number' ){
-					rows[0].isAdmin = true;
+					rows[0].isAdmin = (rows[0].isAdmin === 1);
 				}
 				var validate = schemagic.user.validate(rows[0]);
 				if( !validate.valid ){
