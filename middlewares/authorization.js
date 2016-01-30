@@ -14,7 +14,6 @@ var User = require(__base + 'models/user.js')
 var Password = require(__base + 'models/password.js')
 
 module.exports = function(req, res, next){
-	var requestingUser = req.user;
 	var targetUser = req.params.userId;
 	var targetPassword = req.params.passwordId;
 
@@ -22,9 +21,9 @@ module.exports = function(req, res, next){
 	// Identify what is requested access to
 	if( targetPassword !== undefined ){
 
-		Promise.all([User.find(requestingUser), User.find(targetUser), Password.find(targetPassword)])
-		.spread(function(authed, user, password){
-			if( password.owner === user.id && user.id === authed.id ){
+		Promise.all([User.find(targetUser), Password.find(targetPassword)])
+		.spread(function(user, password){
+			if( password.owner === user.id && user.id === req.resolved.user.id ){
 				return next();	
 			}else{
 				return next(new restify.errors.ForbiddenError('Insufficient privileges'));
@@ -41,17 +40,14 @@ module.exports = function(req, res, next){
 		});
 
 	}else{
-		Promise.all([User.find(requestingUser), User.find(targetUser)])
-		.spread(function(authed, user){
-			if( authed.id === user.id || authed.isAdmin ){
+		User.find(targetUser)
+		.then(function(user){
+			if( req.resolved.user.id === user.id || req.resolved.user.isAdmin ){
 				return next();
 			}else{
 				return next(new restify.errors.ForbiddenError('Insufficient privileges'));
 			}
-		}).catch(UserDoesNotExistError, function(){
-			return next();
-		}).catch(ValidationError, function(){
-			return next();
-		});
+
+		})
 	}
  }

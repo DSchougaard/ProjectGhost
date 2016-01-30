@@ -106,6 +106,7 @@ module.exports = function(server, log){
 	server.put('/api/users/:userId', authHelpers.ensureAuthenticated, function(req, res, next){
 		log.info({ method: 'PUT', path: '/api/user/'+req.params.userId, payload: req.body, auth: req.user });
 		
+		//(req.resolved.user).update(req.body)
 		User.find(req.params.userId)
 		.then(function(user){
 			return user.update(req.body);
@@ -133,7 +134,8 @@ module.exports = function(server, log){
 	server.del('/api/users/:userId', authHelpers.ensureAuthenticated, function(req, res, next){
 		log.info({ method: 'DEL', path: '/api/user/'+req.params.userId, payload: req.body, auth: req.user });
 		
-		User.find( req.params.userId )
+		//(req.resolved.user).del()
+		User.find(req.params.userId)
 		.then(function(user){
 			return user.del();
 		})

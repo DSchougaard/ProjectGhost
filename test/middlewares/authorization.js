@@ -16,6 +16,8 @@ const SqlError 				= require(__base + 'errors/SqlError.js');
 
 const unittestData = require(__base + 'misc/unitTestData.js');
 
+var User 			= require(__base + 'models/user.js');
+
 var knex = require(__base + 'database.js');
 
 describe('Authorization', function(){
@@ -107,7 +109,8 @@ describe('Authorization', function(){
 	describe('User -> User', function(){
 		it('user should not be allowed access admin\'s user info', function(done){
 			var req = {};
-			req.user = normalUser.id;
+			req.resolved = {};
+			req.resolved.user = new User(normalUser);
 			req.params = {};
 			req.params.userId = adminUser.id;
 
@@ -125,7 +128,8 @@ describe('Authorization', function(){
 
 		it('user should be allowed access to his own user info', function(done){
 			var req = {};
-			req.user = normalUser.id;
+			req.resolved = {};
+			req.resolved.user = new User(normalUser);
 			req.params = {};
 			req.params.userId = normalUser.id;
 
@@ -137,7 +141,8 @@ describe('Authorization', function(){
 		
 		it('admin should be allowed access to his own user info', function(done){
 			var req = {};
-			req.user = adminUser.id;
+			req.resolved = {};
+			req.resolved.user = new User(adminUser);
 			req.params = {};
 			req.params.userId = adminUser.id;
 
@@ -151,7 +156,8 @@ describe('Authorization', function(){
 	describe('User -> Password', function(){
 		it('should allow user access to own password', function(done){
 			var req = {};
-			req.user = normalUser.id;
+			req.resolved = {};
+			req.resolved.user = new User(normalUser);
 			req.params = {};
 			req.params.userId = normalUser.id;
 			req.params.passwordId = normalUserPassword.id;
@@ -164,7 +170,8 @@ describe('Authorization', function(){
 
 		it('should allow admin access to own password', function(done){
 			var req = {};
-			req.user = adminUser.id;
+			req.resolved = {};
+			req.resolved.user = new User(adminUser);
 			req.params = {};
 			req.params.userId = adminUser.id;
 			req.params.passwordId = adminUserPassword.id;
@@ -177,7 +184,8 @@ describe('Authorization', function(){
 
 		it('should not allow admin access to other user\'s password', function(done){
 			var req = {};
-			req.user = adminUser.id;
+			req.resolved = {};
+			req.resolved.user = new User(adminUser);
 			req.params = {};
 			req.params.userId = normalUser.id;
 			req.params.passwordId = normalUserPassword.id;
@@ -194,7 +202,8 @@ describe('Authorization', function(){
 
 		it('should not allow user access to other user\'s password', function(done){
 			var req = {};
-			req.user = normalUser.id;
+			req.resolved = {};
+			req.resolved.user = new User(normalUser);
 			req.params = {};
 			req.params.userId = adminUser.id;
 			req.params.passwordId = adminUserPassword.id;
@@ -211,7 +220,8 @@ describe('Authorization', function(){
 
 		it('should fail when userid and password id does not match up', function(done){
 			var req = {};
-			req.user = normalUser.id;
+			req.resolved = {};
+			req.resolved.user = new User(normalUser);
 			req.params = {};
 			req.params.userId = normalUser.id;
 			req.params.passwordId = adminUserPassword.id;
