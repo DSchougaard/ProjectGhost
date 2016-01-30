@@ -21,11 +21,11 @@ unit:
 
 
 count:
-	cloc --exclude-dir=node_modules,components,coverage --by-file .
+	cloc --exclude-dir=node_modules,components,coverage,notes --by-file .
 
 
 tree:
-	tree . -I 'node_modules|components|typings|coverage'
+	tree . -I 'node_modules|components|typings|coverage|notes'
  
 
 test:
