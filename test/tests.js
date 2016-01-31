@@ -21,6 +21,7 @@ describe('Models', function(){
 });
 
 describe('Middlewares', function(){
+	require(__base + 'test/middlewares/authentication.js');
 	require(__base + 'test/middlewares/resolve.js');
 	require(__base + 'test/middlewares/authorization.js');
 });
