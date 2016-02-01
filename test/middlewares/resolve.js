@@ -50,7 +50,9 @@ describe('Resolve', function(){
 
 	it('resolves a single user id', function(done){
 		var req = {
-			user: 1,
+			resolved:{
+				user: 1	
+			},
 			params:{
 				userId : testUser.id
 			}
@@ -64,7 +66,9 @@ describe('Resolve', function(){
 
 	it('resolves a user id and a password id', function(done){
 		var req = {
-			user: 1,
+			resolved:{
+				user: 1	
+			},
 			params:{
 				userId : testUser.id,
 				passwordId: testPassword.id
@@ -81,7 +85,9 @@ describe('Resolve', function(){
 	
 	it('throws an error when resolving a non-existing user id', function(done){
 		var req = {
-			user: 1,
+			resolved:{
+				user: 1	
+			},
 			params:{
 				userId : 1337
 			}
@@ -101,7 +107,9 @@ describe('Resolve', function(){
 
 	it('throws an error when resolving a non-existant password id', function(done){
 		var req = {
-			user: 1,
+			resolved:{
+				user: 1	
+			},
 			params:{
 				passwordId : 1337
 			}

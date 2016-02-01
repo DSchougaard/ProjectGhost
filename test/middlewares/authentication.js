@@ -27,7 +27,7 @@ var knex = require(__base + 'database.js');
 
 var authentication = require(__base + 'middlewares/authentication.js');
 
-describe.only('Authentication', function(){
+describe('Authentication', function(){
 
 	var testUser = {
 		username: 'AuthenticationMiddlewareUser',
@@ -172,11 +172,11 @@ describe.only('Authentication', function(){
 		}
 
 		authentication(req, null, function(err){
-			assert.equal(err.message, 'Token has expired');
+			assert.equal(err.message, 'Invalid auth token');
 			assert.equal(err.statusCode, 401);
 
 			assert.equal(err.body.code, 'UnauthorizedError');
-			assert.equal(err.body.message, 'Token has expired');
+			assert.equal(err.body.message, 'Invalid auth token');
 
 			return done();
 		});

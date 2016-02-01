@@ -298,7 +298,6 @@ describe("API /user", function(){
 
 		var testUpdatedUsername = 'NotAUnitTestUser';
 
-
 		it('successfully updates a single field, non-password', function(done){
 			server
 			.put('/api/users/' + testUser.id)
@@ -307,6 +306,7 @@ describe("API /user", function(){
 			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
+
 				assert.equal(res.body, 'OK');
 				return done();
 			});
@@ -419,13 +419,14 @@ describe("API /user", function(){
 			.end(function(err, res){
 				if(err) return done(err);
 
-				assert.equal(res.body.error, 'User does not exist');
+				assert.equal(res.body.code, 'NotFoundError');
+				assert.equal(res.body.message, 'User was not found');
 
 				return done();
 			});
 		});
 
-		it.skip('should fail when trying to get another user\'s data', function(done){
+		it('should fail when trying to get another user\'s data', function(done){
 			server
 			.get('/api/users/' + 1)
 			.set('Authorization', 'Bearer ' + otherAuthToken)
@@ -433,8 +434,10 @@ describe("API /user", function(){
 			.expect(403)
 			.end(function(err, res){
 				if(err) return done(err);
+			
+				assert.equal(res.body.code, 'ForbiddenError');
+				assert.equal(res.body.message, 'Insufficient privileges');
 
-				assert.equal(res.body.error, 'insufficient priveleges');
 				return done();
 			});
 		});
@@ -448,13 +451,14 @@ describe("API /user", function(){
 			server
 			.del('/api/users/'+1337)
 			.set('Authorization', 'Bearer ' + authToken)
-			.expect(400)
+			.expect(404)
 			.end(function(err,res){
 				if(err){
 					return done(err);
 				} 
 				
-				assert.equal(res.body, 'User ID 1337 was not found');
+				assert.equal(res.body.code, 'NotFoundError');
+				assert.equal(res.body.message, 'User was not found');
 				
 				return done();
 			});
@@ -469,13 +473,12 @@ describe("API /user", function(){
 			.end(function(err, res){
 				if(err) return done(err);
 
-				assert.equal(res.body.error, 'validation');
-				assert.equal(res.body.errors.length, 1);
-				assert.equal(res.body.errors[0].field, 'id');
-				assert.equal(res.body.errors[0].error, 'is the wrong type');
+				assert.equal(res.body.code, 'BadRequestError');
+				assert.equal(res.body.message, 'ValidationError: user.id is the wrong type');
+
 				return done();
-			})
-		})
+			});
+		});
 
 		it('should fail when no auth token is passed', function(done){
 			server
@@ -525,17 +528,35 @@ describe("API /user", function(){
 			});
 		});
 
+		it('should not allow a user to delete another user', function(done){
+			server
+			.del('/api/users/'+1)
+			.set('Authorization', 'Bearer ' + otherAuthToken)
+			.expect(403)
+			.end(function(err,res){
+				if(err){
+					return done(err);
+				} 
+				
+
+				assert.equal(res.body.code, 'ForbiddenError');
+				assert.equal(res.body.message, 'Insufficient privileges');
+				
+				return done();
+			});
+		});
+
 	});
 
 
-	describe('GET: Get a single user', function(){
+	describe.skip('GET: Get a single user', function(){
 		
 		it('should succeed in getting a user', function(done){
 			var id = 1;
 			server
 			.get('/api/users/' + id)
 			.set('Authorization', 'Bearer ' + authToken)
-			//.expect(200)
+			.expect(200)
 			.end(function(err,res){
 				if(err) return done(err);
 
@@ -555,7 +576,9 @@ describe("API /user", function(){
 			.end(function(err,res){
 				if(err) return done(err);
 
-				assert.equal(res.body, 'User with ID ' + id + ' was not found');
+				assert.equal(res.body.code, 'NotFoundError');
+				assert.equal(res.body.message, 'User was not found');
+
 				return done();
 			});
 		});
@@ -567,11 +590,9 @@ describe("API /user", function(){
 			.expect(400)
 			.end(function(err,res){
 				if(err) return done(err);
+				assert.equal(res.body.code, 'BadRequestError');
+				assert.equal(res.body.message, 'ValidationError: user.id is the wrong type');
 
-				assert.equal(res.body.error, 'validation');
-				assert.equal(res.body.errors.length, 1);
-				assert.equal(res.body.errors[0].field, 'id');
-				assert.equal(res.body.errors[0].error, 'is the wrong type');
 				return done();
 			});
 		});
@@ -583,11 +604,8 @@ describe("API /user", function(){
 			.expect(400)
 			.end(function(err,res){
 				if(err) return done(err);
-
-				assert.equal(res.body.error, 'validation');
-				assert.equal(res.body.errors.length, 1);
-				assert.equal(res.body.errors[0].field, 'id');
-				assert.equal(res.body.errors[0].error, 'is the wrong type');
+				assert.equal(res.body.code, 'BadRequestError');
+				assert.equal(res.body.message, 'ValidationError: user.id is the wrong type');
 				return done();
 			});
 		});

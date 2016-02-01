@@ -14,7 +14,7 @@ const User 				= require(__base + 'models/user.js');
 
 // Errors
 const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js');
-
+const ValidationError = require(__base + 'errors/ValidationError');
 
 module.exports = function(req, res, next) {
 	if (!req.headers.authorization) {
@@ -34,7 +34,10 @@ module.exports = function(req, res, next) {
 		};
 		return next();
 	})
-	.catch(UserDoesNotExistError, function(){
+	.catch(ValidationError, function(err){
+		return next( new restify.errors.BadRequestError('') );
+	})
+	.catch(UserDoesNotExistError, function(err){
 		//res.send(400, 'User ID ' +  + ' was not found');
 		return next( new restify.errors.BadRequestError('User was not found') );
 	})
@@ -48,6 +51,7 @@ module.exports = function(req, res, next) {
 			return next(new restify.errors.UnauthorizedError('Token has expired'));	
 		}else{
 			console.log('Undefined error in verifying JWT:' + err);
+			throw err;
 			return next(new restify.UnauthorizedError('Unknown failure during JWT verification'));
 		}
 	});

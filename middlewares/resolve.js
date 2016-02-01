@@ -7,6 +7,7 @@ const _ 						= require('underscore');
 const UserDoesNotExistError 	= require(__base + 'errors/UserDoesNotExistError.js');
 const PasswordDoesNotExistError = require(__base + 'errors/PasswordDoesNotExistError.js');
 const SqlError 					= require(__base + 'errors/SqlError.js');
+const ValidationError 			= require(__base + 'errors/ValidationError.js');
 
 // Models
 var User 						= require(__base + 'models/user.js')
@@ -28,7 +29,7 @@ module.exports = function(req, res, next){
 	var objectTypes = [];
 
 	// Hell, if this is set it isnt an authenicated user and this middleware should NOT be called...
-	if(req.user === undefined )
+	if(req.resolved.user === undefined )
 		return next( new restify.errors.InternalServerError('Authentication and authorization mismatch'));
 
 	/* 	All url parameters in restify, is localted in the req.params object.
@@ -40,12 +41,17 @@ module.exports = function(req, res, next){
 		// key.slice removes the "Id" part form the parameters, 
 		// hence the previous naming convention... The keyword?
 		// FUCKING CONSISTENCY
-		objectTypes.push(key.slice(0, -2));
-		objects.push( (classNames[key.slice(0, -2)]).find(val) );
+
+		// If the name is not present in classNames array, we're
+		// dealing with a body parameter and should skip.
+		if( classNames[key.slice(0, -2)] !== undefined ){
+			objectTypes.push(key.slice(0, -2));
+			objects.push( (classNames[key.slice(0, -2)]).find(val) );
+
+		}
+
 	});
 
-	// Dirty hack until Authentication middleware is updated -- yaaay!
-	req.resolved = req.resolved || {};
 	// Creating empty JSON object for the resolved objects to be placed in
 	req.resolved.params = {};
 
@@ -70,6 +76,11 @@ module.exports = function(req, res, next){
 	})
 	.catch(PasswordDoesNotExistError, function(err){
 		return next(new restify.errors.NotFoundError('Password was not found'));
+	})
+	.catch(ValidationError, function(err){
+		return next( new restify.errors.BadRequestError('ValidationError: ' + err.errors[0].property + ' ' + err.errors[0].message) );
+
+		
 	})
 	.catch(SqlError, function(err){
 		req.log.error({source: 'resolve middleware', error: err, message: 'Sql Error' });
