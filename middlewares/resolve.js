@@ -44,7 +44,12 @@ module.exports = function(req, res, next){
 
 		// If the name is not present in classNames array, we're
 		// dealing with a body parameter and should skip.
-		if( classNames[key.slice(0, -2)] !== undefined ){
+		if( key.slice(-2) === 'Id' && classNames[key.slice(0, -2)] !== undefined ){
+			
+			// Creating empty JSON object for the resolved objects to be placed in
+			if( req.resolved.params === undefined ) 
+				req.resolved.params = {};
+
 			objectTypes.push(key.slice(0, -2));
 			objects.push( (classNames[key.slice(0, -2)]).find(val) );
 
@@ -52,8 +57,6 @@ module.exports = function(req, res, next){
 
 	});
 
-	// Creating empty JSON object for the resolved objects to be placed in
-	req.resolved.params = {};
 
 	// I promise it all.....
 	Promise.all(objects)

@@ -127,6 +127,40 @@ describe('Resolve', function(){
 		});	
 	});
 
+	it('ignores any non-existing classnames', function(done){
+		var req = {
+			resolved:{
+				user: 1	
+			},
+			params:{
+				thisisnotaclassId : 1
+			}
+		};
+
+		resolve(req, null, function(err){
+			assert.equal(err, undefined);
+			assert.equal(req.resolved.params, undefined);
+			done();
+		});
+	});
+
+	it('ignores when, except for two invalid last letters, it matches a class', function(done){
+		var req = {
+			resolved:{
+				user: 1	
+			},
+			params:{
+				userLA : 1
+			}
+		};
+
+		resolve(req, null, function(err){
+			assert.equal(err, undefined);
+			assert.equal(req.resolved.params, undefined);
+			done();
+		});
+	});
+
 	after(function(){
 		return knex('passwords')
 		.where('id', testPassword.id)

@@ -549,7 +549,7 @@ describe("API /user", function(){
 	});
 
 
-	describe.skip('GET: Get a single user', function(){
+	describe('GET: Get a single user', function(){
 		
 		it('should succeed in getting a user', function(done){
 			var id = 1;
