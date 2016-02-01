@@ -60,7 +60,7 @@ describe("API /password", function(){
 	});
 
 	var validPassword = {
-		category: 1,
+		parent: 1,
 		title: 'Death Star Back Entrance',
 		username: 'Obi Wan Kenobi',
 		password: base64.encode('IMissQuiGonJinn'),
@@ -99,7 +99,10 @@ describe("API /password", function(){
 			.expect(404)
 			.end(function(err, res){
 				if(err) return done(err);
-				assert.equal(res.body.error, 'User does not exist');
+
+				assert.equal(res.body.code, 'NotFoundError');
+				assert.equal(res.body.message, 'User was not found');
+
 				return done();
 			});		
 		})
@@ -112,7 +115,9 @@ describe("API /password", function(){
 			.end(function(err, res){
 				if(err) return done(err);
 
-				assert.equal(res.body.error, 'Password was not found');
+				assert.equal(res.body.code, 'NotFoundError');
+				assert.equal(res.body.message, 'Password was not found');
+
 				return done();
 			});
 		});
@@ -125,10 +130,12 @@ describe("API /password", function(){
 			.end(function(err, res){
 				if(err) return done(err);
 
-				assert.equal(res.body.error, 'validation');
+
+				assert.equal(res.body.code, 'ValidationError');
 				assert.equal(res.body.errors.length, 1);
 				assert.equal(res.body.errors[0].field, 'id');
 				assert.equal(res.body.errors[0].error, 'is the wrong type');
+
 				return done();
 			});
 		});
@@ -141,7 +148,9 @@ describe("API /password", function(){
 			.end(function(err, res){
 				if(err) return done(err);
 
+				assert.equal(res.body.code, 'ForbiddenError');
 				assert.equal(res.body.message, 'Insufficient privileges');
+
 				return done();
 			});
 		});
@@ -172,14 +181,17 @@ describe("API /password", function(){
 			});
 		});
 
-		it.skip('should fail when user tries to get all admins passwords', function(done){
+		it('should fail when user tries to get all admins passwords', function(done){
 			server
 			.get('/api/users/' + 1 + '/passwords')
 			.set('Authorization', 'Bearer ' + otherAuthToken)	
-			.expect(404)
+			.expect(403)
 			.end(function(err, res){
 				if(err) return done(err);
-				assert.equal(res.body.error, 'insufficient priveleges');
+
+				assert.equal(res.body.code, 'ForbiddenError');
+				assert.equal(res.body.message, 'Insufficient privileges');
+
 				return done();
 			});		
 		});
@@ -191,7 +203,10 @@ describe("API /password", function(){
 			.expect(404)
 			.end(function(err, res){
 				if(err) return done(err);
-				assert.equal(res.body.error, 'User does not exist');
+
+				assert.equal(res.body.code, 'NotFoundError');
+				assert.equal(res.body.message, 'User was not found');
+
 				return done();
 			});				
 		});
@@ -205,18 +220,15 @@ describe("API /password", function(){
 			.end(function(err, res){
 				if(err) return done(err);
 				
-				assert.equal(res.body.error, 'validation');
+				assert.equal(res.body.code, 'ValidationError');
 				assert.equal(res.body.errors.length, 1);
 				assert.equal(res.body.errors[0].field, 'id');
 				assert.equal(res.body.errors[0].error, 'is the wrong type');
-					
+
 				return done();
 			});	
 		});
 	});
-
-
-
 
 	describe('POST', function(){
 
@@ -402,16 +414,34 @@ describe("API /password", function(){
 	});
 
 	describe('PUT', function(){
+		
+		var PUT_password = {
+			owner: 1,
+			parent: 1,
+			title: 'Death Star Back Entrance',
+			username: 'AAAAAAAAA',
+			password: base64.encode('AAAAAAAAA'),
+			iv: base64.encode('1111111111111111')
+		}
+
+		before(function(){
+			return knex('passwords')
+			.insert(PUT_password)
+			.then(function(id){
+				PUT_password.id = id[0];
+			});
+		});
+
+
 		var newTitle = 'Exposed Exhaust Port';
 		it('should successfully update title of password', function(done){
 			server
-			.put('/api/users/'+idAuthToken+'/passwords/ ' + validPassword.id)
+			.put('/api/users/'+idAuthToken+'/passwords/ ' + PUT_password.id)
 			.set('Authorization', 'Bearer ' + authToken)	
 			.send({title: newTitle})
 			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
-
 				assert.equal(res.body, 'OK');
 
 				return done();
@@ -427,13 +457,13 @@ describe("API /password", function(){
 
 				assert.equal(rows[0].title, 	newTitle);
 
-				assert.equal(rows[0].id, 		validPassword.id);
+				assert.equal(rows[0].id, 		PUT_password.id);
 				assert.notEqual(rows[0].owner, 	NaN);
-				assert.equal(rows[0].parent, 	validPassword.parent);
-				assert.equal(rows[0].username, 	validPassword.username);
-				assert.equal(rows[0].password, 	validPassword.password);
-				assert.equal(rows[0].iv, 		validPassword.iv);
-				assert.equal(rows[0].note, 		validPassword.note);
+				assert.equal(rows[0].parent, 	PUT_password.parent);
+				assert.equal(rows[0].username, 	PUT_password.username);
+				assert.equal(rows[0].password, 	PUT_password.password);
+				assert.equal(rows[0].iv, 		PUT_password.iv);
+				assert.equal(rows[0].note, 		PUT_password.note);
 			});
 		});
 
@@ -443,13 +473,13 @@ describe("API /password", function(){
 		describe('failures on wrong input', function(){
 			it('should fail when given invalid input for title', function(done){
 				server
-				.put('/api/users/'+idAuthToken+'/passwords/ ' + validPassword.id)
+				.put('/api/users/'+idAuthToken+'/passwords/ ' + PUT_password.id)
 				.set('Authorization', 'Bearer ' + authToken)	
 				.send({title: true})
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.error, 'validation');
+					assert.equal(res.body.code, 'ValidationError');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'title');
 					assert.equal(res.body.errors[0].error, 'is the wrong type');
@@ -460,13 +490,13 @@ describe("API /password", function(){
 
 			it('should fail when given invalid input for username', function(done){
 				server
-				.put('/api/users/'+idAuthToken+'/passwords/ ' + validPassword.id)
+				.put('/api/users/'+idAuthToken+'/passwords/ ' + PUT_password.id)
 				.set('Authorization', 'Bearer ' + authToken)	
 				.send({username: true})
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.error, 'validation');
+					assert.equal(res.body.code, 'ValidationError');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'username');
 					assert.equal(res.body.errors[0].error, 'is the wrong type');
@@ -477,13 +507,13 @@ describe("API /password", function(){
 
 			it('should fail when given invalid input for iv', function(done){
 				server
-				.put('/api/users/'+idAuthToken+'/passwords/ ' + validPassword.id)
+				.put('/api/users/'+idAuthToken+'/passwords/ ' + PUT_password.id)
 				.set('Authorization', 'Bearer ' + authToken)	
 				.send({iv: true})
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.error, 'validation');
+					assert.equal(res.body.code, 'ValidationError');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'iv');
 					assert.equal(res.body.errors[0].error, 'is the wrong type');
@@ -494,13 +524,13 @@ describe("API /password", function(){
 
 			it('should fail when given invalid encoding for iv', function(done){
 				server
-				.put('/api/users/'+idAuthToken+'/passwords/ ' +  validPassword.id)
+				.put('/api/users/'+idAuthToken+'/passwords/ ' +  PUT_password.id)
 				.set('Authorization', 'Bearer ' + authToken)	
 				.send({iv: 'this is clearly not base64'})
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.error, 'validation');
+					assert.equal(res.body.code, 'ValidationError');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'iv');
 					assert.equal(res.body.errors[0].error, 'pattern mismatch');
@@ -511,13 +541,13 @@ describe("API /password", function(){
 		
 			it('should fail when given invalid input for password', function(done){
 				server
-				.put('/api/users/'+idAuthToken+'/passwords/ ' + validPassword.id)
+				.put('/api/users/'+idAuthToken+'/passwords/ ' + PUT_password.id)
 				.set('Authorization', 'Bearer ' + authToken)	
 				.send({password: true})
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.error, 'validation');
+					assert.equal(res.body.code, 'ValidationError');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'password');
 					assert.equal(res.body.errors[0].error, 'is the wrong type');
@@ -528,13 +558,13 @@ describe("API /password", function(){
 			
 			it('should fail when given invalid encoding for password', function(done){
 				server
-				.put('/api/users/'+idAuthToken+'/passwords/ ' +  validPassword.id)
+				.put('/api/users/'+idAuthToken+'/passwords/ ' +  PUT_password.id)
 				.set('Authorization', 'Bearer ' + authToken)	
 				.send({password: 'this is clearly not base64'})
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.error, 'validation');
+					assert.equal(res.body.code, 'ValidationError');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'password');
 					assert.equal(res.body.errors[0].error, 'pattern mismatch');
@@ -545,13 +575,13 @@ describe("API /password", function(){
 
 			it('should fail when given invalid input for parent', function(done){
 				server
-				.put('/api/users/'+idAuthToken+'/passwords/ ' +  validPassword.id)
+				.put('/api/users/'+idAuthToken+'/passwords/ ' +  PUT_password.id)
 				.set('Authorization', 'Bearer ' + authToken)	
 				.send({parent: 'test'})
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.error, 'validation');
+					assert.equal(res.body.code, 'ValidationError');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'parent');
 					assert.equal(res.body.errors[0].error, 'is the wrong type');
@@ -562,19 +592,28 @@ describe("API /password", function(){
 
 			it('should fail when given invalid input for note', function(done){
 				server
-				.put('/api/users/'+idAuthToken+'/passwords/ ' +  validPassword.id)
+				.put('/api/users/'+idAuthToken+'/passwords/ ' +  PUT_password.id)
 				.set('Authorization', 'Bearer ' + authToken)	
 				.send({note: true})
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.error, 'validation');
+					assert.equal(res.body.code, 'ValidationError');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'note');
 					assert.equal(res.body.errors[0].error, 'is the wrong type');
 
 					return done();
 				});
+			});
+		});
+
+		after(function(){
+			return knex('passwords')
+			.where('id', PUT_password.id)
+			.del()
+			.then(function(rows){
+
 			});
 		});
 	});
@@ -649,7 +688,8 @@ describe("API /password", function(){
 			.end(function(err,res){
 				if(err) return done(err);
 
-				assert.equal(res.body.error, 'Password was not found');
+				assert.equal(res.body.code, 'NotFoundError');
+				assert.equal(res.body.message, 'Password was not found');
 
 				return done();
 			});
@@ -664,23 +704,25 @@ describe("API /password", function(){
 			.end(function(err, res){
 				if(err) return done(err);
 
-				assert.equal(res.body.error, 'validation');
+				assert.equal(res.body.code, 'ValidationError');
 				assert.equal(res.body.errors.length, 1);
 				assert.equal(res.body.errors[0].field, 'id');
 				assert.equal(res.body.errors[0].error, 'is the wrong type');
+
 				return done();
 			})
 		})
 
-		it.skip('should not allow non-admin to delete admins password', function(done){
+		it('should not allow non-admin to delete admins password', function(done){
 			server
 			.del('/api/users/'+idAuthToken+'/passwords/1')
-			.set('Authorization', 'Bearer ' + authToken)
-			.expect(400)
+			.set('Authorization', 'Bearer ' + otherAuthToken)
+			.expect(403)
 			.end(function(err, res){
 				if(err) return done(err);
-
-				assert.equal(res.body.error, 'insufficient priveleges');
+				
+				assert.equal(res.body.code, 'ForbiddenError');
+				assert.equal(res.body.message, 'Insufficient privileges');
 
 				return done();
 			});
@@ -708,21 +750,22 @@ describe("API /password", function(){
 			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
-
 				assert.equal(res.body, 'OK');
 
 				return done();
 			});	
 		});
 
-		it('should allow admin to delete users password', function(done){
+		it('should not allow admin to delete users password', function(done){
 			server
 			.del('/api/users/'+idOtherAuthToken+'/passwords/' + testData[2].id)
 			.set('Authorization', 'Bearer ' + authToken)
-			.expect(200)
+			.expect(403)
 			.end(function(err, res){
 				if(err) return done(err);
-				assert.equal(res.body, 'OK');
+				
+				assert.equal(res.body.code, 'ForbiddenError');
+				assert.equal(res.body.message, 'Insufficient privileges');
 
 				return done();
 			});

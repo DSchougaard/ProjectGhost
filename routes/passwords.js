@@ -13,17 +13,19 @@ const PasswordDoesNotExistError = require(__base + 'errors/PasswordDoesNotExistE
 const ValidationError 		= require(__base + 'errors/ValidationError.js');
 const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js');
 const SqlError 				= require(__base + 'errors/SqlError.js');
+const ValidationRestError 		= require(__base + 'errors/ValidationRestError.js');
 
 // Middleware
-const authorized 			= require(__base + 'middlewares/authorization.js');
+const authentication 	= require(__base + 'middlewares/authentication.js');
+const authorization  	= require(__base + 'middlewares/authorization.js');
+const resolve 			= require(__base + 'middlewares/resolve.js');
 
 module.exports = function(server, knex, log){
 
-	server.get('/api/users/:userId/passwords', authHelpers.ensureAuthenticated, function(req, res, next){
+	server.get('/api/users/:userId/passwords', authentication, resolve, authorization, function(req, res, next){
 		log.info({ method: 'GET', path: '/api/passwords', payload: req.user });
 
-		User.find(req.params.userId)
-		.then(Password.findAll)
+		Password.findAll(req.resolved.user)
 		.then(function(passwords){
 			res.send(200, passwords);
 			return next();
@@ -37,12 +39,7 @@ module.exports = function(server, knex, log){
 			return next();
 		})
 		.catch(ValidationError, function(err){
-			var parsedErrors = [];
-			for( var i = 0 ; i < err.errors.length ; i++ ){				
-				parsedErrors.push({ field: (err.errors[i].property).split('.')[1], error: err.errors[i].message } );
-			}
-			res.send(400, {error:'validation', errors:parsedErrors});
-			return next();
+			return next( new ValidationRestError('Validation error', err.errors));
 		})
 		.catch(SqlError, function(err){
 			res.send(500, 'Internal database error');
@@ -51,43 +48,12 @@ module.exports = function(server, knex, log){
 		});
 	});
 
-	server.get('/api/users/:userId/passwords/:passwordId', authHelpers.ensureAuthenticated, authorized, function(req, res, next){
-		
-		User.find(req.params.userId)
-		.then(function(user){
-			// Auth thingy
-			return Password.find(req.params.passwordId);
-		})
-		.then(function(password){
-			res.send(200, password);
-			return next();
-		})
-		.catch(UserDoesNotExistError, function(err){
-			res.send(404, {error: 'User does not exist'});
-			return next();
-		})
-		.catch(PasswordDoesNotExistError, function(err){
-			res.send(404, {error:'Password was not found'});
-			return next();
-		})
-		.catch(ValidationError, function(err){
-			var parsedErrors = [];
-			for( var i = 0 ; i < err.errors.length ; i++ ){
-				var t = (err.errors[i].property).split('.');
-				var field = t.length === 2 ? t[1] : t[0];
-				parsedErrors.push({ field: field, error: err.errors[i].message } );
-			}
-			res.send(400, {error:'validation', errors:parsedErrors});
-			return next();
-		})
-		.catch(SqlError, function(err){
-			res.send(500, 'Internal database error');
-			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
-			return next();
-		});		
+	server.get('/api/users/:userId/passwords/:passwordId', authentication, resolve, authorization, function(req, res, next){
+		res.send(200, req.resolved.params.password);
+		return next();
 	});
 
-	server.post('/api/users/:userId/passwords', authHelpers.ensureAuthenticated, function(req, res, next){
+	server.post('/api/users/:userId/passwords', authentication, resolve, authorization, function(req, res, next){
 		log.info({ method: 'POST', path: '/api/passwords', payload: req.body });
 		/*
 			Content:
@@ -104,7 +70,7 @@ module.exports = function(server, knex, log){
 		*/
 
 		var password 	= _.pick(req.body, ['title', 'username', 'iv', 'password', 'parent', 'note']);
-		password.owner 	= req.params.userId;
+		password.owner 	= req.resolved.user.id;
 		password 		= _.defaults(password, {parent: null, note: null});
 
 
@@ -134,29 +100,17 @@ module.exports = function(server, knex, log){
 	});
 
 	
-	server.del('/api/users/:userId/passwords/:passwordId', authHelpers.ensureAuthenticated, function(req, res, next){
+	server.del('/api/users/:userId/passwords/:passwordId', authentication, resolve, authorization, function(req, res, next){
 		log.info({ method: 'DEL', path: '/api/passwords', payload: req.params.passwordId });
 
-		User.find(req.params.userId)
-		.then(function(user){
-			// Do some authorization check?!
-			return Password.find(req.params.passwordId);
-		})
+		(req.resolved.params.password).del()
 		.then(function(password){
-			log.info({ method: 'DEL', path: '/api/passwords', message: 'Deleting password', id: password.id });
-			password.del();
 			res.send(200, 'OK');
 			return next();
 		})
 		.catch(ValidationError, function(err){
-			var parsedErrors = [];
-			for( var i = 0 ; i < err.errors.length ; i++ ){
-				var t = (err.errors[i].property).split('.');
-				var field = t.length === 2 ? t[1] : t[0];
-				parsedErrors.push({ field: field, error: err.errors[i].message } );
-			}
-			res.send(400, {error:'validation', errors:parsedErrors});
-			return next();
+			return next( new ValidationRestError('Validation error', err.errors));
+
 		})
 		.catch(UserDoesNotExistError, function(err){
 			res.send(404, {error: 'User does not exist'});
@@ -174,17 +128,10 @@ module.exports = function(server, knex, log){
 
 	});
 
-	server.put('/api/users/:userId/passwords/:passwordId', authHelpers.ensureAuthenticated, function(req, res, next){
+	server.put('/api/users/:userId/passwords/:passwordId', authentication, resolve, authorization, function(req, res, next){
 		log.info({ method: 'PUT', path: '/api/passwords', id: req.params.passwordId, payload: req.body });
 
-		User.find(req.params.userId)
-		.then(function(user){
-			// Do some authorization
-			return Password.find(req.params.passwordId);
-		})
-		.then(function(password){
-			return password.update(req.body);
-		})
+		(req.resolved.params.password).update(req.body)
 		.then(function(success){
 			if( success ){
 				res.send(200, 'OK');
@@ -195,14 +142,7 @@ module.exports = function(server, knex, log){
 			return next();
 		})
 		.catch(ValidationError, function(err){
-			var parsedErrors = [];
-			for( var i = 0 ; i < err.errors.length ; i++ ){
-				var t = (err.errors[i].property).split('.');
-				var field = t.length === 2 ? t[1] : t[0];
-				parsedErrors.push({ field: field, error: err.errors[i].message } );
-			}
-			res.send(400, {error:'validation', errors:parsedErrors});
-			return next();
+			return next( new ValidationRestError('Validation error', err.errors));
 		})
 		.catch(UserDoesNotExistError, function(err){
 			res.send(404, {error: 'User does not exist'});

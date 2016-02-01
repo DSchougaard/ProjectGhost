@@ -8,6 +8,7 @@ const UserDoesNotExistError 	= require(__base + 'errors/UserDoesNotExistError.js
 const PasswordDoesNotExistError = require(__base + 'errors/PasswordDoesNotExistError.js');
 const SqlError 					= require(__base + 'errors/SqlError.js');
 const ValidationError 			= require(__base + 'errors/ValidationError.js');
+const ValidationRestError 		= require(__base + 'errors/ValidationRestError.js');
 
 // Models
 var User 						= require(__base + 'models/user.js')
@@ -81,8 +82,9 @@ module.exports = function(req, res, next){
 		return next(new restify.errors.NotFoundError('Password was not found'));
 	})
 	.catch(ValidationError, function(err){
-		return next( new restify.errors.BadRequestError('ValidationError: ' + err.errors[0].property + ' ' + err.errors[0].message) );
+		//return next( new restify.errors.BadRequestError('ValidationError: ' + err.errors[0].property + ' ' + err.errors[0].message) );
 
+		return next( new ValidationRestError('Validation error', err.errors) );
 		
 	})
 	.catch(SqlError, function(err){

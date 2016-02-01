@@ -473,8 +473,10 @@ describe("API /user", function(){
 			.end(function(err, res){
 				if(err) return done(err);
 
-				assert.equal(res.body.code, 'BadRequestError');
-				assert.equal(res.body.message, 'ValidationError: user.id is the wrong type');
+				assert.equal(res.body.code, 'ValidationError');
+				assert.equal(res.body.errors.length, 1);
+				assert.equal(res.body.errors[0].field, 'id');
+				assert.equal(res.body.errors[0].error, 'is the wrong type');
 
 				return done();
 			});
@@ -590,8 +592,11 @@ describe("API /user", function(){
 			.expect(400)
 			.end(function(err,res){
 				if(err) return done(err);
-				assert.equal(res.body.code, 'BadRequestError');
-				assert.equal(res.body.message, 'ValidationError: user.id is the wrong type');
+
+				assert.equal(res.body.code, 'ValidationError');
+				assert.equal(res.body.errors.length, 1);
+				assert.equal(res.body.errors[0].field, 'id');
+				assert.equal(res.body.errors[0].error, 'is the wrong type');
 
 				return done();
 			});
@@ -604,8 +609,12 @@ describe("API /user", function(){
 			.expect(400)
 			.end(function(err,res){
 				if(err) return done(err);
-				assert.equal(res.body.code, 'BadRequestError');
-				assert.equal(res.body.message, 'ValidationError: user.id is the wrong type');
+
+				assert.equal(res.body.code, 'ValidationError');
+				assert.equal(res.body.errors.length, 1);
+				assert.equal(res.body.errors[0].field, 'id');
+				assert.equal(res.body.errors[0].error, 'is the wrong type');
+				
 				return done();
 			});
 		});

@@ -16,6 +16,8 @@ const User 				= require(__base + 'models/user.js');
 const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js');
 const ValidationError = require(__base + 'errors/ValidationError');
 
+const ValidationRestError = require(__base + 'errors/ValidationRestError.js');
+
 module.exports = function(req, res, next) {
 	if (!req.headers.authorization) {
 		return next(new restify.errors.UnauthorizedError('No Authorization header was found'));
@@ -52,7 +54,6 @@ module.exports = function(req, res, next) {
 		}else{
 			console.log('Undefined error in verifying JWT:' + err);
 			throw err;
-			return next(new restify.UnauthorizedError('Unknown failure during JWT verification'));
 		}
 	});
 };
