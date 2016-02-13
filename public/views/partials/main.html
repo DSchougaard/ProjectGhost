@@ -1,0 +1,56 @@
+<section layout="row" flex="">
+		
+	<md-sidenav md-component-id="left" class="md-sidenav-left md-whiteframe-z2" md-is-locked-open="$mdMedia('gt-md')">
+		Left Nav!
+		<md-button class="md-primary" ng-click=test()>TEST</md-button>
+	</md-sidenav>
+
+
+	<md-content layout="column" layout-fill>	
+
+		<md-card ng-repeat="entry in entries">
+			<md-card-title>
+				<md-card-title-text>
+					 <span class="md-headline">{{entry.title}}</span>
+					 <span class="md-subhead">{{entry.note}}</span>
+				</md-card-title-text>
+				
+				<md-button class="md-icon-button" aria-label="toggle" ng-click="select($index)">
+					<md-icon md-svg-icon="md-toggle-arrow"></md-icon>
+				</md-button>
+
+			</md-card-title>
+			
+		
+			<md-card-content ng-show="$index === selectedIndex" layout="row" layout-xs="column">
+				
+				<div layout="column">
+					<md-input-container class="reset-spacing-bottom" >
+						<label>Username</label>
+						<input value="{{entry.username}}" readonly>
+					</md-input-container>
+
+					<md-input-container class="reset-spacing" >
+						<label>Password</label>
+						<input value="{{entry.password}}" readonly >
+					</md-input-container>
+
+
+					<md-input-container class="reset-spacing" ng-hide="entry.note === undefined || entry.note === '' "> <label>Note</label>
+						<textarea readonly>{{entry.note}}</textarea>
+					</md-input-container>
+				</div>
+
+
+
+
+				
+
+
+			</md-card-content >
+
+		</md-card>
+	</md-content>
+
+</section>
+	

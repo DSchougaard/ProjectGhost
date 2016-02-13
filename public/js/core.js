@@ -80,10 +80,6 @@ ghost.service('UserService', function($http, $auth, $mdDialog){
 		    .then(function(password){
 
 		    	// HARDCODED BASE64 SALT!!
-		    	var saltBase64 = "Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI=";
-		    	var salt = atob(saltBase64);
-					console.log(self.privatekey);
-
 				var encryptionKey = forge.pkcs5.pbkdf2(password, salt, 10000, 32, function(err, derivedKey){
 
 					var decipher = forge.cipher.createDecipher('AES-CBC', encryptionKey);

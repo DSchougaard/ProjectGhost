@@ -1,6 +1,7 @@
 const base64 	= require('../helpers/base64.js');
 const fs 		= require('fs');
 const bcrypt 	= require('bcrypt');
+var forge = require('node-forge');
 
 var privateKey = fs.readFileSync('misc/unittest-private.key');
 var publicKey  = fs.readFileSync('misc/unittest-public.crt');
@@ -12,7 +13,7 @@ var userData = [
 		salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
 		password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
 		privatekey 	: base64.encode(privateKey.toString('utf8')),
-		iv 			: base64.encode('111111111'),
+		iv 			: "woDDiR/DmsKtSgkQwqXDp2zDlMOCwpDCqXk=",
 		pk_salt 	: "Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI=",
 		publickey 	: base64.encode(publicKey.toString('utf8'))
 	},
@@ -22,7 +23,7 @@ var userData = [
 		salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
 		password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
 		privatekey 	: base64.encode(privateKey.toString('utf8')),
-		iv 			: base64.encode('111111111'),
+		iv 			: "woDDiR/DmsKtSgkQwqXDp2zDlMOCwpDCqXk=",
 		pk_salt 	: "Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI=",
 		publickey 	: base64.encode(publicKey.toString('utf8'))
 	}
@@ -86,6 +87,39 @@ var passwordData = [
 		url 		: null
 	}
 ];
+
+
+console.log("Generating RSA keypairs...");
+var keypair = forge.pki.rsa.generateKeyPair({bits: 1024, e: 0x10001});
+userData[0].publickey = keypair.publicKey;
+userData[0].privatekey= keypair.privateKey;
+
+keypair = forge.pki.rsa.generateKeyPair({bits: 1024, e: 0x10001});
+userData[1].publickey = keypair.publicKey;
+userData[1].privatekey= keypair.privateKey;
+console.log("Done!");
+
+console.log( forge.pki.privateKeyToPem(userData[1].privatekey) );
+
+
+
+
+
+
+
+
+
+var salt 		= base64.decode(userData[0].pk_salt);
+var derivedKey 	= forge.pkcs5.pbkdf2('password', salt, 10000, 32);
+
+var cipher 		= forge.cipher.createCipher('AES-CBC', derivedKey);
+cipher.start({iv: base64.decode(userData[0].iv)});
+cipher.update(forge.util.createBuffer(privateKey));
+cipher.finish();
+
+userData[0].privatekey = base64.encode(cipher.output);
+
+
 
 
 var structuresData = [
