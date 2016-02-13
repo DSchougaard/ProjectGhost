@@ -24,6 +24,8 @@ var testUser = {
 	password: 				'password',
 	privatekey: 			fs.readFileSync('misc/unittest-private.key').toString('utf8'),
 	publickey: 				fs.readFileSync('misc/unittest-public.crt').toString('utf8'),
+	pk_salt: 				"Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI=",
+	iv:  					base64.encode('111111111')
 };
 testUser.base64 = {
 		publickey: base64.encode(testUser.publickey),
@@ -78,7 +80,7 @@ describe('API /users', function(){
 				if(err) return done(err);
 				assert.equal(res.body.length, 2);
 				
-				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'privatekey', 'salt', 'password', 'isAdmin'); });	
+				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'iv', 'pk_salt', 'privatekey', 'salt', 'password', 'isAdmin'); });	
 				var usersWithoutIDs = _.map(res.body, function(o) { return _.omit(o, 'id'); });
 				
 				assert.deepEqual(usersWithoutIDs, filteredData);
@@ -149,6 +151,8 @@ describe("API /user", function(){
 			.field('username', testUser.username)
 			.field('privatekey', testUser.base64.privatekey)
 			.field('publickey', testUser.base64.publickey)
+			.field('iv', testUser.iv)
+			.field('pk_salt', testUser.pk_salt)
 			.expect(400)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -167,6 +171,8 @@ describe("API /user", function(){
 			.field('password', testUser.password)
 			.field('privatekey', testUser.base64.privatekey)
 			.field('publickey', testUser.base64.publickey)
+			.field('iv', testUser.iv)
+			.field('pk_salt', testUser.pk_salt)
 			.expect(400)
 			.end(function(err,res){
 				if(err) return done(err);
@@ -185,6 +191,8 @@ describe("API /user", function(){
 			.field('username', testUser.username)
 			.field('password', testUser.password)
 			.field('publickey', testUser.base64.publickey)
+			.field('iv', testUser.iv)
+			.field('pk_salt', testUser.pk_salt)
 			.expect(400)
 			.end(function(err,res){
 				if(err) return done(err);
@@ -203,6 +211,8 @@ describe("API /user", function(){
 			.field('username', testUser.username)
 			.field('password', testUser.password)
 			.field('privatekey', testUser.base64.privatekey)
+			.field('iv', testUser.iv)
+			.field('pk_salt', testUser.pk_salt)
 			.expect(400)
 			.end(function(err,res){
 				if(err) return done(err);
@@ -214,6 +224,45 @@ describe("API /user", function(){
 			});
 		});
 
+		it('should fail when a iv is not supplied', function(done){
+			server
+			.post('/api/users')
+			.set('Authorization', 'Bearer ' + authToken)
+			.field('username', testUser.username)
+			.field('password', testUser.password)
+			.field('privatekey', testUser.base64.privatekey)
+			.field('publickey', testUser.base64.publickey)
+			.field('pk_salt', testUser.pk_salt)
+			.expect(400)
+			.end(function(err,res){
+				if(err) return done(err);
+				assert.equal(res.body.error, 'validation');
+				assert.equal(res.body.errors.length, 1);
+				assert.equal(res.body.errors[0].field, 'iv');
+				assert.equal(res.body.errors[0].error, 'is required');
+				done();
+			});
+		});
+
+		it('should fail when pk_salt is not supplied', function(done){
+			server
+			.post('/api/users')
+			.set('Authorization', 'Bearer ' + authToken)
+			.field('username', testUser.username)
+			.field('password', testUser.password)
+			.field('privatekey', testUser.base64.privatekey)
+			.field('iv', testUser.iv)
+			.field('publickey', testUser.base64.publickey)
+			.expect(400)
+			.end(function(err,res){
+				if(err) return done(err);
+				assert.equal(res.body.error, 'validation');
+				assert.equal(res.body.errors.length, 1);
+				assert.equal(res.body.errors[0].field, 'pk_salt');
+				assert.equal(res.body.errors[0].error, 'is required');
+				done();
+			});
+		});
 		it("Should fail at creating a user that already exists", function(done){
 			server
 			.post('/api/users')
@@ -222,6 +271,8 @@ describe("API /user", function(){
 			.field('password', testUser.password)
 			.field('privatekey', testUser.base64.privatekey)
 			.field('publickey', testUser.base64.publickey)
+			.field('iv', testUser.iv)
+			.field('pk_salt', testUser.pk_salt)
 			.expect(400)
 			.end(function(err, res){
 				if(err){
@@ -246,6 +297,8 @@ describe("API /user", function(){
 			.field('password', testUser.password)
 			.field('privatekey', testUser.base64.privatekey)
 			.field('publickey', testUser.base64.publickey)
+			.field('iv', testUser.iv)
+			.field('pk_salt', testUser.pk_salt)
 			.expect(200)
 			.end(function(err,res){
 				if(err){
@@ -282,7 +335,7 @@ describe("API /user", function(){
 					publickey: testUser.base64.publickey
 				}
 				
-				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'privatekey', 'salt', 'password', 'isAdmin'); });	
+				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'iv', 'pk_salt','privatekey', 'salt', 'password', 'isAdmin'); });	
 				filteredData.push(expectedInsertedUser);
 					
 			
@@ -523,7 +576,7 @@ describe("API /user", function(){
 				(res.body).should.have.length(2);
 				
 				var usersWithoutIDs = _.map(res.body, function(o) { return _.omit(o, 'id'); });
-				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'privatekey', 'salt', 'password', 'isAdmin'); });	
+				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'iv', 'pk_salt', 'privatekey', 'salt', 'password', 'isAdmin'); });	
 				
 				assert.deepEqual(usersWithoutIDs, filteredData);
 				return done();
@@ -580,23 +633,6 @@ describe("API /user", function(){
 
 				assert.equal(res.body.code, 'NotFoundError');
 				assert.equal(res.body.message, 'User was not found');
-
-				return done();
-			});
-		});
-		
-		it('should fail when no id is passed', function(done){
-			server
-			.get('/api/users/')
-			.set('Authorization', 'Bearer ' + authToken)
-			.expect(400)
-			.end(function(err,res){
-				if(err) return done(err);
-
-				assert.equal(res.body.code, 'ValidationError');
-				assert.equal(res.body.errors.length, 1);
-				assert.equal(res.body.errors[0].field, 'id');
-				assert.equal(res.body.errors[0].error, 'is the wrong type');
 
 				return done();
 			});

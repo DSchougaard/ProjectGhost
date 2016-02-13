@@ -66,6 +66,9 @@ var server = restify.createServer({
 	name: "Project Ghost",
 	log: log
 });
+
+server.pre(restify.pre.sanitizePath());
+
 server.use(restify.bodyParser());
 server.use(restify.queryParser());
 server.on('uncaughtException', function (req, res, route, err) {
@@ -159,14 +162,18 @@ users(server, log);
 auth(server, knex, log);
 passwords(server, knex, log);
 
+var test = fs.readFileSync(__base + 'public/views/index.html');
+
+// Fucking dirty hack, which will bite me in the ass. But Restify aparently ignores default file in serveStatic.
+
+server.get(/^\/[a-zA-Z0-9]*$/, function(req, res, next){
+	res.end(test);
+});
+
 // Finally catch all routes for static content.
-server.get('/', restify.serveStatic({
-  directory: __dirname+'/public',
-  default: '/views/index.html'
-}));
-server.get(/^\/?.*/, restify.serveStatic({
-    directory: __dirname + '/public',
-    default: 'index.html'
+server.get(/.*/, restify.serveStatic({
+  	directory: __base + 'public',
+    default: '/views/index.html'
 }));
 
 if( process.env.NODE_ENV === 'test' ){

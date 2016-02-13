@@ -39,7 +39,11 @@ module.exports = function(server, log){
 		User.findAll()
 		.then(function(users){
 			
-			res.send(200, users);
+			res.send(200, 
+				_.map(users, function(user){
+					return _.pick(user, ['id', 'publickey', 'username'])
+				})
+			);
 			return next();
 		})
 		.catch(SqlError, function(err){
@@ -47,6 +51,14 @@ module.exports = function(server, log){
 			res.send(500, 'Internal database error');
 			return next();
 		});
+	});
+	
+	server.get('/api/users/me', authentication, function(req, res, next){
+		log.info({ method: 'GET', path: '/api/users/me/' });
+		
+		//res.send(200, _.pick(req.resolved.user, ['privatekey', 'iv']));
+		res.send(200, req.resolved.user)
+		return next();
 	});
 
 	server.get('/api/users/:userId', authentication, resolve, authorization, function(req, res, next){

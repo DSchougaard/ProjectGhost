@@ -64,7 +64,6 @@ describe("API /password", function(){
 		title: 'Death Star Back Entrance',
 		username: 'Obi Wan Kenobi',
 		password: base64.encode('IMissQuiGonJinn'),
-		iv: base64.encode('1111111111111111'),
 		note: 'Darth Maul is a meanie!'
 	};
 
@@ -154,6 +153,20 @@ describe("API /password", function(){
 				return done();
 			});
 		});
+
+		it('should fail when no auth token is supplied', function(done){
+			server
+			.get('/api/users/' + idAuthToken + '/passwords')
+			.expect(401)
+			.end(function(err, res){
+				assert.equal(res.body.code, 'UnauthorizedError');
+				assert.equal(res.body.message, 'No Authorization header was found');
+
+				return done();
+			})
+		})
+
+
 	});
 
 	describe('GET', function(){
@@ -252,8 +265,9 @@ describe("API /password", function(){
 		});
 
 		describe('failures on wrong input', function(){
+		
 			it('should fail when given invalid input for title', function(done){
-				var temp = _.clone(validPassword);
+				var temp = _.omit(validPassword, 'id');
 				temp.title = true;
 
 				server
@@ -262,6 +276,7 @@ describe("API /password", function(){
 				.send(temp)
 				.end(function(err, res){
 					if(err) return done(err);
+
 					assert.equal(res.body.error, 'validation');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'title');
@@ -272,7 +287,7 @@ describe("API /password", function(){
 			});
 
 			it('should fail when given invalid input for username', function(done){
-				var temp = _.clone(validPassword);
+				var temp = _.omit(validPassword, 'id');
 				temp.username = true;
 
 				server
@@ -291,9 +306,9 @@ describe("API /password", function(){
 				});
 			});
 
-			it('should fail when given invalid input for iv', function(done){
-				var temp = _.clone(validPassword);
-				temp.iv = true;
+			it('should fail when given invalid input for url', function(done){
+				var temp = _.omit(validPassword, 'id');
+				temp.url = true;
 
 				server
 				.post('/api/users/'+idAuthToken+'/passwords')
@@ -301,38 +316,19 @@ describe("API /password", function(){
 				.send(temp)
 				.end(function(err, res){
 					if(err) return done(err);
-
+					
 					assert.equal(res.body.error, 'validation');
 					assert.equal(res.body.errors.length, 1);
-					assert.equal(res.body.errors[0].field, 'iv');
+					assert.equal(res.body.errors[0].field, 'url');
 					assert.equal(res.body.errors[0].error, 'is the wrong type');
 
 					return done();
 				});
 			});
 
-			it('should fail when given invalid encoding for iv', function(done){
-				var temp = _.clone(validPassword);
-				temp.iv = 'clearly not base 64';
-
-				server
-				.post('/api/users/'+idAuthToken+'/passwords')
-				.set('Authorization', 'Bearer ' + authToken)	
-				.send(temp)
-				.end(function(err, res){
-					if(err) return done(err);
-
-					assert.equal(res.body.error, 'validation');
-					assert.equal(res.body.errors.length, 1);
-					assert.equal(res.body.errors[0].field, 'iv');
-					assert.equal(res.body.errors[0].error, 'pattern mismatch');
-
-					return done();
-				});
-			});
 		
 			it('should fail when given invalid input for password', function(done){
-				var temp = _.clone(validPassword);
+				var temp = _.omit(validPassword, 'id');
 				temp.password = true;
 
 				server
@@ -352,7 +348,7 @@ describe("API /password", function(){
 			});
 			
 			it('should fail when given invalid encoding for password', function(done){
-				var temp = _.clone(validPassword);
+				var temp = _.omit(validPassword, 'id');
 				temp.password = 'clearly not base 64';
 
 				server
@@ -372,7 +368,7 @@ describe("API /password", function(){
 			});
 
 			it('should fail when given invalid input for parent', function(done){
-				var temp = _.clone(validPassword);
+				var temp = _.omit(validPassword, 'id');
 				temp.parent = 'test';
 
 				server
@@ -392,7 +388,7 @@ describe("API /password", function(){
 			});
 
 			it('should fail when given invalid input for note', function(done){
-				var temp = _.clone(validPassword);
+				var temp = _.omit(validPassword, 'id');
 				temp.note = true;
 
 				server
@@ -421,7 +417,6 @@ describe("API /password", function(){
 			title: 'Death Star Back Entrance',
 			username: 'AAAAAAAAA',
 			password: base64.encode('AAAAAAAAA'),
-			iv: base64.encode('1111111111111111')
 		}
 
 		before(function(){
@@ -505,35 +500,18 @@ describe("API /password", function(){
 				});
 			});
 
-			it('should fail when given invalid input for iv', function(done){
+			it('should fail when given invalid input for url', function(done){
 				server
 				.put('/api/users/'+idAuthToken+'/passwords/ ' + PUT_password.id)
 				.set('Authorization', 'Bearer ' + authToken)	
-				.send({iv: true})
+				.send({url: true})
 				.end(function(err, res){
 					if(err) return done(err);
 
 					assert.equal(res.body.code, 'ValidationError');
 					assert.equal(res.body.errors.length, 1);
-					assert.equal(res.body.errors[0].field, 'iv');
+					assert.equal(res.body.errors[0].field, 'url');
 					assert.equal(res.body.errors[0].error, 'is the wrong type');
-
-					return done();
-				});
-			});
-
-			it('should fail when given invalid encoding for iv', function(done){
-				server
-				.put('/api/users/'+idAuthToken+'/passwords/ ' +  PUT_password.id)
-				.set('Authorization', 'Bearer ' + authToken)	
-				.send({iv: 'this is clearly not base64'})
-				.end(function(err, res){
-					if(err) return done(err);
-
-					assert.equal(res.body.code, 'ValidationError');
-					assert.equal(res.body.errors.length, 1);
-					assert.equal(res.body.errors[0].field, 'iv');
-					assert.equal(res.body.errors[0].error, 'pattern mismatch');
 
 					return done();
 				});
@@ -633,7 +611,6 @@ describe("API /password", function(){
 				title: 'DELTestTitle1',
 				username:'DELTestUsername1',
 				password: base64.encode('DELTestPassword2'),
-				iv: base64.encode('1111111111111111')
 			},
 			{
 				owner: 2,
@@ -641,7 +618,6 @@ describe("API /password", function(){
 				title: 'DELTestTitle2',
 				username:'DELTestUsername2',
 				password: base64.encode('DELTestPassword2'),
-				iv: base64.encode('1111111111111111')
 			},
 			{
 				owner: 2,
@@ -649,7 +625,6 @@ describe("API /password", function(){
 				title: 'DELTestTitle3',
 				username:'DELTestUsername3',
 				password: base64.encode('DELTestPassword3'),
-				iv: base64.encode('1111111111111111')
 			}
 		]
 

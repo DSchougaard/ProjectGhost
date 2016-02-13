@@ -3,10 +3,12 @@
   "version": "0.1",
   "appPath": "public",
   "dependencies": {
-    "bootstrap": "~3.3.6",
-    "angular-bootstrap": "~0.14.3",
-    "angular": "angularjs#~1.4.8",
-    "angular-route": "~1.4.8"
+    "satellizer": "~0.13.4",
+    "angular": "^1.5.0",
+    "angular-ui-router": "^0.2.18",
+    "underscore": "^1.8.3",
+    "forge": "^0.6.38",
+    "angular-material": "^1.0.5"
   },
   "private": true
 }

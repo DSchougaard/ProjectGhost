@@ -12,6 +12,8 @@ var userData = [
 		salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
 		password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
 		privatekey 	: base64.encode(privateKey.toString('utf8')),
+		iv 			: base64.encode('111111111'),
+		pk_salt 	: "Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI=",
 		publickey 	: base64.encode(publicKey.toString('utf8'))
 	},
 	{
@@ -20,6 +22,8 @@ var userData = [
 		salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
 		password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
 		privatekey 	: base64.encode(privateKey.toString('utf8')),
+		iv 			: base64.encode('111111111'),
+		pk_salt 	: "Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI=",
 		publickey 	: base64.encode(publicKey.toString('utf8'))
 	}
 ];
@@ -49,8 +53,8 @@ var passwordData = [
 		title 		: 'SomeTitle1',
 		username 	: 'SomeUser1',
 		password 	: base64.encode('password'),
-		iv 			: base64.encode('1111111111111111'),
-		note 		: 'This is clearly a note!' 
+		note 		: 'This is clearly a note!',
+		url 		: null
 	},
 	{
 		parent 		: null,
@@ -58,8 +62,8 @@ var passwordData = [
 		title 		: 'SomeTitle2',
 		username 	: 'SomeUser1',
 		password 	: base64.encode('password'),
-		iv 			: base64.encode('1111111111111111'),
-		note 		: 'null' 
+		note 		: 'null',
+		url 		: null
 
 	},
 	{
@@ -68,8 +72,8 @@ var passwordData = [
 		title 		: 'SomeOtherTitle1.1',
 		username 	: 'Doge',
 		password 	: base64.encode('P@ssw0rd'),
-		iv 			: base64.encode('1111111111111111'),
-		note 		: 'Such password, much secure. Wow.' 
+		note 		: 'Such password, much secure. Wow.',
+		url 		: null
 
 	},
 	{
@@ -78,8 +82,8 @@ var passwordData = [
 		title 		: 'SomeTitleAgain',
 		username 	: 'BadLuckBrian',
 		password 	: base64.encode('password'),
-		iv 			: base64.encode('1111111111111111'),
-		note 		: 'Oh no... Not again...' 
+		note 		: 'Oh no... Not again...',
+		url 		: null
 	}
 ];
 

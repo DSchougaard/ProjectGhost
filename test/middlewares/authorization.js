@@ -26,13 +26,17 @@ describe('Authorization', function(){
 		username: 'AuthorizationMiddlewareNormalUser',
 		isAdmin: false,
 		privatekey: base64.encode('privatekey'),
-		publickey: base64.encode('publickey')
+		publickey: base64.encode('publickey'),
+		pk_salt 	: "Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI=",
+		iv 			: base64.encode('111111111')
 	};
 	var adminUser = {
 		username: 'AuthorizationMiddlewareAdminUser',
 		isAdmin: true,
 		privatekey: base64.encode('privatekey'),
-		publickey: base64.encode('publickey')
+		publickey: base64.encode('publickey'),
+		pk_salt 	: "Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI=",
+		iv 			: base64.encode('111111111')
 	};
 
 
@@ -70,7 +74,6 @@ describe('Authorization', function(){
 			title : 'AuthorizationMiddlewareNormalUserPasswordTitel',
 			username: 'AuthorizationMiddlewareNormalUserPasswordUsername',
 			password  : base64.encode('AuthorizationMiddlewareNormalUserPasswordPassword'),
-			iv : base64.encode('1111111111111111'),
 			note: 'Note'
 		};
 		adminUserPassword = {
@@ -79,7 +82,6 @@ describe('Authorization', function(){
 			title : 'AuthorizationMiddlewareAdminUserPasswordTitel',
 			username: 'AuthorizationMiddlewareAdminUserPasswordUsername',
 			password  : base64.encode('AuthorizationMiddlewareAdminUserPasswordPassword'),
-			iv : base64.encode('1111111111111111'),
 			note: 'Note'
 		};
 		return done();

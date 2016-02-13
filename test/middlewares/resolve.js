@@ -19,7 +19,9 @@ describe('Resolve', function(){
 			username: 'ResolveMiddlewareNormalUser',
 			isAdmin: false,
 			privatekey: base64.encode('privatekey'),
-			publickey: base64.encode('publickey')
+			publickey: base64.encode('publickey'),
+			pk_salt 	: "Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI=",
+			iv 			: base64.encode('111111111')
 		};
 		testUser.salt =  bcrypt.genSaltSync();
 		testUser.password =  bcrypt.hashSync('password', testUser.salt);
@@ -35,8 +37,8 @@ describe('Resolve', function(){
 				title : 'ResolveMiddlewareNormalUserPasswordTitle',
 				username: 'ResolveMiddlewareNormalUserPasswordUsername',
 				password  : base64.encode('ResolveMiddlewareNormalUserPasswordPassword'),
-				iv : base64.encode('1111111111111111'),
-				note: 'Note'
+				note: 'Note',
+				url: 'google.com'
 			};
 
 			return knex('passwords')

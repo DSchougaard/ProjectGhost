@@ -24,6 +24,7 @@ module.exports = function(server, knex, log){
 
 	server.get('/api/users/:userId/passwords', authentication, resolve, authorization, function(req, res, next){
 		log.info({ method: 'GET', path: '/api/passwords', payload: req.user });
+		log.debug({ request: req });
 
 		Password.findAll(req.resolved.user)
 		.then(function(passwords){
@@ -69,9 +70,10 @@ module.exports = function(server, knex, log){
 			note
 		*/
 
-		var password 	= _.pick(req.body, ['title', 'username', 'iv', 'password', 'parent', 'note']);
+		//var password 	= _.pick(req.body, ['title', 'username', 'iv', 'password', 'parent', 'url', 'note']);
+		var password 	= _.clone(req.body);
 		password.owner 	= req.resolved.user.id;
-		password 		= _.defaults(password, {parent: null, note: null});
+		password 		= _.defaults(password, {parent: null, note: null, url: null});
 
 
 		Password.create(password)

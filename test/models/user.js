@@ -29,7 +29,9 @@ describe("User", function(){
 			isAdmin: true,
 			password: 'password',
 			privatekey: base64.encode(fs.readFileSync('misc/unittest-private.key').toString('utf8')),
-			publickey: base64.encode(fs.readFileSync('misc/unittest-public.crt').toString('utf8'))
+			publickey: base64.encode(fs.readFileSync('misc/unittest-public.crt').toString('utf8')),
+			pk_salt 	: "Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI=",
+			iv 			: base64.encode('111111111')
 		}
 		done();
 	});

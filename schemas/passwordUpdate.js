@@ -31,11 +31,11 @@ module.exports = {
 			"type": ["string", 'null'],
 			"pattern":/^([A-Za-z0-9+\/]{4})*([A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}==)$/
 		},
-		"iv":{
-			"description": "IV for the encryption blob",
+		"url":{
+			"decription": "URL for the password entry",
 			"required": false,
-			"type": ["string", 'null'],
-			"pattern":/^([A-Za-z0-9+\/]{4})*([A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}==)$/
+			"type": ['string', 'null'],
+			"example": "www.google.com"
 		},
 		"note":{
 			"description": "Note for the Password Entry",

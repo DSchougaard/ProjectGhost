@@ -20,6 +20,7 @@ const ValidationRestError = require(__base + 'errors/ValidationRestError.js');
 
 module.exports = function(req, res, next) {
 	if (!req.headers.authorization) {
+		console.log("No header was found");
 		return next(new restify.errors.UnauthorizedError('No Authorization header was found'));
 	}
 	// Extract token from the request headers
@@ -37,10 +38,12 @@ module.exports = function(req, res, next) {
 		return next();
 	})
 	.catch(ValidationError, function(err){
+		console.log("Unexpected validation error");
 		return next( new restify.errors.BadRequestError('') );
 	})
 	.catch(UserDoesNotExistError, function(err){
 		//res.send(400, 'User ID ' +  + ' was not found');
+		console.log("User was not found");
 		return next( new restify.errors.BadRequestError('User was not found') );
 	})
 	.catch(function(err){

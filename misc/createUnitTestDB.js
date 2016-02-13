@@ -26,8 +26,10 @@ knex.schema.createTableIfNotExists('users', function(table){
 	table.string("username").unique().notNullable();
 	table.string("salt").notNullable();
 	table.string("password").notNullable();
-	table.binary("privatekey").notNullable();
-	table.binary("publickey").notNullable();
+	table.string("privatekey").notNullable();
+	table.string('iv').notNullable();
+	table.string('pk_salt').notNullable();
+	table.string("publickey").notNullable();
 }).then();
 
 knex.schema.createTableIfNotExists('categories', function(table){
@@ -43,8 +45,8 @@ knex.schema.createTableIfNotExists('passwords', function(table){
 	table.integer('parent').unsigned().references('id').inTable('categories');
 	table.string('title').notNullable();
 	table.string('password').notNullable();
-	table.binary('iv', 16).notNullable();
 	table.string('username').nullable();
+	table.string('url').nullable();
 	table.string('note').nullable();
 }).then();
 

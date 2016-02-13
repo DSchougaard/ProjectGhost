@@ -37,10 +37,17 @@ module.exports = class User{
 		this.id 		= data.id;
 		this.username 	= data.username;
 		this.isAdmin 	= data.isAdmin;
+		this.publickey 	= data.publickey;
+
+		// User Authentication Fields
 		this.password 	= data.password;
 		this.salt 		= data.salt;
+
+		// User Private Key Fields
 		this.privatekey = data.privatekey;
-		this.publickey 	= data.publickey;
+		this.iv 		= data.iv;
+		this.pk_salt 	= data.pk_salt;
+
 
 	}
 

@@ -31,7 +31,6 @@ describe('Password', function(){
         'title': 'How to Find the Rebels',
         'username': 'Count Boba Fett',
         'password': base64.encode('MandaloriansRulez'),
-        'iv': base64.encode('1111111111111111'),
         'note': "I'll get revenge on that damned Skywalker!"
     };
 	
@@ -41,7 +40,6 @@ describe('Password', function(){
         'title': 'Sarlacc Pit',
         'username': 'Pew Pew',
         'password': base64.encode('He tasted good'),
-        'iv': base64.encode('1111111111111111')
 	}
     
 	describe('Object creation and manipulation', function(){
@@ -116,8 +114,9 @@ describe('Password', function(){
                 assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
             })
             .catch(ValidationError, function(err){
-				assert.equal(err.num, 1);
 				assert.equal(err.message, '1 error: data has additional properties.');
+				assert.equal(err.num, 1);
+
             });
         });
 
@@ -276,16 +275,6 @@ describe('Password', function(){
 				});
 			});
 
-			it('should throw an error when creating a new password with iv field missing', function(){
-				return Password.create( _.omit(validPassword, 'iv') )
-				.then(function(password){
-					assert.fail();
-				})
-				.catch(ValidationError, function(err){
-					assert.equal(err.num, 1);
-					assert.equal(err.message, '1 error: data.iv is required.');
-				});
-			});
 		});
 		
 		describe('wrong field types', function(){
@@ -366,19 +355,6 @@ describe('Password', function(){
 				});
 			});
 
-			it('should throw an error when creating a new password with iv of wrong type', function(){
-				var temp = _.clone(validPassword);
-				temp.iv = true;
-				return Password.create( temp )
-				.then(function(password){
-					assert.fail();
-				})
-				.catch(ValidationError, function(err){
-					assert.equal(err.num, 1);
-					assert.equal(err.message, '1 error: data.iv is the wrong type.');
-				});
-			});
-
 			it('should throw an error when creating a new password with note of wrong type', function(){
 				var temp = _.clone(validPassword);
 				temp.note = true;
@@ -452,7 +428,6 @@ describe('Password', function(){
 				assert.equal(updatedPassword.title,      testValues[0] );
 				assert.equal(updatedPassword.username ,  testValues[1] );
 				assert.equal(updatedPassword.password ,  originalPassword.password );
-				assert.equal(updatedPassword.iv ,        originalPassword.iv );
 				assert.equal(updatedPassword.note ,      originalPassword.note );
 				
 				return knex('passwords')
@@ -465,7 +440,6 @@ describe('Password', function(){
 					assert.equal(dbPassword[0].title,      testValues[0] );
 					assert.equal(dbPassword[0].username ,  testValues[1] );
 					assert.equal(dbPassword[0].password ,  originalPassword.password );
-					assert.equal(dbPassword[0].iv ,        originalPassword.iv );
 					assert.equal(dbPassword[0].note ,      originalPassword.note );
 				});
 			});
@@ -571,20 +545,7 @@ describe('Password', function(){
 					assert.equal(err.message, '1 error: data.password is the wrong type.');
 				});
 			});	
-			
-			it('should throw an error when creating a new password with iv of wrong type', function(){
-				return Password.find(1)
-				.then(function(password){
-					return password.update({iv:true});
-				})
-				.then(function(updated){
-					assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
-				})
-				.catch(ValidationError, function(err){
-					assert.equal(err.num, 1);
-					assert.equal(err.message, '1 error: data.iv is the wrong type.');
-				});
-			});					
+							
 			
 			it('should throw an error when creating a new password with note of wrong type', function(){
 				return Password.find(1)
@@ -666,7 +627,9 @@ describe('Password', function(){
 				password: 'Fake',
 				salt: 'Fake',
 				privatekey: base64.encode('fake'),
-				publickey: base64.encode('fake')
+				publickey: base64.encode('fake'),
+				iv: base64.encode('11111111'),
+				pk_salt: "Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI="
 			}
 			var fake = new User(fakeData);
 			
@@ -683,8 +646,8 @@ describe('Password', function(){
 				assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
 			})
 			.catch(ValidationError, function(err){
-				assert.equal(err.num, 6);
-				assert.equal(err.message, '6 errors: data.id is required. data.isAdmin is required. data.salt is required. data.password is required. data.publickey is required. data.privatekey is required.');
+				assert.equal(err.num, 8);
+				assert.equal(err.message, '8 errors: data.id is required. data.isAdmin is required. data.salt is required. data.password is required. data.publickey is required. data.privatekey is required. data.iv is required. data.pk_salt is required.');
 			});
 		});
 		

@@ -42,7 +42,7 @@ module.exports = class Password{
 		this.title 		= input.title;
 		this.username 	= input.username;
 		this.password 	= input.password;
-		this.iv			= input.iv;
+		this.url 		= input.url;
 		this.note 		= input.note;
 	}
 
