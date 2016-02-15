@@ -5,96 +5,173 @@ ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRout
     $urlRouterProvider.otherwise('/login');
    
     $stateProvider
-        
-        // HOME STATES AND NESTED VIEWS ========================================
-        .state('home', {
-            url: '/',
-            templateUrl: 'views/partials/main.html',
-            controller: 'homeController',
-			authenticate: true
-        })
-        
-        // ABOUT PAGE AND MULTIPLE NAMED VIEWS =================================
-        .state('login', {
-        	url: '/login',
-			templateUrl 	: 'views/partials/login.html',
-			controller 		: 'loginController'
-        })
-        .state('logout', {
-        	controller: 'logoutController'
-        })
-
-	/*$routeProvider
-		.when('/', {
-			templateUrl 	: 'views/partials/main.html',
-			controller 		: 'passwordController'
-
-		})
-		.when('/login', {
-			templateUrl 	: 'views/partials/login.html',
-			controller 		: 'loginController'
-		})
-		.when('/add', {
-			templateUrl 	: 'views/partials/add.html'
-		});*/
+    // HOME STATES AND NESTED VIEWS ========================================
+    .state('home', {
+        url: '/',
+        templateUrl: 'views/partials/main.html',
+        controller: 'homeController',
+		authenticate: true
+    })
+    
+    // ABOUT PAGE AND MULTIPLE NAMED VIEWS =================================
+    .state('login', {
+    	url: '/login',
+		templateUrl 	: 'views/partials/login.html',
+		controller 		: 'loginController'
+    })
+    .state('logout', {
+    	controller: 'logoutController'
+    });
 
     $locationProvider.html5Mode(true);
 
     // Config for Satellizer
-    $authProvider.loginUrl = '/api/auth/login';
-    $authProvider.authHeader = 'Authorization';
-	$authProvider.authToken = 'Bearer';
-	$authProvider.storageType = 'localStorage';
-
-
+    $authProvider.loginUrl 		= '/api/auth/login';
+    $authProvider.authHeader 	= 'Authorization';
+	$authProvider.authToken 	= 'Bearer';
+	$authProvider.storageType 	= 'localStorage';
 });
 
-ghost.service('UserService', function($http, $auth, $mdDialog){
+ghost.controller('toolbarController', function($scope, $mdSidenav){
+	$scope.menu = function(){
+		$mdSidenav('left').toggle();
+	}
+})
+
+ghost.service('EncryptionService', function($q, $http, $auth, $mdDialog, $mdToast){
+	var self = this;
+
+	this.encryptionKey = undefined;
 	this.privatekey = undefined;
-	this.iv = undefined;
 
-	this.get = function(){
-		var userID = $auth.getPayload().uid;
+	this.getEncryptionKey = function(){
 
-		var self = this;
+		console.log("Retrieving privatekey from remote server");
+		if( self.privatekey !== undefined ){
+			return $q.resolve(self.privatekey);
+		}
 
-		$http({
-			method: 'GET',
-			url: '/api/users/me'
+		// First promt user for encryption password
+		return $mdDialog.show({
+			parent: angular.element(document.body),
+			controller: PasswordPromtController,
+			templateUrl: 'views/modals/password.html',
+			clickOutsideToClose:true,
+			fullscreen: true
 		})
-		.then(function(res){
-			console.log("user service got: %j", res);
-			self.privatekey = res.privatekey;
-			self.iv = res.iv;
+		.then(function(password){
 
-			// Promt for password
-			// Todo: Fix
-			var password = "password";
-		   	$mdDialog.show({
-		      parent: angular.element(document.body),
-		      controller: PasswordPromtController,
-		      templateUrl: 'views/modals/password.html',
-		      clickOutsideToClose:true,
-		      fullscreen: true
-		    })
-		    .then(function(password){
+			// Query API for encryption data
+			return $http({
+				method: 'GET',
+				url: '/api/users/me'
+			})
+			.then(function(res){
+				// Derive User Encrypion key
+				var salt = forge.util.decode64(res.data.pk_salt);
+				var encryptionKey = forge.pkcs5.pbkdf2(password, salt, 10000, 32);
+				self.encryptionKey = encryptionKey;
 
-		    	// HARDCODED BASE64 SALT!!
-				var encryptionKey = forge.pkcs5.pbkdf2(password, salt, 10000, 32, function(err, derivedKey){
+				// Decode and extract private key data from payload, and convert to buffer
+				var privateKeyBinary = forge.util.decode64( res.data.privatekey );
+				var privateKeyBuffer = forge.util.createBuffer( privateKeyBinary);
 
-					var decipher = forge.cipher.createDecipher('AES-CBC', encryptionKey);
-					decipher.start({iv: self.iv});
-					console.log(self.privatekey);
-					decipher.update(self.privatekey);
-					decipher.finish();
+				console.log("Decrypting privatekey");
 
-					console.log(decipher.output.toHex());
+				// Use the derived encryption key to decrypt the privatekey
+				var decipher = forge.cipher.createDecipher('AES-CBC', encryptionKey);
+				decipher.start({iv: forge.util.decode64(res.data.iv) });
+				decipher.update( privateKeyBuffer );
+				decipher.finish();
+				/*
+				console.log("Salt = " + res.data.pk_salt);
+				console.log("Encryption key = " + forge.util.encode64(encryptionKey));
+				console.log("IV = " + res.data.iv);
+				console.log("Private Key = " + res.data.privatekey);
+				console.log(decipher.output.data);
+				*/
+				self.privatekey = forge.pki.privateKeyFromPem(decipher.output.data);
+				return self.privatekey;
 
+			})
+			.catch(function(err){
+				console.log("Error!: " + err);
+			    $mdDialog.show(
+			        $mdDialog.alert()
+		            .parent(angular.element(document.querySelector('#popupContainer')))
+		            .clickOutsideToClose(true)
+		            .title('Invalid decryption passphrase')
+		            .textContent('The encryption passphase you entered was wrong. Please try again.')
+		            .ariaLabel('Alert Wrong Decryption Passphrase')
+		            .ok('OK')
+		        );
 
-				});
-		    });
+		        return $q.reject("Error: " + err);
+			});
 		});
 	};
+
+	this.decrypt = function(password){
+		console.log("Decrypting password with id %d", password.id);
+		return this.getEncryptionKey()
+		.then(function(privatekey){
+
+			// base64 deocde password
+			var binaryPassword = forge.util.decode64( password.password );
+
+			// Decrypt binary password
+			var decrypted = privatekey.decrypt(binaryPassword, 'RSA-OAEP', {
+				md: forge.md.sha256.create()
+			});
+
+			return decrypted;
+		});
+	};
+});
+
+ghost.service('PasswordService', function($rootScope, $q, $http, $auth, $mdDialog, EncryptionService){
+	// I hate JS's version of "this"
+	var self = this;
+
+	// Content for storing the actual passwords
+	this.passwords = [];
+
+	this.fetch = function(){
+		$http({
+			method: 'GET',
+			url: '/api/users/' + $auth.getPayload().uid + '/passwords'
+		})
+		.then(function(res){
+			self.passwords = _.clone(res.data);
+			console.log("Passwords updated.\n%j", self.passwords);
+			$rootScope.$broadcast('passwords', 'fetched');
+		})
+		.catch(function(err){
+		    $mdDialog.show(
+		        $mdDialog.alert()
+	            .parent(angular.element(document.querySelector('#popupContainer')))
+	            .clickOutsideToClose(true)
+	            .title('Error retrieving passwords')
+	            .textContent(err)
+	            .ariaLabel('Alert retrieve')
+	            .ok('OK')
+	        );
+		});
+	}
+
+	this.show = function(index){
+		console.log("Password Service: Showing password with ID %d, resolving to %j", index, this.passwords[index])
+		return EncryptionService.decrypt(this.passwords[index])
+		.then(function(password){
+
+			self.passwords[index].decryptedPassword = password;
+
+		});
+	};
+
+	this.hide = function(index){
+		self.passwords[index].decryptedPassword = undefined;
+	}
 });
 
 function PasswordPromtController($scope, $mdDialog){
@@ -153,21 +230,19 @@ ghost.controller('logoutController', function($auth){
 	}
 });
 
-ghost.controller('homeController', function($scope, $http, $auth, $location, $state, UserService){
+ghost.controller('homeController', function($scope, $http, $auth, $location, $state, PasswordService, EncryptionService){
 
 	$scope.entries = [];
 
 	var userID = $auth.getPayload().uid;
 
-	$http({
-		method: 'GET',
-		url: '/api/users/' + userID + '/passwords'
-	})
-	.then(function(res){
-		$scope.entries = res.data;
-		console.log("%j", res.data);
-	}, function(err){
-		console.log("%j", err);
+
+
+	$scope.entries = PasswordService.passwords;
+	PasswordService.fetch();
+
+	$scope.$on('passwords', function(res){
+		$scope.entries = PasswordService.passwords;
 	});
 
 	$scope.openNav = function(){
@@ -179,14 +254,14 @@ ghost.controller('homeController', function($scope, $http, $auth, $location, $st
 		$state.transitionTo("login");
 	}
 
-	$scope.test = function(){
-	UserService.get();
-	}
-
-	// List
+	// List controls
 	$scope.selectedIndex = undefined;
 	$scope.select = function(index, event){
-		console.log("Event = %j" , event);
+		if( $scope.selectedIndex !== undefined && index !== $scope.selectedIndex ){
+			// Hide previously shown password, when it looses focus.
+			PasswordService.hide($scope.selectedIndex);
+		}
+
 		if(index !== $scope.selectedIndex){
 			$scope.selectedIndex = index;
 		}else {
@@ -194,9 +269,22 @@ ghost.controller('homeController', function($scope, $http, $auth, $location, $st
 		}
 	}
 
-	$scope.get = function(id){
-		console.log("GOT " + id);
+	$scope.decrypt = function(index){
+		EncryptionService.decrypt( $scope.entries[index] )
+		.then(function(password){
+			console.log("Decrypted password = " + password);
+			this.reload();
+		});
 	}
 
+	$scope.show = function(index){
+		PasswordService.show(index)
+		.then(function(){
+		})
+	}
+
+	$scope.hide = function(index){
+		PasswordService.hide(index);
+	}
 
 })

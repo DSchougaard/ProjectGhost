@@ -22,7 +22,7 @@
         <script src="components/underscore/underscore-min.js"></script>
 
         <!-- Crypto Lib of Choice -->
-        <script src="components/forge/js/forge.bundle.js"></script>
+        <script src="components/forge/js/forge.min.js"></script>
 
 
 
@@ -30,7 +30,7 @@
         
         <link rel="stylesheet" href="components/angular-material/angular-material.css">
         <link rel="stylesheet" href="css/text.css">
-                <link rel="stylesheet" href="css/ghost.css">
+        <link rel="stylesheet" href="css/ghost.css">
 
 
         <!-- Angular Controller -->
@@ -42,10 +42,10 @@
            
         <div layout="column" layout-fill>
             <md-toolbar>
-                <div class="md-toolbar-tools">
+                <div class="md-toolbar-tools" ng-controller="toolbarController">
 
-                <md-button class="md-icon-button" aria-label="Settings" style="color:white">
-                    <md-icon md-svg-icon="img/icons/menu.svg" ></md-icon>
+                <md-button class="md-icon-button" hide-gt-xs aria-label="Settings" style="color:white">
+                    <md-icon md-svg-icon="img/icons/menu.svg" ng-click="menu()"></md-icon>
                 </md-button>
                 
                 <span>Project Ghost</span>
