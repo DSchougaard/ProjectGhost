@@ -1,6 +1,6 @@
 var ghost = angular.module('ghost', ['ngMaterial', 'satellizer', 'ui.router']);
 
-ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRouterProvider){
+ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider){
     
     $urlRouterProvider.otherwise('/login');
    
@@ -21,6 +21,12 @@ ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRout
     })
     .state('logout', {
     	controller: 'logoutController'
+    })
+    .state('add', {
+    	url: '/add',
+    	templateUrl: 'views/partials/add.html',
+    	controller: 'addController',
+    	controllerAs: 'vm'
     });
 
     $locationProvider.html5Mode(true);
@@ -30,7 +36,23 @@ ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRout
     $authProvider.authHeader 	= 'Authorization';
 	$authProvider.authToken 	= 'Bearer';
 	$authProvider.storageType 	= 'localStorage';
+
+
+	// Angular Material Config
+ 	//$mdThemingProvider.theme('default').dark();
+	$mdThemingProvider.theme('default')
+		.primaryPalette('blue-grey')
+		.accentPalette('deep-orange');
 });
+
+ghost.directive('exists', function($compile){
+	return {
+		restrict: "A",
+		link: function($scope, element, attributes){
+			console.log("%j", element);
+		}
+	}
+})
 
 ghost.controller('toolbarController', function($scope, $mdSidenav){
 	$scope.menu = function(){
@@ -40,15 +62,26 @@ ghost.controller('toolbarController', function($scope, $mdSidenav){
 
 ghost.service('EncryptionService', function($q, $http, $auth, $mdDialog, $mdToast){
 	var self = this;
+	// Variables
+	self.encryptionKey 	= undefined;
+	self.privateKey 	= undefined;
+	self.publicKey 		= undefined;
+	// Methods
+	self.getPublicKey 	= getPublicKey;
+	self.encrypt  		= encrypt;
 
-	this.encryptionKey = undefined;
-	this.privatekey = undefined;
+	function fetch(){
+		return $http({
+			method: 'GET',
+			url: '/api/users/me'
+		});
+	}
 
-	this.getEncryptionKey = function(){
+	self.getEncryptionKey = function(){
 
 		console.log("Retrieving privatekey from remote server");
-		if( self.privatekey !== undefined ){
-			return $q.resolve(self.privatekey);
+		if( self.privateKey !== undefined ){
+			return $q.resolve(self.privateKey);
 		}
 
 		// First promt user for encryption password
@@ -90,8 +123,8 @@ ghost.service('EncryptionService', function($q, $http, $auth, $mdDialog, $mdToas
 				console.log("Private Key = " + res.data.privatekey);
 				console.log(decipher.output.data);
 				*/
-				self.privatekey = forge.pki.privateKeyFromPem(decipher.output.data);
-				return self.privatekey;
+				self.privateKey = forge.pki.privateKeyFromPem(decipher.output.data);
+				return self.privateKey;
 
 			})
 			.catch(function(err){
@@ -111,9 +144,21 @@ ghost.service('EncryptionService', function($q, $http, $auth, $mdDialog, $mdToas
 		});
 	};
 
-	this.decrypt = function(password){
+	function getPublicKey(){
+		if( self.publicKey !== undefined ){
+			return $q.resolve(self.publicKey);
+		}
+
+		return fetch()
+		.then(function(res){
+			self.publicKey = res.data.publickey;
+			return self.publicKey;
+		});
+	}
+
+	self.decrypt = function(password){
 		console.log("Decrypting password with id %d", password.id);
-		return this.getEncryptionKey()
+		return self.getEncryptionKey()
 		.then(function(privatekey){
 
 			// base64 deocde password
@@ -127,6 +172,25 @@ ghost.service('EncryptionService', function($q, $http, $auth, $mdDialog, $mdToas
 			return decrypted;
 		});
 	};
+
+	function encrypt(password){
+		console.log('Encrypting password');
+
+		return self.getPublicKey()
+		.then(function(key){
+			console.log("Private key = ", key);
+
+
+			var binaryPublicKey = forge.util.decode64(key);
+			var publicKey = forge.pki.publicKeyFromPem(binaryPublicKey);
+
+			var encrypted = publicKey.encrypt(password, 'RSA-OAEP', {
+				md: forge.md.sha256.create()
+			});
+
+			return forge.util.encode64(encrypted);
+		});
+	}
 });
 
 ghost.service('PasswordService', function($rootScope, $q, $http, $auth, $mdDialog, EncryptionService){
@@ -134,7 +198,8 @@ ghost.service('PasswordService', function($rootScope, $q, $http, $auth, $mdDialo
 	var self = this;
 
 	// Content for storing the actual passwords
-	this.passwords = [];
+	this.passwords 	= [];
+	this.create 	= create;
 
 	this.fetch = function(){
 		$http({
@@ -172,6 +237,12 @@ ghost.service('PasswordService', function($rootScope, $q, $http, $auth, $mdDialo
 	this.hide = function(index){
 		self.passwords[index].decryptedPassword = undefined;
 	}
+
+	function create(password){
+
+
+	};
+
 });
 
 function PasswordPromtController($scope, $mdDialog){
@@ -288,3 +359,4 @@ ghost.controller('homeController', function($scope, $http, $auth, $location, $st
 	}
 
 })
+

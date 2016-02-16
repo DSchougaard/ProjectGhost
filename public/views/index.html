@@ -35,11 +35,13 @@
 
         <!-- Angular Controller -->
         <script src="js/core.js"></script>
+        <script src="js/controllers/addController.js"></script>
 
     </head>
+    <!-- Dan says #E6E6E6 is good -->
+    <!-- <body style="background-color:#e6e6e6"> -->
+    <body>
 
-    <body style="background-color:#ECECEC"> 
-           
         <div layout="column" layout-fill>
             <md-toolbar>
                 <div class="md-toolbar-tools" ng-controller="toolbarController">
@@ -52,6 +54,10 @@
                 
                 <!-- fill up the space between left and right area -->
                 <span flex></span>
+
+                <md-button ng-href="/add" class="md-fab float-fab" style="margin-top: 50px;" aria-label="Mini FAB">
+                    <md-icon md-svg-src="img/icons/add.svg">></md-icon>
+                </md-button>
 
                 </div>
             </md-toolbar>

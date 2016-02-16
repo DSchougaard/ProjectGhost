@@ -1,12 +1,15 @@
-<section layout="row" flex="">
-		
-	<md-sidenav md-component-id="left" class="md-sidenav-left md-whiteframe-z2" md-is-locked-open="$mdMedia('gt-xs')">
-		Left Nav!
-		<md-button class="md-primary" ng-click=test()>TEST</md-button>
+<section layout="row" flex>
+	
+	<md-sidenav md-component-id="left" class="md-sidenav-left md-whiteframe-z2" md-is-locked-open="$mdMedia('gt-xs')" ng-cloak>
+		<md-content layout-padding>
+			Left Nav!
+			<md-button class="md-primary" ng-click=test()>TEST</md-button>
+
+		</md-content>
 	</md-sidenav>
 
 
-	<md-content layout="column" layout-fill>	
+	<md-content flex layout="column">	
 
 		<md-card ng-repeat="entry in entries">
 			<md-card-title>
@@ -25,34 +28,44 @@
 			<md-card-content ng-show="$index === selectedIndex" layout="row" layout-xs="column">
 				
 				<div layout="column" flex-gt-xs="40">
-					<md-input-container class="reset-spacing-bottom" >
+					<md-input-container class="reset-spacing-bottom" exists="{{entry.username}}" >
 						<label>Username</label>
 						<input value="{{entry.username}}" readonly>
 					</md-input-container>
 
-					<div layout="row" flex>
+					<div layout="row" >
+						<!-- Eh, probably not the best way to do this... -->
 						<!-- Shows filler input when password is still decrypted -->
-						<md-input-container ng-hide="entries[$index].decryptedPassword !== undefined"  class="reset-spacing" >
-							<label>Password</label>
-							<input value="********" readonly >
-						</md-input-container>
+						<div flex>
+							<md-input-container layout-fill ng-hide="entry.decryptedPassword !== undefined"  class="reset-spacing" >
+								<label>Password</label>
+								<input value="********" readonly >
+							</md-input-container>
+							
+							<!-- Seen when the actual password is decrypted -->
+							<md-input-container layout-fill ng-show="entry.decryptedPassword !== undefined"  class="reset-spacing">
+								<label>Password</label>
+								<input value="{{entry.decryptedPassword}}" readonly >
+							</md-input-container>
+						</div>
 						
-						<!-- Seen when the actual password is decrypted -->
-						<md-input-container ng-show="entries[$index].decryptedPassword !== undefined"  class="reset-spacing">
-							<label>Password</label>
-							<input value="{{entry.decryptedPassword}}" readonly >
-						</md-input-container>
-						
-						<div  layout-align="end center">
+
+
+						<div flex="nogrow" layout-align="end center">
 							<md-button ng-click="show($index)" ng-show="entry.decryptedPassword === undefined" class="reset-spacing"> Show </md-button>
 							<md-button ng-click="hide($index)" ng-show="entry.decryptedPassword !== undefined" class="reset-spacing"> Hide </md-button>
 						</div>
+
+
 					</div>
 
-
+					<md-input-container>
+						<label>URL</label>
+						<input value="{{entry.url}}" readonly>
+					</md-input-container>
 		
 
-					<md-input-container class="reset-spacing" ng-hide="entry.note === undefined || entry.note === '' "> <label>Note</label>
+					<md-input-container class="reset-spacing" ng-hide="entry.note === undefined || entry.note === '' || entry.note === null "> <label>Note</label>
 						<textarea readonly>{{entry.note}}</textarea>
 					</md-input-container>
 
