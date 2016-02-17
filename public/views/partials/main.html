@@ -1,5 +1,4 @@
 <section layout="row" flex>
-	
 	<md-sidenav md-component-id="left" class="md-sidenav-left md-whiteframe-z2" md-is-locked-open="$mdMedia('gt-sm')" ng-cloak>
 		<md-content layout-padding>
 			Left Nav!
@@ -15,19 +14,11 @@
 			<md-card-title class="card-head-padding-button">
 				<md-card-title-text>
 					 <span class="md-headline">{{entry.title}}</span>
-					 <span class="md-subhead" ng-hide="selectedIndex === $index">{{entry.note}}</span>
+					 <span class="md-subhead" >{{entry.note}}</span>
 				</md-card-title-text>
 				
-				<md-button class="md-icon-button" aria-label="toggle" ng-click="select($index)">
-					<!-- <md-icon md-svg-icon="md-toggle-arrow"></md-icon>-->
-					<md-icon md-svg-icon="toggle-arrow-up" ng-show="selectedIndex !== $index"></md-icon>
-					<md-icon md-svg-icon="toggle-arrow-down" ng-show="selectedIndex === $index"></md-icon>
-
-				</md-button>
-
 			</md-card-title>
 			
-		
 			<md-card-content ng-show="$index === selectedIndex" layout="row" layout-xs="column">
 				
 				<div layout="column" flex-gt-sm="40">
@@ -72,16 +63,27 @@
 						<textarea readonly>{{entry.note}}</textarea>
 					</md-input-container>
 
+				</div>
+			</md-card-content >
 
+			<md-divider></md-divider>
+
+			<md-card-actions layout="row" layout-align-xs="end" layout-align-gt-sm="start">
+
+				<!-- Edit and Delete Buttons -->
+				<div flex ng-show="selectedIndex === $index" flex-order="2">
+					<md-button class="md-primary">Edit</md-button>
+					<md-button class="md-warn md-hue-2">Delete</md-button>
 				</div>
 
 
-
-
-				
-
-
-			</md-card-content >
+				<!-- Expand / Collapse Icon -->
+				<md-button flex-order="1" flex-order-xs="3"  class="md-icon-button" aria-label="toggle" ng-click="select($index)">
+					<!-- <md-icon md-svg-icon="md-toggle-arrow"></md-icon>-->
+					<md-icon md-svg-icon="toggle-arrow-up" ng-show="selectedIndex === $index"></md-icon>
+					<md-icon md-svg-icon="toggle-arrow-down" ng-show="selectedIndex !== $index"></md-icon>
+				</md-button>
+			</md-card-actions>
 
 		</md-card>
 	</md-content>
