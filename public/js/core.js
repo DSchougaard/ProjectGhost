@@ -1,6 +1,6 @@
 var ghost = angular.module('ghost', ['ngMaterial', 'satellizer', 'ui.router']);
 
-ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider){
+ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider, $mdIconProvider){
     
     $urlRouterProvider.otherwise('/login');
    
@@ -43,7 +43,30 @@ ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRout
 	$mdThemingProvider.theme('default')
 		.primaryPalette('blue-grey')
 		.accentPalette('deep-orange');
+
+	// Angular Material Icon Proivder Setup
+	$mdIconProvider
+	.icon('add', 'img/icons/add.svg')
+	.icon('menu', 'img/icons/menu.svg')
+	.icon('toggle-arrow-up', 'img/icons/toggle-arrow-up.svg')
+	.icon('toggle-arrow-down', 'img/icons/toggle-arrow-down.svg')
 });
+
+ghost.run(function($http, $templateCache){
+	// Pre-fetch icons sources by URL and cache in the $templateCache...
+	// subsequent $http calls will look there first.
+	var urls = [ 
+		'img/icons/add.svg', 
+		'img/icons/menu.svg', 
+		'img/icons/toggle-arrow-up.svg',
+		'img/icons/toggle-arrow-down.svg'];
+	
+
+	angular.forEach(urls, function(url) {
+		$http.get(url, {cache: $templateCache});
+	});
+});
+
 
 ghost.controller('toolbarController', function($scope, $mdSidenav){
 	$scope.menu = function(){
@@ -297,8 +320,6 @@ ghost.controller('homeController', function($scope, $http, $auth, $location, $st
 	$scope.entries = [];
 
 	var userID = $auth.getPayload().uid;
-
-
 
 	$scope.entries = PasswordService.passwords;
 	PasswordService.fetch();

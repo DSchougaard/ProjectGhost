@@ -1,6 +1,6 @@
 <section layout="row" flex>
 	
-	<md-sidenav md-component-id="left" class="md-sidenav-left md-whiteframe-z2" md-is-locked-open="$mdMedia('gt-xs')" ng-cloak>
+	<md-sidenav md-component-id="left" class="md-sidenav-left md-whiteframe-z2" md-is-locked-open="$mdMedia('gt-sm')" ng-cloak>
 		<md-content layout-padding>
 			Left Nav!
 			<md-button class="md-primary" ng-click=test()>TEST</md-button>
@@ -19,7 +19,10 @@
 				</md-card-title-text>
 				
 				<md-button class="md-icon-button" aria-label="toggle" ng-click="select($index)">
-					<md-icon md-svg-icon="md-toggle-arrow"></md-icon>
+					<!-- <md-icon md-svg-icon="md-toggle-arrow"></md-icon>-->
+					<md-icon md-svg-icon="toggle-arrow-up" ng-show="selectedIndex !== $index"></md-icon>
+					<md-icon md-svg-icon="toggle-arrow-down" ng-show="selectedIndex === $index"></md-icon>
+
 				</md-button>
 
 			</md-card-title>
@@ -27,7 +30,7 @@
 		
 			<md-card-content ng-show="$index === selectedIndex" layout="row" layout-xs="column">
 				
-				<div layout="column" flex-gt-xs="40">
+				<div layout="column" flex-gt-sm="40">
 					<md-input-container class="reset-spacing" ng-show="isVisible(entry.username)">
 						<label>Username</label>
 						<input value="{{entry.username}}" readonly>
