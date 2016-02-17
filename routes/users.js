@@ -3,7 +3,6 @@ const restify 		= require('restify');
 const validator 	= require('validator');
 const crypto 		= require('crypto');
 const bcrypt 		= require('bcrypt');
-const argon2 		= require('argon2');
 const schemagic 	= require('schemagic');
 const _				= require('underscore');
 

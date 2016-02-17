@@ -3,7 +3,6 @@ const fs 				= require('fs');
 const restify 			= require('restify');
 
 const bcrypt 			= require('bcrypt');
-const argon2 			= require('argon2');
 const validator			= require('validator');
 
 const authHelpers 		= require(__base + '/helpers/authHelpers.js');
