@@ -45,15 +45,6 @@ ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRout
 		.accentPalette('deep-orange');
 });
 
-ghost.directive('exists', function($compile){
-	return {
-		restrict: "A",
-		link: function($scope, element, attributes){
-			console.log("%j", element);
-		}
-	}
-})
-
 ghost.controller('toolbarController', function($scope, $mdSidenav){
 	$scope.menu = function(){
 		$mdSidenav('left').toggle();
@@ -311,6 +302,19 @@ ghost.controller('homeController', function($scope, $http, $auth, $location, $st
 
 	$scope.entries = PasswordService.passwords;
 	PasswordService.fetch();
+
+
+	// Method for determining wheter or not a field is shown	
+	$scope.isVisible = function(value){
+		return (
+			value !== '' &&
+			value !== null &&
+			value !== undefined
+			);
+	}
+
+
+
 
 	$scope.$on('passwords', function(res){
 		$scope.entries = PasswordService.passwords;
