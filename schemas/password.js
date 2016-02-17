@@ -28,8 +28,8 @@ module.exports = {
 		},
 		"username":{
 			"description": "Username for the Password Entry",
-			"required":true,
-			"type":"string"
+			"required":false,
+			"type":["string", 'null']
 		},
 		"password":{
 			"description": "Password for the Password Entry, in encrypted BLOB format, base64 encoded",
