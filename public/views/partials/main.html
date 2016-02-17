@@ -7,10 +7,9 @@
 		</md-content>
 	</md-sidenav>
 
-
 	<md-content flex layout="column">	
 
-		<md-card ng-repeat="entry in entries">
+		<md-card ng-repeat="entry in vm.entries">
 			<md-card-title class="card-head-padding-button">
 				<md-card-title-text>
 					 <span class="md-headline">{{entry.title}}</span>
@@ -19,10 +18,10 @@
 				
 			</md-card-title>
 			
-			<md-card-content ng-show="$index === selectedIndex" layout="row" layout-xs="column">
+			<md-card-content ng-show="$index === vm.selectedIndex" layout="row" layout-xs="column">
 				
 				<div layout="column" flex-gt-sm="40">
-					<md-input-container class="reset-spacing" ng-show="isVisible(entry.username)">
+					<md-input-container class="reset-spacing" ng-show="vm.isVisible(entry.username)">
 						<label>Username</label>
 						<input value="{{entry.username}}" readonly>
 					</md-input-container>
@@ -46,20 +45,20 @@
 
 
 						<div flex="nogrow" layout-align="end center">
-							<md-button ng-click="show($index)" ng-show="entry.decryptedPassword === undefined" class="reset-spacing"> Show </md-button>
-							<md-button ng-click="hide($index)" ng-show="entry.decryptedPassword !== undefined" class="reset-spacing"> Hide </md-button>
+							<md-button ng-click="vm.show($index)" ng-show="entry.decryptedPassword === undefined" class="reset-spacing"> Show </md-button>
+							<md-button ng-click="vm.hide($index)" ng-show="entry.decryptedPassword !== undefined" class="reset-spacing"> Hide </md-button>
 						</div>
 
 
 					</div>
 
-					<md-input-container class="reset-spacing" ng-show="isVisible(entry.url)" >
+					<md-input-container class="reset-spacing" ng-show="vm.isVisible(entry.url)" >
 						<label>URL</label>
 						<input value="{{entry.url}}" readonly >
 					</md-input-container>
 		
 
-					<md-input-container class="reset-spacing" ng-show="isVisible(entry.note)"> <label>Note</label>
+					<md-input-container class="reset-spacing" ng-show="vm.isVisible(entry.note)"> <label>Note</label>
 						<textarea readonly>{{entry.note}}</textarea>
 					</md-input-container>
 
@@ -71,17 +70,17 @@
 			<md-card-actions layout="row" layout-align-xs="end" layout-align-gt-sm="start">
 
 				<!-- Edit and Delete Buttons -->
-				<div flex ng-show="selectedIndex === $index" flex-order="2">
+				<div flex ng-show="vm.selectedIndex === $index" flex-order="2">
 					<md-button class="md-primary">Edit</md-button>
-					<md-button class="md-warn md-hue-2">Delete</md-button>
+					<md-button class="md-warn md-hue-2" ng-click="vm.del($index)">Delete</md-button>
 				</div>
 
 
 				<!-- Expand / Collapse Icon -->
-				<md-button flex-order="1" flex-order-xs="3"  class="md-icon-button" aria-label="toggle" ng-click="select($index)">
+				<md-button flex-order="1" flex-order-xs="3"  class="md-icon-button" aria-label="toggle" ng-click="vm.select($index)">
 					<!-- <md-icon md-svg-icon="md-toggle-arrow"></md-icon>-->
-					<md-icon md-svg-icon="toggle-arrow-up" ng-show="selectedIndex === $index"></md-icon>
-					<md-icon md-svg-icon="toggle-arrow-down" ng-show="selectedIndex !== $index"></md-icon>
+					<md-icon md-svg-icon="toggle-arrow-up" ng-show="vm.selectedIndex === $index"></md-icon>
+					<md-icon md-svg-icon="toggle-arrow-down" ng-show="vm.selectedIndex !== $index"></md-icon>
 				</md-button>
 			</md-card-actions>
 

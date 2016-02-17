@@ -9,7 +9,8 @@ ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRout
     .state('home', {
         url: '/',
         templateUrl: 'views/partials/main.html',
-        controller: 'homeController',
+        controller: 'listController',
+        controllerAs: 'vm',
 		authenticate: true
     })
     
@@ -207,57 +208,6 @@ ghost.service('EncryptionService', function($q, $http, $auth, $mdDialog, $mdToas
 	}
 });
 
-ghost.service('PasswordService', function($rootScope, $q, $http, $auth, $mdDialog, EncryptionService){
-	// I hate JS's version of "this"
-	var self = this;
-
-	// Content for storing the actual passwords
-	this.passwords 	= [];
-	this.create 	= create;
-
-	this.fetch = function(){
-		$http({
-			method: 'GET',
-			url: '/api/users/' + $auth.getPayload().uid + '/passwords'
-		})
-		.then(function(res){
-			self.passwords = _.clone(res.data);
-			console.log("Passwords updated.\n%j", self.passwords);
-			$rootScope.$broadcast('passwords', 'fetched');
-		})
-		.catch(function(err){
-		    $mdDialog.show(
-		        $mdDialog.alert()
-	            .parent(angular.element(document.querySelector('#popupContainer')))
-	            .clickOutsideToClose(true)
-	            .title('Error retrieving passwords')
-	            .textContent(err)
-	            .ariaLabel('Alert retrieve')
-	            .ok('OK')
-	        );
-		});
-	}
-
-	this.show = function(index){
-		console.log("Password Service: Showing password with ID %d, resolving to %j", index, this.passwords[index])
-		return EncryptionService.decrypt(this.passwords[index])
-		.then(function(password){
-
-			self.passwords[index].decryptedPassword = password;
-
-		});
-	};
-
-	this.hide = function(index){
-		self.passwords[index].decryptedPassword = undefined;
-	}
-
-	function create(password){
-
-
-	};
-
-});
 
 function PasswordPromtController($scope, $mdDialog){
 	$scope.password = undefined;
@@ -314,74 +264,3 @@ ghost.controller('logoutController', function($auth){
 		console.log('Auth token removed');
 	}
 });
-
-ghost.controller('homeController', function($scope, $http, $auth, $location, $state, PasswordService, EncryptionService){
-
-	$scope.entries = [];
-
-	var userID = $auth.getPayload().uid;
-
-	$scope.entries = PasswordService.passwords;
-	PasswordService.fetch();
-
-
-	// Method for determining wheter or not a field is shown	
-	$scope.isVisible = function(value){
-		return (
-			value !== '' &&
-			value !== null &&
-			value !== undefined
-			);
-	}
-
-
-
-
-	$scope.$on('passwords', function(res){
-		$scope.entries = PasswordService.passwords;
-	});
-
-	$scope.openNav = function(){
-    	$mdSidenav('left').toggle();
-	}
-
-	$scope.logout = function(){
-		$auth.logout();
-		$state.transitionTo("login");
-	}
-
-	// List controls
-	$scope.selectedIndex = undefined;
-	$scope.select = function(index, event){
-		if( $scope.selectedIndex !== undefined && index !== $scope.selectedIndex ){
-			// Hide previously shown password, when it looses focus.
-			PasswordService.hide($scope.selectedIndex);
-		}
-
-		if(index !== $scope.selectedIndex){
-			$scope.selectedIndex = index;
-		}else {
-			$scope.selectedIndex = undefined;
-		}
-	}
-
-	$scope.decrypt = function(index){
-		EncryptionService.decrypt( $scope.entries[index] )
-		.then(function(password){
-			console.log("Decrypted password = " + password);
-			this.reload();
-		});
-	}
-
-	$scope.show = function(index){
-		PasswordService.show(index)
-		.then(function(){
-		})
-	}
-
-	$scope.hide = function(index){
-		PasswordService.hide(index);
-	}
-
-})
-
