@@ -47,7 +47,8 @@ function ListController($scope, $http, $auth, $location, $state, $mdDialog, Pass
 
 	function del(index){
 		console.log(index);
-		PasswordService.del(index)
+		PasswordService.del(index);
+		self.selectedIndex = undefined;
 	}
 
 	function edit(index){
