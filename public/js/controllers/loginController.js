@@ -26,4 +26,4 @@ function LoginController($scope, $auth, $location, $state){
 	$scope.closeAlert = function(index){
 		$scope.alerts.splice(index, 1);
 	}
-});
+};

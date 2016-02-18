@@ -27,6 +27,8 @@
     "fibers": "^1.0.8",
     "fs-extra": "^0.26.4",
     "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.0",
+    "gulp-util": "^3.0.7",
     "istanbul": "^0.4.2",
     "mocha": "^2.3.4",
     "node-forge": "^0.6.39",

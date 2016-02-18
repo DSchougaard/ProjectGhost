@@ -2,8 +2,6 @@ angular
 .module('ghost')
 .controller('addController', AddController);
 
-
-
 function AddController($http, $auth, $state, EncryptionService) {
 	var self = this;
 	console.log("Beam me up, scotty!");
@@ -13,10 +11,6 @@ function AddController($http, $auth, $state, EncryptionService) {
 
 
 	
-
-
-
-
 	function submit() {
 		console.log("Creating new password, %j", self.password);
 		EncryptionService.encrypt(self.password.password)
@@ -40,11 +34,9 @@ function AddController($http, $auth, $state, EncryptionService) {
 
 			// Handle validation errors
 			if( err.data.error === "validation" ){
-
+				
 			}
-
-
+			
 		});
-	
 	}
 }
