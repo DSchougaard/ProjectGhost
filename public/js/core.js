@@ -77,18 +77,6 @@ ghost.controller('toolbarController', function($scope, $mdSidenav){
 
 
 
-function PasswordPromtController($scope, $mdDialog){
-	$scope.password = undefined;
-	$scope.cancel = function(){
-		$mdDialog.cancel();
-	}
-
-	$scope.submit = function(){
-		$mdDialog.hide($scope.password);
-	}
-}
-
-
 ghost.run(function ($rootScope, $state, $auth) {
 	$rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
 		if (toState.authenticate && !$auth.isAuthenticated()){

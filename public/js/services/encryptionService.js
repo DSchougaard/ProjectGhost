@@ -30,7 +30,7 @@ function EncryptionService($q, $http, $auth, $mdDialog, $mdToast){
 		// First promt user for encryption password
 		return $mdDialog.show({
 			parent: angular.element(document.body),
-			controller: PasswordPromtController,
+			controller: 'passwordPromtController',
 			templateUrl: 'views/modals/password.html',
 			clickOutsideToClose:true,
 			fullscreen: true
