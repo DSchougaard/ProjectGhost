@@ -51,7 +51,7 @@ function ListController($scope, $http, $auth, $location, $state, $mdDialog, Pass
 	}
 
 	function edit(index){
-
+		$state.go('edit', {password: self.entries[index]});
 	}
 
 	// List controls

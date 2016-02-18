@@ -28,6 +28,15 @@ ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRout
     	templateUrl: 'views/partials/add.html',
     	controller: 'addController',
     	controllerAs: 'vm'
+    })
+    .state('edit', {
+    	url: '/edit',
+    	templateUrl: 'views/partials/add.html',
+    	controller: 'addController',
+    	controllerAs: 'vm',
+    	params: {
+    		password: undefined
+    	}
     });
 
     $locationProvider.html5Mode(true);
