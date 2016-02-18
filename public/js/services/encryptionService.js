@@ -117,17 +117,14 @@ function EncryptionService($q, $http, $auth, $mdDialog, $mdToast){
 	};
 
 	function encrypt(password){
-		console.log('Encrypting password');
+		console.log('Encrypting password %j', password);
 
 		return self.getPublicKey()
 		.then(function(key){
-			console.log("Private key = ", key);
-
-
 			var binaryPublicKey = forge.util.decode64(key);
 			var publicKey = forge.pki.publicKeyFromPem(binaryPublicKey);
-
-			var encrypted = publicKey.encrypt(password, 'RSA-OAEP', {
+			
+			var encrypted = publicKey.encrypt(password.password, 'RSA-OAEP', {
 				md: forge.md.sha256.create()
 			});
 
