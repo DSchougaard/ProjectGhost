@@ -1,131 +1,105 @@
 <!DOCTYPE html>
-
-<section layout="row" flex>
-	
-	<md-sidenav md-component-id="left" class="md-sidenav-left md-whiteframe-z2" md-is-locked-open="$mdMedia('gt-sm')" ng-cloak>
-			<!-- 
-			<md-toolbar class="md-hue-1" md-scroll-shrink>
-
-				<div class="md-toolbar-tools" layout="row">
-					<div flex>
-						<p>Welcome User!</p>
-					</div>
-					<div layout="row" layout-align="end center">
-						<img class="md-avatar"  ng-src="img/default-avatar.png" height="50" alt="{{item.who}}">
-					</div>
-				
-				</div>
-
-			</md-toolbar>
-			-->
-			<md-toolbar class="md-theme-indigo">
-				<div class="md-toolbar-tools" >
-					<span flex>Hello User!</span>
-					<img class="md-avatar"  ng-src="img/default-avatar.png" height="50" alt="{{item.who}}">
-				</div>
-			</md-toolbar>
-
-			<md-content layout-padding>
-
-				<md-button class="md-primary" ng-click="test()">TEST</md-button>
-
-				<p>Lorem</p>
-				<p>Ipsum</p>
-				<p>Dolor</p>
-				<p>Sit</p>
-				<p>Amet</p>
-			</md-content>
+<md-sidenav flex md-component-id="left" class="md-sidenav-left md-whiteframe-z2" md-is-locked-open="$mdMedia('gt-sm')" ng-cloak>
 		
-	</md-sidenav>
+		<md-toolbar class="md-hue-1">
+			<div class="md-toolbar-tools" >
+				<span flex>Hello User!</span>
+				<img class="md-avatar"  ng-src="img/default-avatar.png" height="50" alt="{{item.who}}">
+			</div>
+		</md-toolbar>
+
+		<md-content layout-padding>
+
+			<md-button class="md-primary" ng-click="test()">TEST</md-button>
+
+			<p>Lorem</p>
+			<p>Ipsum</p>
+			<p>Dolor</p>
+			<p>Sit</p>
+			<p>Amet</p>
+		</md-content>
+	
+</md-sidenav>
 
 
 
 
+<md-content flex layout="column">	
 
-
-
-
-
-
-	<md-content flex layout="column">	
-
-		<md-card ng-repeat="entry in vm.entries">
-			<md-card-title class="card-head-padding-button">
-				<md-card-title-text>
-					 <span class="md-headline">{{entry.title}}</span>
-					 <span class="md-subhead" >{{entry.note}}</span>
-				</md-card-title-text>
-				
-			</md-card-title>
+	<md-card ng-repeat="entry in vm.entries">
+		<md-card-title class="card-head-padding-button">
+			<md-card-title-text>
+				 <span class="md-headline">{{entry.title}}</span>
+				 <span class="md-subhead" >{{entry.note}}</span>
+			</md-card-title-text>
 			
-			<md-card-content ng-show="$index === vm.selectedIndex" layout="row" layout-xs="column">
-				
-				<div layout="column" flex-gt-sm="40">
-					<md-input-container class="reset-spacing" ng-show="vm.isVisible(entry.username)">
-						<label>Username</label>
-						<input value="{{entry.username}}" readonly>
-					</md-input-container>
+		</md-card-title>
+		
+		<md-card-content ng-show="$index === vm.selectedIndex" layout="row" layout-xs="column">
+			
+			<div layout="column" flex-gt-sm="40">
+				<md-input-container class="reset-spacing" ng-show="vm.isVisible(entry.username)">
+					<label>Username</label>
+					<input value="{{entry.username}}" readonly>
+				</md-input-container>
 
-					<div layout="row" >
-						<!-- Eh, probably not the best way to do this... -->
-						<!-- Shows filler input when password is still decrypted -->
-						<div flex>
-							<md-input-container layout-fill ng-hide="entry.decryptedPassword !== undefined"  class="reset-spacing" >
-								<label>Password</label>
-								<input value="********" readonly >
-							</md-input-container>
-							
-							<!-- Seen when the actual password is decrypted -->
-							<md-input-container layout-fill ng-show="entry.decryptedPassword !== undefined"  class="reset-spacing">
-								<label>Password</label>
-								<input value="{{entry.decryptedPassword}}" readonly >
-							</md-input-container>
-						</div>
+				<div layout="row" >
+					<!-- Eh, probably not the best way to do this... -->
+					<!-- Shows filler input when password is still decrypted -->
+					<div flex>
+						<md-input-container layout-fill ng-hide="entry.decryptedPassword !== undefined"  class="reset-spacing" >
+							<label>Password</label>
+							<input value="********" readonly >
+						</md-input-container>
 						
+						<!-- Seen when the actual password is decrypted -->
+						<md-input-container layout-fill ng-show="entry.decryptedPassword !== undefined"  class="reset-spacing">
+							<label>Password</label>
+							<input value="{{entry.decryptedPassword}}" readonly >
+						</md-input-container>
+					</div>
+					
 
 
-						<div flex="nogrow" layout-align="end center">
-							<md-button ng-click="vm.show($index)" ng-show="entry.decryptedPassword === undefined" class="reset-spacing"> Show </md-button>
-							<md-button ng-click="vm.hide($index)" ng-show="entry.decryptedPassword !== undefined" class="reset-spacing"> Hide </md-button>
-						</div>
-
-
+					<div flex="nogrow" layout-align="end center">
+						<md-button ng-click="vm.show($index)" ng-show="entry.decryptedPassword === undefined" class="reset-spacing"> Show </md-button>
+						<md-button ng-click="vm.hide($index)" ng-show="entry.decryptedPassword !== undefined" class="reset-spacing"> Hide </md-button>
 					</div>
 
-					<md-input-container class="reset-spacing" ng-show="vm.isVisible(entry.url)" >
-						<label>URL</label>
-						<input value="{{entry.url}}" readonly >
-					</md-input-container>
-		
-
-					<md-input-container class="reset-spacing" ng-show="vm.isVisible(entry.note)"> <label>Note</label>
-						<textarea readonly>{{entry.note}}</textarea>
-					</md-input-container>
 
 				</div>
-			</md-card-content >
 
-			<md-divider></md-divider>
-
-			<md-card-actions layout="row" layout-align-xs="end" layout-align-gt-sm="start">
-
-				<!-- Edit and Delete Buttons -->
-				<div flex ng-show="vm.selectedIndex === $index" flex-order="2">
-					<md-button class="md-primary" ng-click="vm.edit($index)">Edit</md-button>
-					<md-button class="md-warn md-hue-2" ng-click="vm.del($index)">Delete</md-button>
-				</div>
-
-
-				<!-- Expand / Collapse Icon -->
-				<md-button flex-order="1" flex-order-xs="3"  class="md-icon-button" aria-label="toggle" ng-click="vm.select($index)">
-					<!-- <md-icon md-svg-icon="md-toggle-arrow"></md-icon>-->
-					<md-icon md-svg-icon="toggle-arrow-up" ng-show="vm.selectedIndex === $index"></md-icon>
-					<md-icon md-svg-icon="toggle-arrow-down" ng-show="vm.selectedIndex !== $index"></md-icon>
-				</md-button>
-			</md-card-actions>
-
-		</md-card>
-	</md-content>
-
-</section>
+				<md-input-container class="reset-spacing" ng-show="vm.isVisible(entry.url)" >
+					<label>URL</label>
+					<input value="{{entry.url}}" readonly >
+				</md-input-container>
 	
+
+				<md-input-container class="reset-spacing" ng-show="vm.isVisible(entry.note)"> <label>Note</label>
+					<textarea readonly>{{entry.note}}</textarea>
+				</md-input-container>
+
+			</div>
+		</md-card-content >
+
+		<md-divider></md-divider>
+
+		<md-card-actions layout="row" layout-align-xs="end" layout-align-gt-sm="start">
+
+			<!-- Edit and Delete Buttons -->
+			<div flex ng-show="vm.selectedIndex === $index" flex-order="2">
+				<md-button class="md-primary" ng-click="vm.edit($index)">Edit</md-button>
+				<md-button class="md-warn md-hue-2" ng-click="vm.del($index)">Delete</md-button>
+			</div>
+
+
+			<!-- Expand / Collapse Icon -->
+			<md-button flex-order="1" flex-order-xs="3"  class="md-icon-button" aria-label="toggle" ng-click="vm.select($index)">
+				<!-- <md-icon md-svg-icon="md-toggle-arrow"></md-icon>-->
+				<md-icon md-svg-icon="toggle-arrow-up" ng-show="vm.selectedIndex === $index"></md-icon>
+				<md-icon md-svg-icon="toggle-arrow-down" ng-show="vm.selectedIndex !== $index"></md-icon>
+			</md-button>
+		</md-card-actions>
+
+	</md-card>
+</md-content>

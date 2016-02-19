@@ -47,9 +47,10 @@
     </head>
     <!-- Dan says #E6E6E6 is good -->
     <!-- <body style="background-color:#e6e6e6"> -->
-    <body>
-            <div ui-view="sidenav"></div>
-            <div ui-view="content"></div>
+    <body flex layout="column" style="height:100%">
+
+        <div ui-view="sidenav" flex="none"></div>
+        <div ui-view="content" flex layout="row"></div>
 
 
     </body>
