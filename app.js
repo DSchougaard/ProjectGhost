@@ -181,3 +181,4 @@ if( process.env.NODE_ENV === 'test' ){
 }else{
 	server.listen(opts.port);
 }
+		console.log(new Date());
