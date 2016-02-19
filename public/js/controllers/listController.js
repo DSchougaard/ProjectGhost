@@ -6,6 +6,7 @@
 
 	function ListController($scope, $http, $auth, $location, $state, $mdDialog, PasswordService, EncryptionService){
 		
+
 		var self = this;
 		
 		// List of Passwords
@@ -29,6 +30,57 @@
 		self.isVisible = isVisible;
 
 		self.userMenu = ['Preferences', 'Log off'];
+
+
+		self.treeStructure = [
+			{
+				title: 'Group 1',
+				type: 'node',
+				children: [
+					{
+						title: 'Other Title',
+						type: 'leaf'
+					},
+					{
+						title: 'Other Title 2',
+						type: 'leaf'
+					}
+				]
+			},
+			{
+				title: 'Group 2',
+				type: 'node',
+				children: [
+					{
+						title: 'Another Title',
+						type: 'leaf'
+					},
+					{
+						title: 'Another Title 2',
+						type: 'leaf'
+					}
+				]
+			},
+			{
+				title: 'This is interesting',
+				type: 'node',
+				children: [
+					{
+						title: 'A little more interesting',
+						type: 'node',
+						children:[
+							{
+								title: 'Hmmmmmm',
+								type: 'leaf'
+							}
+						]
+					}
+				]
+			}
+
+		];
+
+
 
 
 		// Watch for change, need this for initial load

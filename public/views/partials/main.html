@@ -20,10 +20,10 @@
 					<md-menu-content width="4" >
 						<md-menu-item ng-repeat="item in vm.userMenu">
 							<md-button ng-click="ctrl.announceClick($index)">
-							<div layout="row">
-							<p flex>{{item}}</p>
-							<md-icon md-menu-align-target md-svg-icon="call:portable-wifi-off" style="margin: auto 3px auto 0;"></md-icon>
-							</div>
+								<div layout="row">
+									<p flex>{{item}}</p>
+										<md-icon md-menu-align-target style="margin: auto 3px auto 0;"></md-icon>
+								</div>
 							</md-button>
 						</md-menu-item>
 					</md-menu-content>
@@ -37,38 +37,8 @@
 
 
 
-
-
-
-
-		<!-- 
-		<md-toolbar class="md-tall md-hue-1" >
-			<div class="md-toolbar-tools md-tall" style="background-color: #444444">
-
-				<div layout="column" layout-fill layout-align="end start">
-
-					<img class="md-avatar" ng-src="img/default-avatar.png" height="40" alt="{{item.who}}"> 
-
-
-					<div layout="row">
-						<h4 class="md-subhead" > Username</h4>
-						<span flex></span>
-					</div>
-
-				</div>
-
-			</div>
-		</md-toolbar>	
-		-->
-		<md-content layout-padding>
-
-			<md-button class="md-primary" ng-click="test()">TEST</md-button>
-
-			<p>Lorem</p>
-			<p>Ipsum</p>
-			<p>Dolor</p>
-			<p>Sit</p>
-			<p>Amet</p>
+		<md-content>
+			<tree-menu data="vm.treeStructure"></tree-menu>
 		</md-content>
 	
 </md-sidenav>

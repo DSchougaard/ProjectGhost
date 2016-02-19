@@ -18,7 +18,7 @@
 	        		controllerAs: 'vm',
 				},
 				'sidenav':{
-			        templateUrl: 'toolbar/toolbar.template.html',
+			        templateUrl: 'app/toolbar/toolbar.template.html',
        				controller: 'ToolBarController',
 	        		controllerAs: 'vm',
 				}
@@ -43,7 +43,7 @@
 	   		 		controllerAs: 'vm'
 	    		},
 				'sidenav':{
-			        templateUrl: 'toolbar/toolbar.template.html',
+			        templateUrl: 'app/toolbar/toolbar.template.html',
        				controller: 'ToolBarController',
 	        		controllerAs: 'vm',
 				}
@@ -58,7 +58,7 @@
 	    			controllerAs: 'vm',
 	    		},
 				'sidenav':{
-			        templateUrl: 'toolbar/toolbar.template.html',
+			        templateUrl: 'app/toolbar/toolbar.template.html',
        				controller: 'ToolBarController',
 	        		controllerAs: 'vm',
 				}

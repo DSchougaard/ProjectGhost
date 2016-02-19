@@ -20,3 +20,7 @@
 .float-fab {
 	margin-top: 20px;
 }
+
+.suppress-uppercase{
+	text-transform: none;
+}

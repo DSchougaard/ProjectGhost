@@ -12,6 +12,10 @@
 		self.title = "";
 
 
+		self.test = {
+			title: 'this is a test title'
+		}
+
 		// UI Strings
 		var add = {
 			title: "Create new password"

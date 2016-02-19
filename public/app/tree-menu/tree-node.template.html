@@ -1,0 +1,14 @@
+<md-button class="suppress-uppercase" ng-click="$ctrl.toggle()" ng-show="$ctrl.parent.expanded">
+	[NODE] {{$ctrl.node.title}}
+</md-button>
+
+<div ng-repeat="child in $ctrl.node.children">
+	
+	<div ng-if="child.type == 'node'">
+		<tree-node parent="$ctrl" node="child"></tree-node>
+	</div>
+
+	<div ng-if="child.type === 'leaf'">
+		<tree-leaf parent="$ctrl" leaf="child"></tree-leaf>
+	</div> 
+</div>
