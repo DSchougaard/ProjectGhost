@@ -5,7 +5,7 @@
 		.service('EncryptionService', EncryptionService);
 
 
-	function EncryptionService($q, $http, $auth, $mdDialog, $mdToast){
+	function EncryptionService($q, $http, $auth, $mdDialog, $mdToast, $mdMedia){
 		var self = this;
 		// Variables
 		self.encryptionKey 	= undefined;
@@ -35,7 +35,7 @@
 				controller: 'passwordPromtController',
 				templateUrl: 'views/modals/password.html',
 				clickOutsideToClose:true,
-				fullscreen: true
+				fullscreen: !$mdMedia('gt-xs')
 			})
 			.then(function(password){
 
