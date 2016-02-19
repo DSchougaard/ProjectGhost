@@ -3,12 +3,42 @@
 <section layout="row" flex>
 	
 	<md-sidenav md-component-id="left" class="md-sidenav-left md-whiteframe-z2" md-is-locked-open="$mdMedia('gt-sm')" ng-cloak>
-		<md-content layout-padding>
-			Left Nav!
-			<md-button class="md-primary" ng-click="test()">TEST</md-button>
+			
+			<md-toolbar class="md-hue-1" md-scroll-shrink>
 
-		</md-content>
+				<div class="md-toolbar-tools" layout="row">
+					<div flex>
+						<p>Welcome User!</p>
+					</div>
+					<div flex layout="row" layout-align="end center">
+						<img class="md-avatar"  ng-src="img/default-avatar.png" height="50" alt="{{item.who}}">
+					</div>
+				
+				</div>
+
+			</md-toolbar>
+	
+			<md-content>
+
+				<md-button class="md-primary" ng-click="test()">TEST</md-button>
+
+				<p>Lorem</p>
+				<p>Ipsum</p>
+				<p>Dolor</p>
+				<p>Sit</p>
+				<p>Amet</p>
+			</md-content>
+		
 	</md-sidenav>
+
+
+
+
+
+
+
+
+
 
 	<md-content flex layout="column">	
 
