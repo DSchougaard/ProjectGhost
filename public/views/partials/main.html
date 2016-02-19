@@ -21,7 +21,6 @@
 	
 </md-sidenav>
 
-
 <md-content flex layout="column">	
 
 	<md-card ng-repeat="entry in vm.entries">
@@ -90,14 +89,15 @@
 				<md-button class="md-warn md-hue-2" ng-click="vm.del($index)">Delete</md-button>
 			</div>
 
-
 			<!-- Expand / Collapse Icon -->
 			<md-button flex-order="1" flex-order-xs="3"  class="md-icon-button" aria-label="toggle" ng-click="vm.select($index)">
 				<!-- <md-icon md-svg-icon="md-toggle-arrow"></md-icon>-->
 				<md-icon md-svg-icon="toggle-arrow-up" ng-show="vm.selectedIndex === $index"></md-icon>
 				<md-icon md-svg-icon="toggle-arrow-down" ng-show="vm.selectedIndex !== $index"></md-icon>
 			</md-button>
+
 		</md-card-actions>
 
 	</md-card>
+
 </md-content>
