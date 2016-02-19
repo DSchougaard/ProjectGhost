@@ -36,15 +36,33 @@
 	    })
 	    .state('add', {
 	    	url: '/add',
-	    	templateUrl: 'views/partials/add.html',
-	    	controller: 'addController',
-	    	controllerAs: 'vm'
+	    	views: {
+	    		'content':{
+			    	templateUrl: 'views/partials/add.html',
+  	 				controller: 'addController',
+	   		 		controllerAs: 'vm'
+	    		},
+				'sidenav':{
+			        templateUrl: 'toolbar/toolbar.template.html',
+       				controller: 'ToolBarController',
+	        		controllerAs: 'vm',
+				}
+	    	}
 	    })
 	    .state('edit', {
 	    	url: '/edit',
-	    	templateUrl: 'views/partials/add.html',
-	    	controller: 'addController',
-	    	controllerAs: 'vm',
+	    	views: {
+	    		'content': {
+			    	templateUrl: 'views/partials/add.html',
+	    			controller: 'addController',
+	    			controllerAs: 'vm',
+	    		},
+				'sidenav':{
+			        templateUrl: 'toolbar/toolbar.template.html',
+       				controller: 'ToolBarController',
+	        		controllerAs: 'vm',
+				}
+	    	},
 	    	params: {
 	    		password: undefined
 	    	}
