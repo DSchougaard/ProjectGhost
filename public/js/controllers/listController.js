@@ -28,6 +28,9 @@
 		// UI show/hide statusses
 		self.isVisible = isVisible;
 
+		self.userMenu = ['Preferences', 'Log off'];
+
+
 		// Watch for change, need this for initial load
 		$scope.$on('passwords', function(res){
 			self.entries = PasswordService.passwords;

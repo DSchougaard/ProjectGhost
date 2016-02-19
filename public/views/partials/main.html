@@ -1,13 +1,65 @@
 <!DOCTYPE html>
 <md-sidenav md-component-id="left" class="md-sidenav-left md-whiteframe-z2" md-is-locked-open="$mdMedia('gt-sm')" ng-cloak>
-		
-		<md-toolbar class="md-hue-1">
-			<div class="md-toolbar-tools" >
-				<span flex>Hello User!</span>
-				<img class="md-avatar"  ng-src="img/default-avatar.png" height="50" alt="{{item.who}}">
+		<md-toolbar class="md-tall md-hue-1">
+			
+			<div layout="row" layout-padding>
+				<img class="md-avatar" ng-src="img/default-avatar.png" height="75" alt="{{item.who}}"> 
 			</div>
+
+			<span flex></span>
+			
+			<div class="md-toolbar-tools md-toolbar-tools-bottom">
+				<h4 class="md-subhead" > Username</h4>
+				<span flex></span>
+		
+				<md-menu md-position-mode="target-right target" >
+					<md-button aria-label="Open demo menu" class="md-icon-button" ng-click="$mdOpenMenu($event)">
+						<md-icon md-menu-origin md-svg-icon="toggle-arrow-down"></md-icon>
+					</md-button>
+
+					<md-menu-content width="4" >
+						<md-menu-item ng-repeat="item in vm.userMenu">
+							<md-button ng-click="ctrl.announceClick($index)">
+							<div layout="row">
+							<p flex>{{item}}</p>
+							<md-icon md-menu-align-target md-svg-icon="call:portable-wifi-off" style="margin: auto 3px auto 0;"></md-icon>
+							</div>
+							</md-button>
+						</md-menu-item>
+					</md-menu-content>
+				</md-menu>
+
+			</div>
+
+
+
 		</md-toolbar>
 
+
+
+
+
+
+
+		<!-- 
+		<md-toolbar class="md-tall md-hue-1" >
+			<div class="md-toolbar-tools md-tall" style="background-color: #444444">
+
+				<div layout="column" layout-fill layout-align="end start">
+
+					<img class="md-avatar" ng-src="img/default-avatar.png" height="40" alt="{{item.who}}"> 
+
+
+					<div layout="row">
+						<h4 class="md-subhead" > Username</h4>
+						<span flex></span>
+					</div>
+
+				</div>
+
+			</div>
+		</md-toolbar>	
+		-->
 		<md-content layout-padding>
 
 			<md-button class="md-primary" ng-click="test()">TEST</md-button>
