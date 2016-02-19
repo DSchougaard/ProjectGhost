@@ -127,14 +127,6 @@ ciphers[0].finish();
 userData[0].privatekey = forge.util.encode64(ciphers[0].output.getBytes());
 userData[0].publickey  = forge.util.encode64(publicKey.toString('utf8'));
 
-console.log("Salt = " + userData[0].pk_salt);
-console.log("Encryption key = " + forge.util.encode64(encryptionKeys[0]));
-console.log("IV = " + userData[0].iv);
-console.log("Private Key = " + userData[0].privatekey);
-
-
-
-
 ciphers[1] = forge.cipher.createCipher('AES-CBC', encryptionKeys[1]);
 ciphers[1].start({iv: forge.util.decode64(userData[1].iv) });
 ciphers[1].update(forge.util.createBuffer(privateKey));
