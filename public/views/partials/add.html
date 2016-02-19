@@ -2,16 +2,18 @@
 
 
   <section class="md-whiteframe-z1" layout-fill>
-	<md-toolbar layout-fill>
+	
+	<md-toolbar >
 		<div class="md-toolbar-tools">
-		<h3>
-		<span ng-bind="vm.title"></span>
-		</h3>
+			<h3>
+				<span ng-bind="vm.title"></span>
+			</h3>
 		</div>
 	</md-toolbar>
 
 
 	<form name="addPasswordForm" ng-submit="vm.submit()">
+		
 		<md-input-container class="md-block">
 			<label>Title</label>
 			<input ng-model="vm.password.title" ng-required="true" name="title">
