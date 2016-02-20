@@ -1,24 +1,31 @@
-<md-button 
-	aria-label="Expand" 
-	layout-fill
-	class="allow-wrap reset-spacing text-left suppress-uppercase" 
-	ng-click="$ctrl.toggle()" 
-	ng-show="$ctrl.parent.expanded"
-	ng-style="{'padding-left': $ctrl.parent.indentation.toString() + 'px'}"
-	>
+	<md-button class="allow-wrap reset-spacing text-left suppress-uppercase" aria-label="Expand" ng-click="$ctrl.toggle()" ng-show="$ctrl.parent.expanded" ng-style="{'padding-left': $ctrl.parent.indentation.toString() + 'px'}">
 
-	<md-icon md-svg-icon="tree:folder"></md-icon>
-	<span>{{$ctrl.node.title}}</span>
-</md-button>
+		<md-icon md-svg-icon="tree:folder"></md-icon>
+		<span>{{$ctrl.node.title}}</span>
+	</md-button>
 
-<div ng-repeat="child in $ctrl.node.children">
-	
-	<div ng-if="child.type == 'node'">
-		<tree-node parent="$ctrl" node="child"></tree-node>
+	<div ng-repeat="child in $ctrl.node.children" ng-if="$ctrl.expanded">
+		
+		<div ng-if="child.type == 'node'">
+			<tree-node parent="$ctrl" node="child"></tree-node>
+		</div>
+
+		<div ng-if="child.type === 'leaf'">
+			<tree-leaf parent="$ctrl" leaf="child"></tree-leaf>
+		</div> 
 	</div>
+	<!-- style="overflow:hidden; word-wrap: break-word;" -->
 
-	<div ng-if="child.type === 'leaf'">
-		<tree-leaf parent="$ctrl" leaf="child"></tree-leaf>
-	</div> 
-</div>
-<!-- style="overflow:hidden; word-wrap: break-word;" -->
+
+<!--
+		
+		class="md-block allow-wrap reset-spacing text-left suppress-uppercase" 
+
+
+
+
+
+
+
+
+-->

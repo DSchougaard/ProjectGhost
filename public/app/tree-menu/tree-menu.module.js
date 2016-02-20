@@ -23,8 +23,10 @@
 		},
 		template: function($element, $attrs){
 			return [
-				'<div layout="column" flex="none" layout-wrap	 ng-repeat="node in $ctrl.data">',
+				'<div layout="column" flex>',
+				'<div ng-repeat="node in $ctrl.data">',
 					'<tree-node parent="$ctrl" node="node"></tree-node>',
+				'</div>',
 				'</div>'
 			].join('');
 		}
