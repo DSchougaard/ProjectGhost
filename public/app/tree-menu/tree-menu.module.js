@@ -1,43 +1,30 @@
 (function(){
-
-angular
-	.module('ghost')
-	.component('treeMenuasdasdas', {
-		bindings: {
-			structure: '='
-		},
-		controller: treeMenuController,
-		controllerAs: 'tree'
-		
-	});
-
-
-
-function treeMenuController(){
-	var self = this;
-
-
-	self.isOpen = isOpen();
-}
-})();
-
-
-(function(){
 	angular
 	.module('ghost')
 	.component('treeMenu', {
 		bindings: {
-			data: '='
+			data: '=',
+			selection: '='
 		},
 		controller: function () {
-			this.expanded = true;
+			var self = this;
+			// Literals
+			self.expanded = true;
+			self.indentation = 0;
+
+			// Exposed interface
+			self.propagate = propagate;
+
+			// Methods
+			function propagate(ret){
+				self.selection = ret;
+			}
+
 		},
 		template: function($element, $attrs){
 			return [
-				'<div layout="column">',
-					'<div ng-repeat="node in $ctrl.data">',
-						'<tree-node parent="$ctrl" node="node"></tree-node>',
-					'</div>',
+				'<div layout="column" flex="none" layout-wrap	 ng-repeat="node in $ctrl.data">',
+					'<tree-node parent="$ctrl" node="node"></tree-node>',
 				'</div>'
 			].join('');
 		}
@@ -54,17 +41,33 @@ function treeMenuController(){
 		},
 		controller: function () {
 			var self = this;
+			// Literals
 			self.expanded = false;
+			self.indentation = self.parent.indentation + 20;
+
+			// Exposed Interface
 			self.toggle = toggle;
 			self.check = check;
+			self.propagate = propagate;
 
+			// Methods
 			function check(){
 				console.log(self.parent);
 			}
 
+			function propagate(ret){
+				self.parent.propagate(ret);
+			}
+
 			function toggle(){
 				self.expanded = !self.expanded;
-				console.log("Node " + self.node.title + " is expanded? " + self.expanded);
+				if( self.expanded ){
+					if( self.node.selection !== undefined ){
+						self.parent.propagate(self.node.selection);
+					}else{
+						self.parent.propagate(self.node);
+					}
+				}
 			}
 
 		
@@ -86,39 +89,26 @@ function treeMenuController(){
 			var self = this;
 			self.get = get;
 
+			self.brokenTitle = []
+
+			self.brokenTitle[0] = self.leaf.title.substring(0, 36);
+			self.brokenTitle[1] = self.leaf.title.substring(37, 73);
+
+
+
 			function get(){
 				console.log("%j", self.leaf);
+				if( self.leaf.selection !== undefined ){
+					// User had set a selection criteria
+					self.parent.propagate(self.leaf.selection);
+				}else{
+					self.parent.propagate(self.leaf);
+				}
 			}
+
+
+
 		},
-		template: function($element, $attrs){
-			return [
-				'<md-button class="suppress-uppercase" ng-click="$ctrl.get()" ng-show="$ctrl.parent.expanded">',
-					'[LEAF] {{$ctrl.leaf.title}}',
-				'</md-button>',
-			].join('');
-		}
+		templateUrl: 'app/tree-menu/tree-leaf.template.html'
 	});
 })();
-
-/*
-node
-	leaf
-node
-	leaf
-node
-	node
-		node
-			leaf
-		leaf
-	node
-		leaf
-		leaf
-		leaf
-node
-	leaf
-
-<tree-node></tree-node>
-<tree-leaf></tree-leaf>
-
-
-*/

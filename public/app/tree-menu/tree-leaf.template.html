@@ -1,0 +1,11 @@
+<md-button 
+	ng-show="$ctrl.parent.expanded"
+	ng-click="$ctrl.get()"
+	layout-fill layout-wrap
+	class="allow-wrap reset-spacing text-left suppress-uppercase"
+	aria-label="File"
+	ng-style="{'padding-left': $ctrl.parent.indentation.toString() + 'px'}"
+	>
+	<md-icon md-svg-icon="tree:file"></md-icon>
+	{{$ctrl.leaf.title}}
+</md-button>

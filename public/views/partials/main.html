@@ -22,7 +22,7 @@
 							<md-button ng-click="ctrl.announceClick($index)">
 								<div layout="row">
 									<p flex>{{item}}</p>
-										<md-icon md-menu-align-target style="margin: auto 3px auto 0;"></md-icon>
+									<md-icon md-menu-align-target style="margin: auto 3px auto 0;"></md-icon>
 								</div>
 							</md-button>
 						</md-menu-item>
@@ -36,9 +36,8 @@
 		</md-toolbar>
 
 
-
-		<md-content>
-			<tree-menu data="vm.treeStructure"></tree-menu>
+		<md-content>	
+			<tree-menu data="vm.treeStructure" selection="vm.selection"></tree-menu>
 		</md-content>
 	
 </md-sidenav>

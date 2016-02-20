@@ -24,3 +24,11 @@
 .suppress-uppercase{
 	text-transform: none;
 }
+
+.text-left{
+	text-align:left;
+}
+
+.allow-wrap{
+	white-space: normal;
+}

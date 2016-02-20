@@ -31,7 +31,7 @@
 
 		self.userMenu = ['Preferences', 'Log off'];
 
-
+		self.selection = "";
 		self.treeStructure = [
 			{
 				title: 'Group 1',
@@ -71,11 +71,17 @@
 						children:[
 							{
 								title: 'Hmmmmmm',
-								type: 'leaf'
+								type: 'leaf',
+								selection: 'Bambus!'
 							}
 						]
 					}
 				]
+			},
+			{
+				title: 'Node Without children and a very very very very very very very looooooong title',
+				'type': 'node',
+				children: []
 			}
 
 		];

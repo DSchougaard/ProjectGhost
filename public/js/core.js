@@ -89,6 +89,12 @@
 		.icon('menu', 'img/icons/menu.svg')
 		.icon('toggle-arrow-up', 'img/icons/toggle-arrow-up.svg')
 		.icon('toggle-arrow-down', 'img/icons/toggle-arrow-down.svg')
+		// Tree Icons
+		.icon('tree:folder', 			'img/icons/tree/folder.svg')
+		.icon('tree:folder-expanded', 	'img/icons/tree/folder-expanded.svg')
+		.icon('tree:file', 				'img/icons/tree/file.svg')
+
+
 	});
 
 	ghost.run(function($http, $templateCache){
