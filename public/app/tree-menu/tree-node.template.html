@@ -4,7 +4,7 @@
 		<span>{{$ctrl.node.title}}</span>
 	</md-button>
 
-	<div ng-repeat="child in $ctrl.node.children" ng-if="$ctrl.expanded">
+	<div ng-repeat="child in $ctrl.node.children" ng-show="$ctrl.expanded">
 		
 		<div ng-if="child.type == 'node'">
 			<tree-node parent="$ctrl" node="child"></tree-node>
