@@ -32,6 +32,7 @@
 		self.userMenu = ['Preferences', 'Log off'];
 
 		self.selection = "";
+		// Test Data
 		self.treeStructure = [
 			{
 				title: 'Group 1',
@@ -83,7 +84,6 @@
 				'type': 'node',
 				children: []
 			}
-
 		];
 
 

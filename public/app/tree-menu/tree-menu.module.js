@@ -10,7 +10,7 @@
 			var self = this;
 			// Literals
 			self.expanded = true;
-			self.indentation = 0;
+			self.indentation = 15;
 
 			// Exposed interface
 			self.propagate = propagate;
