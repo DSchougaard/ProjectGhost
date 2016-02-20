@@ -87,15 +87,11 @@
 		},
 		controller: function () {
 			var self = this;
+
+			// Exposed Interface
 			self.get = get;
 
-			self.brokenTitle = []
-
-			self.brokenTitle[0] = self.leaf.title.substring(0, 36);
-			self.brokenTitle[1] = self.leaf.title.substring(37, 73);
-
-
-
+			// Methods
 			function get(){
 				console.log("%j", self.leaf);
 				if( self.leaf.selection !== undefined ){

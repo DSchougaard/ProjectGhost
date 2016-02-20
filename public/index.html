@@ -26,11 +26,10 @@
 
         <!-- CSS Components --> 
         <link rel="stylesheet" href="components/angular-material/angular-material.css">
-        <link rel="stylesheet" href="css/text.css">
-        <link rel="stylesheet" href="css/ghost.css">
+        <link rel="stylesheet" href="app/ghost.css">
 
         <!-- Angular Controller -->
-        <script src="app.js"></script>
+        <script src="bundle.js"></script>
 
         <!--
         <script src="js/core.js"></script>
@@ -48,7 +47,7 @@
     <!-- Dan says #E6E6E6 is good -->
     <!-- <body style="background-color:#e6e6e6"> -->
     <body flex layout="column" >
-        <div ui-view="sidenav" flex="none"></div>
+        <div ui-view="toolbar" flex="none"></div>
         <div ui-view="content" flex layout="row"></div>
     </body>
 </html>

@@ -13,11 +13,11 @@
 			authenticate: true,
 			views: {
 				'content':{
-			        templateUrl: 'views/partials/main.html',
+			        templateUrl: 'app/password-list/password-list.template.html',
        				controller: 'listController',
 	        		controllerAs: 'vm',
 				},
-				'sidenav':{
+				'toolbar':{
 			        templateUrl: 'app/toolbar/toolbar.template.html',
        				controller: 'ToolBarController',
 	        		controllerAs: 'vm',
@@ -38,11 +38,11 @@
 	    	url: '/add',
 	    	views: {
 	    		'content':{
-			    	templateUrl: 'views/partials/add.html',
+			    	templateUrl: 'app/password-form/password-form.template.html',
   	 				controller: 'addController',
 	   		 		controllerAs: 'vm'
 	    		},
-				'sidenav':{
+				'toolbar':{
 			        templateUrl: 'app/toolbar/toolbar.template.html',
        				controller: 'ToolBarController',
 	        		controllerAs: 'vm',
@@ -53,11 +53,11 @@
 	    	url: '/edit',
 	    	views: {
 	    		'content': {
-			    	templateUrl: 'views/partials/add.html',
+			    	templateUrl: 'app/password-form/password-form.template.html',
 	    			controller: 'addController',
 	    			controllerAs: 'vm',
 	    		},
-				'sidenav':{
+				'toolbar':{
 			        templateUrl: 'app/toolbar/toolbar.template.html',
        				controller: 'ToolBarController',
 	        		controllerAs: 'vm',

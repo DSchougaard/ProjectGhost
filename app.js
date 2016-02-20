@@ -162,7 +162,7 @@ users(server, log);
 auth(server, knex, log);
 passwords(server, knex, log);
 
-var test = fs.readFileSync(__base + 'public/views/index.html');
+var test = fs.readFileSync(__base + 'public/index.html');
 
 // Fucking dirty hack, which will bite me in the ass. But Restify aparently ignores default file in serveStatic.
 
