@@ -28,8 +28,12 @@
 	    // ABOUT PAGE AND MULTIPLE NAMED VIEWS =================================
 	    .state('login', {
 	    	url: '/login',
-			templateUrl 	: 'views/partials/login.html',
-			controller 		: 'loginController'
+			views: {
+				'content':{
+					templateUrl 	: 'app/login/login.template.html',
+					controller 		: 'loginController'
+				}
+			}
 	    })
 	    .state('logout', {
 	    	controller: 'logoutController'
