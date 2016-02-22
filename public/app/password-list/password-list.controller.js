@@ -99,6 +99,8 @@
 		function selectMenu(index){
 			switch(index){
 				case 0:
+					console.log("Going to User.Edit");
+					$state.go('user');
 					break;
 				case 1:
 					$auth.logout();

@@ -40,6 +40,7 @@
 	    })
 	    .state('add', {
 	    	url: '/add',
+	    	authenticate: true,
 	    	views: {
 	    		'content':{
 			    	templateUrl: 'app/password-form/password-form.template.html',
@@ -55,6 +56,7 @@
 	    })
 	    .state('edit', {
 	    	url: '/edit',
+	    	authenticate: true,
 	    	views: {
 	    		'content': {
 			    	templateUrl: 'app/password-form/password-form.template.html',
@@ -69,6 +71,22 @@
 	    	},
 	    	params: {
 	    		password: undefined
+	    	}
+	    })
+	    .state('user', {
+	    	url: '/user',
+	    	authenticate: true,
+	    	views: {
+	    		'content': {
+	    			templateUrl: 'app/user/user.template.html',
+	    			controller: 'UserController',
+	    			controllerAs: 'vm'
+	    		},
+	    		'toolbar': {
+			        templateUrl: 'app/toolbar/toolbar.template.html',
+       				controller: 'ToolBarController',
+	        		controllerAs: 'vm',
+	    		}
 	    	}
 	    });
 
