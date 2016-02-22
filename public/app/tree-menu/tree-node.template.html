@@ -1,19 +1,21 @@
-	<md-button class="allow-wrap reset-spacing text-left suppress-uppercase" aria-label="Expand" ng-click="$ctrl.toggle()" ng-show="$ctrl.parent.expanded" ng-style="{'padding-left': $ctrl.parent.indentation.toString() + 'px'}">
+<div width="100%">
+	<md-button layout-fill class="allow-wrap reset-spacing text-left suppress-uppercase" aria-label="Expand" ng-click="$ctrl.toggle()" ng-show="$ctrl.parent.expanded" ng-style="{'padding-left': $ctrl.parent.indentation.toString() + 'px'}">
 
 		<md-icon md-svg-icon="tree:folder"></md-icon>
 		<span>{{$ctrl.node.title}}</span>
 	</md-button>
+</div>
 
-	<div ng-repeat="child in $ctrl.node.children" ng-show="$ctrl.expanded">
-		
-		<div ng-if="child.type == 'node'">
-			<tree-node parent="$ctrl" node="child"></tree-node>
-		</div>
-
-		<div ng-if="child.type === 'leaf'">
-			<tree-leaf parent="$ctrl" leaf="child"></tree-leaf>
-		</div> 
+<div ng-repeat="child in $ctrl.node.children" ng-show="$ctrl.expanded">
+	
+	<div ng-if="child.type == 'node'">
+		<tree-node parent="$ctrl" node="child"></tree-node>
 	</div>
+
+	<div ng-if="child.type === 'leaf'">
+		<tree-leaf parent="$ctrl" leaf="child"></tree-leaf>
+	</div> 
+</div>
 	<!-- style="overflow:hidden; word-wrap: break-word;" -->
 
 

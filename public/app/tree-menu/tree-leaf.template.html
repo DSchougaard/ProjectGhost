@@ -1,15 +1,16 @@
-<md-button 
-	ng-show="$ctrl.parent.expanded"
-	ng-click="$ctrl.get()"
-	aria-label="File"
-	class="allow-wrap reset-spacing text-left suppress-uppercase"
-
-	ng-style="{'padding-left': $ctrl.parent.indentation.toString() + 'px'}"
-	>
-	<md-icon md-svg-icon="tree:file"></md-icon>
-	{{$ctrl.leaf.title}}
-</md-button>
-
+<div width="100%">
+	<md-button 
+		ng-show="$ctrl.parent.expanded"
+		ng-click="$ctrl.get()"
+		aria-label="File"
+		class="allow-wrap reset-spacing text-left suppress-uppercase"
+		layout-fill
+		ng-style="{'padding-left': $ctrl.parent.indentation.toString() + 'px'}"
+		>
+		<md-icon md-svg-icon="tree:file"></md-icon>
+		{{$ctrl.leaf.title}}
+	</md-button>
+</div>
 <!--
 	class="allow-wrap reset-spacing text-left suppress-uppercase"
 
