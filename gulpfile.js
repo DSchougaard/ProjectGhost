@@ -21,9 +21,7 @@ gulp.task('auto-concat', function(cb){
 		console.log(new Date());
 
 		gulp.src(dirs)
-		.pipe(sourcemaps.init())
-			.pipe(concat('bundle.js'))
-		.pipe(sourcemaps.write())
+		.pipe(concat('bundle.js'))
 	    .pipe(gulp.dest('./public/'));
 
 	})
