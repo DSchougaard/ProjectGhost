@@ -1,0 +1,76 @@
+<md-content flex="60" flex-offset="20" layout="column" layout-align="start center" layout-padding>
+
+  <section class="md-whiteframe-z1" layout-fill>
+	
+	<md-toolbar >
+		<div class="md-toolbar-tools">
+			<h3>
+				<span ng-bind="vm.title"></span>
+			</h3>
+		</div>
+	</md-toolbar>
+
+
+	<form name="userForm" ng-submit="vm.submit()">
+			
+		<md-input-container class="md-block">
+			<label>Username</label>
+			<input ng-model="vm.user.username" name="username">
+		</md-input-container>
+
+		  <md-subheader class="md-hue-1">Change your password</md-subheader>
+				<md-input-container class="md-block">
+					<label>Current Password</label>
+					<input ng-model="vm.password.oldPassword" name="oldPassword">
+				</md-input-container>
+
+				<md-input-container class="md-block">
+					<label>New password</label>
+					<input ng-model="vm.password.newPassword" name="newPassword">
+				</md-input-container>
+
+				<md-input-container class="md-block">
+					<label>Repeat New password</label>
+					<input ng-model="vm.password.newPasswordRepeated" name="newPasswordRepeated">
+				</md-input-container>
+	
+
+			<md-subheader class="md-hue-1">Encryption Keys</md-subheader>
+
+				<md-input-container class="md-block">
+					<label>New Decryption Password</label>
+					<input ng-model="vm.settings.decryptionPassword" name="decryptionPassword">
+				</md-input-container>
+
+				<md-input-container class="md-block">
+					<md-switch ng-model="vm.settings.generateNewEncryptionKey" class="md-primary" aria-label="Generate encryption keys" ng-model="data.cb5">
+						Generate new encryption keys <b><i>(WILL take some time)</i></b>
+					</md-switch>
+				</md-input-container>
+
+
+
+
+
+
+
+
+
+
+
+
+		<md-button type="submit" class="md-primary md-raised">Update</md-button>
+		<md-button type="submit" class="md-primary md-raised">Cancel</md-button>
+
+
+
+	</form>
+
+
+  </section>
+
+
+
+</md-content>
+
+
