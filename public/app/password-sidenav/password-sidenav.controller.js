@@ -4,16 +4,14 @@
 	.controller('PasswordSideNavController', PasswordSideNavController);
 
 
-	function PasswordSideNavController($state){
+	function PasswordSideNavController($state, $auth){
 		var self = this;
 
 		// Literals
-		self.userMenu = ['Preferences', 'Log off'];
+		self.userMenu 		= ['Preferences', 'Log off'];
 
 		// Exposed Interface
-		self.selectMenu = selectMenu;
-
-
+		self.selectMenu 	= selectMenu;
 
 		function selectMenu(index){
 			switch(index){
@@ -30,7 +28,6 @@
 					break;
 			};
 		}
-
 
 
 		// Test Data

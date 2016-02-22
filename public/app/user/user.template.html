@@ -11,7 +11,7 @@
 	</md-toolbar>
 
 
-	<form name="userForm" ng-submit="vm.submit()">
+	<form name="userForm" novalidate ng-submit="vm.submit()" class="md-inline-form">
 			
 		<md-input-container class="md-block">
 			<label>Username</label>
@@ -26,12 +26,34 @@
 
 				<md-input-container class="md-block">
 					<label>New password</label>
-					<input ng-model="vm.password.newPassword" name="newPassword">
+					<input required-if="userForm.oldPassword" ng-model="vm.password.newPassword" name="newPassword" >
+
+
+
+					<div ng-messages="userForm.newPassword.$error">
+						<ng-message when="requiredIf"> This is a test</ng-message>
+					</div>
+
+
+
+
+
+
 				</md-input-container>
 
 				<md-input-container class="md-block">
 					<label>Repeat New password</label>
-					<input ng-model="vm.password.newPasswordRepeated" name="newPasswordRepeated">
+					<input ng-model="vm.password.newPasswordRepeated" ng-match="vm.password.newPassword" name="newPasswordRepeated">
+
+
+					<div ng-messages="userForm.newPasswordRepeated.$error">
+						<ng-message when="match">The passwords does not match</ng-message>
+					</div>
+
+
+
+
+
 				</md-input-container>
 	
 
@@ -60,7 +82,7 @@
 
 
 		<md-button type="submit" class="md-primary md-raised">Update</md-button>
-		<md-button type="submit" class="md-primary md-raised">Cancel</md-button>
+		<md-button ng-click="vm.cancel()" class="md-primary md-raised">Cancel</md-button>
 
 
 

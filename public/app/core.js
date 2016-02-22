@@ -1,6 +1,6 @@
 (function(){
 
-	var ghost = angular.module('ghost', ['ngMaterial', 'satellizer', 'ui.router']);
+	var ghost = angular.module('ghost', ['ngMaterial', 'ngMessages', 'satellizer', 'ui.router']);
 
 	ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider, $mdIconProvider){
 	    

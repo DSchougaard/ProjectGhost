@@ -8,7 +8,8 @@
     "angular-ui-router": "^0.2.18",
     "underscore": "^1.8.3",
     "forge": "^0.6.38",
-    "angular-material": "^1.0.5"
+    "angular-material": "^1.0.5",
+    "angular-messages": "^1.5.0"
   },
   "private": true
 }
