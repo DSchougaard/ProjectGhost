@@ -4,35 +4,40 @@
 		.module('ghost')
 		.controller('listController', ListController);
 
-	function ListController($scope, $http, $auth, $location, $state, $mdDialog, PasswordService, EncryptionService){
-		
 
+	function ListController($scope, $http, $auth, $location, $state, $mdDialog, PasswordService, EncryptionService){
 		var self = this;
 		
+		self.selectedIndex = undefined;
+
+		// User Menu Entries
+		self.userMenu = ['Preferences', 'Log off'];
+
 		// List of Passwords
 		self.entries = [];
 		self.entries = PasswordService.passwords;
 		// Fetch the data
 		PasswordService.fetch();
 
-
 		// List Controls
-		self.selectedIndex = undefined;
 		self.select = select;
 
 		// Methods for list items
-		self.hide = hide;
-		self.show = show;
+		self.hide 	= hide;
+		self.show 	= show;
 		self.del 	= del;
 		self.edit 	= edit;
 
 		// UI show/hide statusses
 		self.isVisible = isVisible;
 
-		self.userMenu = ['Preferences', 'Log off'];
+		// User Menu Controls
+		self.selectMenu = selectMenu;
 
-		self.selection = "";
+
+
 		// Test Data
+		self.selection = "";
 		self.treeStructure = [
 			{
 				title: 'Group 1',
@@ -86,13 +91,24 @@
 			}
 		];
 
-
-
-
 		// Watch for change, need this for initial load
 		$scope.$on('passwords', function(res){
 			self.entries = PasswordService.passwords;
 		});
+
+		function selectMenu(index){
+			switch(index){
+				case 0:
+					break;
+				case 1:
+					$auth.logout();
+					$state.transitionTo("login");
+					break;
+				default:
+					console.log('Invalid selection');
+					break;
+			};
+		}
 
 		// Method for determining wheter or not a field is shown	
 		function isVisible(value){
