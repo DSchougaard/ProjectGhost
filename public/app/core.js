@@ -4,11 +4,11 @@
 
 	ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider, $mdIconProvider){
 	    
-	    $urlRouterProvider.otherwise('/login');
+	    $urlRouterProvider.otherwise('/');
 	   
-	    $stateProvider
 	    // HOME STATES AND NESTED VIEWS ========================================
-	    .state('home', {
+	   	/*
+	    .state('home1', {
 	        url: '/',
 			authenticate: true,
 			views: {
@@ -16,15 +16,36 @@
 			        templateUrl: 'app/password-list/password-list.template.html',
        				controller: 'listController',
 	        		controllerAs: 'vm',
-				},
+				}, 
 				'toolbar':{
 			        templateUrl: 'app/toolbar/toolbar.template.html',
        				controller: 'ToolBarController',
 	        		controllerAs: 'vm',
 				}
 			}
+	    })*/
+		$stateProvider
+	    .state('home', {
+	    	url:'/',
+	    	views: {
+				'toolbar':{
+			        templateUrl: 'app/toolbar/toolbar.template.html',
+       				controller: 'ToolBarController',
+	        		controllerAs: 'vm',
+				},
+				'content': {
+			        templateUrl: 'app/password-list/password-list.template.html',
+       				controller: 'listController',
+	        		controllerAs: 'vm'
+	    		},
+	    		'sidenav@home': {
+	    			templateUrl: 'app/password-sidenav/password-sidenav.template.html',
+	    			controller: 'PasswordSideNavController',
+	    			controllerAs: 'vm'
+	    		}
+	    	}
 	    })
-	    
+
 	    // ABOUT PAGE AND MULTIPLE NAMED VIEWS =================================
 	    .state('login', {
 	    	url: '/login',

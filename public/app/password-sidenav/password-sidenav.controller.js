@@ -4,11 +4,36 @@
 	.controller('PasswordSideNavController', PasswordSideNavController);
 
 
-	function PasswordSideNavController(){
+	function PasswordSideNavController($state){
 		var self = this;
 
+		// Literals
 		self.userMenu = ['Preferences', 'Log off'];
 
+		// Exposed Interface
+		self.selectMenu = selectMenu;
+
+
+
+		function selectMenu(index){
+			switch(index){
+				case 0:
+					console.log("Going to User.Edit");
+					$state.go('user');
+					break;
+				case 1:
+					$auth.logout();
+					$state.transitionTo("login");
+					break;
+				default:
+					console.log('Invalid selection');
+					break;
+			};
+		}
+
+
+
+		// Test Data
 		self.selection = "";
 		self.treeStructure = [
 			{
