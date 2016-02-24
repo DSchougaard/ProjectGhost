@@ -170,6 +170,12 @@ module.exports = class User{
 		if( input.privatekey !== undefined && input.privatekey !== this.privatekey ){
 			updated.privatekey = input.privatekey;
 		}
+		if( input.iv !== undefined && input.iv !== this.iv ){
+			updated.iv = input.iv;
+		}
+		if( input.pk_salt !== undefined && input.pk_salt !== this.pk_salt ){
+			updated.pk_salt = input.pk_salt;
+		}
 		if( input.publickey !== undefined && input.publickey !== this.publickey ){
 			updated.publickey = input.publickey;
 		}
