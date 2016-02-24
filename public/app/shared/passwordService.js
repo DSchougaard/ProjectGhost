@@ -52,9 +52,7 @@
 			self.passwords[index].decryptedPassword = undefined;
 		}
 
-		function create(password){
-
-		};
+		function create(password){};
 
 		function del(index){
 			var confirm = $mdDialog.confirm()

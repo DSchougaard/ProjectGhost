@@ -77,7 +77,6 @@
 			return deferred.promise;
 		}
 
-
 		self.getEncryptionKey = function(){
 
 			console.log("Retrieving privatekey from remote server");
