@@ -11,9 +11,13 @@
 		self.encryptionKey 	= undefined;
 		self.privateKey 	= undefined;
 		self.publicKey 		= undefined;
-		// Methods
+		
+		// Exposed Interface
 		self.getPublicKey 	= getPublicKey;
 		self.encrypt  		= encrypt;
+		self.generateKeyPair = generateKeyPair;
+		self.changeDecryptionKey = changeDecryptionKey;
+
 
 		function fetch(){
 			return $http({
@@ -21,6 +25,58 @@
 				url: '/api/users/me'
 			});
 		}
+
+		function changeDecryptionKey(password){
+			return self.getEncryptionKey()
+			.then(function(){
+				console.log("new password: " + password);
+				console.log("%j", self.privateKey);
+
+				// Generate New Decryption key
+				var salt 	= forge.random.getBytes(32);
+				var iv 		= forge.random.getBytes(16);
+
+				var encryptionKey = forge.pkcs5.pbkdf2(password, salt, 10000, 32);
+				var cipher = forge.cipher.createCipher('AES-CBC', encryptionKey);
+				cipher.start({iv: iv});
+				cipher.update(forge.util.createBuffer( forge.pki.privateKeyToPem(self.privateKey).toString('utf8') ));
+				cipher.finish();
+
+				console.log("Output:");
+				console.log("%j", cipher.output);
+
+				return { 
+					iv: forge.util.encode64(iv),
+					pk_salt: forge.util.encode64(salt), 
+					privatekey: forge.util.encode64(cipher.output.getBytes()) };
+
+			})
+		}
+
+		function generateKeyPair(){
+ 			var deferred = $q.defer();
+
+			// Default RSA key length. Optional later?
+			var keyLength = 4096;
+			var options = {
+				bits: 4096,
+				e: 0x1001,
+				workerScript: 'components/forge/js/prime.worker.js', // Forge SUUUUUCKS
+				workers: -1
+			}
+
+			forge.pki.rsa.generateKeyPair(options, function(err, keypair) {
+				if(err){
+					deferred.reject(err);
+				}else{
+					deferred.resolve(keypair);
+				}
+			});
+
+		
+			return deferred.promise;
+		}
+
 
 		self.getEncryptionKey = function(){
 
@@ -33,7 +89,7 @@
 			return $mdDialog.show({
 				parent: angular.element(document.body),
 				controller: 'passwordPromtController',
-				templateUrl: 'views/modals/password.html',
+				templateUrl: 'app/shared/password-promt/password-promt.template.html',
 				clickOutsideToClose:true,
 				fullscreen: !$mdMedia('gt-xs')
 			})
@@ -69,6 +125,8 @@
 					console.log(decipher.output.data);
 					*/
 					self.privateKey = forge.pki.privateKeyFromPem(decipher.output.data);
+					self.publicKey = res.data.publickey;
+
 					return self.privateKey;
 
 				})

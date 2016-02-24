@@ -50,7 +50,7 @@ gulp.task('vendor-concat', function(){
 		.pipe(sourcemaps.init())
 			.pipe(concat('vendor.js'))
 		.pipe(sourcemaps.write())
-		.pipe(uglify())
+		//.pipe(uglify())
 		.pipe(gulp.dest('./public/'))
 });
 
