@@ -78,6 +78,7 @@
 	    .state('edit', {
 	    	url: '/edit',
 	    	authenticate: true,
+	    	authorization: 2,
 	    	views: {
 	    		'content': {
 			    	templateUrl: 'app/password-form/password-form.template.html',

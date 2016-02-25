@@ -24,7 +24,7 @@ module.exports = function(server, knex, log){
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing password"));
 		}
 
-		knex.select('id', 'username', 'password', 'salt').from('users').where({'username':req.body.username})
+		knex.select('id', 'username', 'password', 'salt', 'isAdmin').from('users').where({'username':req.body.username})
 		.then(function(rows){
 			if( rows.length == 0 ){
 				// No user was found with that username.

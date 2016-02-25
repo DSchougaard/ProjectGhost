@@ -19,8 +19,14 @@ exports.createJWT = function(user) {
 	var payload = {
 		uid: user.id,
 		iat: moment().unix(),
-		exp: moment().add(14, 'days').unix()
+		exp: moment().add(14, 'days').unix(),
+		lvl: 0
 	};
+
+	if( user.isAdmin ){
+		payload.lvl = 1;
+	}
+
 	return jwt.sign(payload, privateKey, {algorithm: 'RS256'});
 }
 

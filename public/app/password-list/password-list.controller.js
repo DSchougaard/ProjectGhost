@@ -20,7 +20,7 @@
 		PasswordService.fetch();
 
 		// List Controls
-		self.select = select;
+		self.select = select; 
 
 		// Methods for list items
 		self.hide 	= hide;

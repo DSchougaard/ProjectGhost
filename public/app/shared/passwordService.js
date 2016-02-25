@@ -16,6 +16,8 @@
 
 		this.fetch = function(){
 			console.log("Retrieving fresh data from remote");
+
+			console.log("%j", $auth.getPayload());
 			$http({
 				method: 'GET',
 				url: '/api/users/' + $auth.getPayload().uid + '/passwords'

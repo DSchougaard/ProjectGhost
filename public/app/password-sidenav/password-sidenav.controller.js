@@ -4,22 +4,28 @@
 	.controller('PasswordSideNavController', PasswordSideNavController);
 
 
-	function PasswordSideNavController($state, $auth){
+	function PasswordSideNavController($state, $auth, AuthorizationService){
 		var self = this;
 
 		// Literals
-		self.userMenu 		= ['Preferences', 'Log off'];
+		self.userMenu = [];
+
+		// Populate Menu
+		self.userMenu.push('Preferences');
+		if( AuthorizationService.isAuthorized('user.list') )
+			self.userMenu.push('Users');
+		self.userMenu.push('Log off');
 
 		// Exposed Interface
 		self.selectMenu 	= selectMenu;
 
-		function selectMenu(index){
-			switch(index){
-				case 0:
+		function selectMenu(item){
+			switch(item){ 
+				case 'Preferences':
 					console.log("Going to User.Edit");
 					$state.go('user');
 					break;
-				case 1:
+				case 'Log off':
 					$auth.logout();
 					$state.transitionTo("login");
 					break;
