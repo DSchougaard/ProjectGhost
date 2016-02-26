@@ -1,0 +1,38 @@
+<div flex style="background-color: #ececec">
+
+<md-content flex-gt-sm="60" flex-offset-gt-sm="20" flex="100" flex-offset="0" layout="column" layout-align="start center" layout-padding >
+  <section class="md-whiteframe-z1" layout-fill>
+
+		<md-toolbar class="md-table-toolbar md-primary md-hue-1">
+		  <div class="md-toolbar-tools">
+		    <span>Users</span>
+		  </div>
+		</md-toolbar>
+
+		<md-table-container layout-fill>
+		  	<table md-table md-row-select ng-model="vm.selected">
+		    	
+   				<thead md-head md-order="vm.query.order" md-on-reorder="vm.onReorder">
+					<tr md-row>
+						<th md-column md-numeric md-order-by="id" class="disable-text-selection">ID</th>
+						<th md-column md-order-by="username" class="disable-text-selection">Username</th>
+						<th md-column class="disable-text-selection">Role</th>
+					</tr>
+				</thead>
+
+
+				<tbody md-body>
+		      		<tr md-row md-select="user" md-select-id="{{user.id}}" md-auto-select ng-repeat="user in vm.users">
+						<td md-cell>{{user.id}}</td>
+						<td md-cell>{{user.username}}</td>
+						<td md-cell>{{user.isAdmin}}</td>
+					</tr>
+				</tbody>
+
+			</table>
+
+		</md-table-container>
+	</section>
+</md-content>
+
+</div>

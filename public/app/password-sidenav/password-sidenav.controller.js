@@ -12,8 +12,9 @@
 
 		// Populate Menu
 		self.userMenu.push('Preferences');
-		if( AuthorizationService.isAuthorized('user.list') )
+		if( AuthorizationService.isAuthorized('user.list') ){
 			self.userMenu.push('Users');
+		}
 		self.userMenu.push('Log off');
 
 		// Exposed Interface
@@ -28,6 +29,9 @@
 				case 'Log off':
 					$auth.logout();
 					$state.transitionTo("login");
+					break;
+				case 'Users':
+					$state.transitionTo('user-list');
 					break;
 				default:
 					console.log('Invalid selection');
