@@ -1,6 +1,6 @@
 (function(){
 
-	var ghost = angular.module('ghost', ['ngMaterial', 'ngMessages', 'satellizer', 'ui.router']);
+	var ghost = angular.module('ghost', ['ngMaterial', 'ngMessages', 'md.data.table', 'satellizer', 'ui.router']);
 
 	ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider, $mdIconProvider){
 	    
@@ -110,6 +110,23 @@
 	        		controllerAs: 'vm',
 	    		}
 	    	}
+	    })
+	    .state('user-list', {
+	    	url: '/users',
+	    	authenticate: true,
+	    	views: {
+	    		'toolbar': {
+			        templateUrl: 'app/toolbar/toolbar.template.html',
+       				controller: 'ToolBarController',
+	        		controllerAs: 'vm',
+	    		},
+	    		'content': {
+	    			templateUrl: 'app/user-list/user-list.template.html',
+	    			controller: 'UserListController',
+	    			controllerAs: 'vm'
+	    		}
+	    		
+	    	}
 	    });
 
 	    $locationProvider.html5Mode(true);
@@ -137,6 +154,8 @@
 		.icon('tree:folder', 			'img/icons/tree/folder.svg')
 		.icon('tree:folder-expanded', 	'img/icons/tree/folder-expanded.svg')
 		.icon('tree:file', 				'img/icons/tree/file.svg')
+		.icon('back-white', 			'img/icons/back-white.svg')
+		.icon('back-black', 			'img/icons/back-black.svg')
 
 
 	});
