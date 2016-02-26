@@ -59,9 +59,8 @@
 
 				}
 
-
 				$q(function(resolve, reject){
-					if( self.encryption.decryptionPassword !== '' ){
+					if( self.encryption.decryptionPassword !== '' && self.encryption.decryptionPassword !== undefined  ){
 						EncryptionService.changeDecryptionKey(self.encryption.decryptionPassword).then(resolve);
 					}else{
 						resolve(undefined);
