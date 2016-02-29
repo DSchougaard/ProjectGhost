@@ -39,8 +39,8 @@
 		    	
    				<thead md-head md-order="vm.query.order" md-on-reorder="vm.onReorder">
 					<tr md-row>
-						<th md-column md-numeric md-order-by="id" class="disable-text-selection">ID</th>
-						<th md-column md-order-by="username" class="disable-text-selection">Username</th>
+						<th md-column md-numeric width="25px" md-order-by="id" class="disable-text-selection">ID</th>
+						<th md-column md-order-by="username" class="disable-text-selection"> <span> Username </span> </th>
 						<th md-column class="disable-text-selection">Role</th>
 					</tr>
 				</thead>
@@ -50,7 +50,7 @@
 		      		<tr md-row md-select="user" md-select-id="{{user.id}}" md-auto-select ng-repeat="user in vm.users">
 						<td md-cell>{{user.id}}</td>
 						<td md-cell>{{user.username}}</td>
-						<td md-cell>{{user.isAdmin}}</td>
+						<td md-cell>{{user.isAdmin?'Admin':'User'}}</td>
 					</tr>
 				</tbody>
 

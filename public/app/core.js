@@ -7,23 +7,6 @@
 	    $urlRouterProvider.otherwise('/');
 	   
 	    // HOME STATES AND NESTED VIEWS ========================================
-	   	/*
-	    .state('home1', {
-	        url: '/',
-			authenticate: true,
-			views: {
-				'content':{
-			        templateUrl: 'app/password-list/password-list.template.html',
-       				controller: 'listController',
-	        		controllerAs: 'vm',
-				}, 
-				'toolbar':{
-			        templateUrl: 'app/toolbar/toolbar.template.html',
-       				controller: 'ToolBarController',
-	        		controllerAs: 'vm',
-				}
-			}
-	    })*/
 		$stateProvider
 	    .state('home', {
 	    	url:'/',
