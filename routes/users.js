@@ -32,17 +32,12 @@ module.exports = function(server, log){
 
 	var knex = require(__base + 'database.js')();
 
-	server.get('/api/users', authHelpers.ensureAuthenticated, function(req, res, next){
+	server.get('/api/users', authentication, function(req, res, next){
 		log.info({ method: 'GET', path: '/api/users' });
 	
 		User.findAll()
 		.then(function(users){
-			
-			res.send(200, 
-				_.map(users, function(user){
-					return _.pick(user, ['id', 'publickey', 'username'])
-				})
-			);
+			res.send(200, users);
 			return next();
 		})
 		.catch(SqlError, function(err){

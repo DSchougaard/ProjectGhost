@@ -99,7 +99,7 @@ module.exports = class User{
 
 	static findAll(){
 		return knex
-		.select('id', 'username', 'publickey')
+		.select('id', 'username', 'publickey', 'isAdmin')
 		.from('users')
 		.then(function(rows){
 			return new Promise.resolve(rows);
