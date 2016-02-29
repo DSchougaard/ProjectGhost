@@ -3,28 +3,101 @@
 	.module('ghost')
 	.controller('UserListController', UserListController);
 
-	function UserListController($http){
+	function UserListController($http, $q, $mdToast){
 		var self = this;
 
 		// Literals
 		self.users = [];
 		self.selected = [];
+		self.state = 'default';
+
 
 		// Exposed interface
 		self.onReorder = onReorder;
+		self.setState = setState;
+		self.deleteUsers = deleteUsers;
+		self.getUsers = getUsers;
+
 
 		// Populate Users list
-		$http({
-			method:'GET',
-			url: '/api/users'
-		}).then(function(res){
-			self.users = res.data;
-			console.log("%j", self.users);
-		}, function(err){
-			console.log("Error!\n%j", err);
-		});
+		self.getUsers();
 
 		// Methods
+		function getUsers(){
+			$http({
+				method:'GET',
+				url: '/api/users'
+			}).then(function(res){
+				self.users = res.data;
+				console.log("%j", self.users);
+			}, function(err){
+				console.log("Error!\n%j", err);
+			});
+		}
+
+		function deleteUsers(){
+			var deleteCalls = [];
+
+			var deleted = [];
+			var fails = [];
+
+			console.log("%j",self.selected);
+			// Create array of promises
+			angular.forEach(self.selected, function(user){
+				deleteCalls.push(
+					$http({
+						method: 'DELETE',
+						url: '/api/users/'+user.id
+					})
+				);
+			});
+
+			$q.allSettled(deleteCalls)
+			.then(function(responses){
+				angular.forEach(responses, function(res){
+					console.log("%j", res);
+					if(res.state === 'fulfilled'){
+						// Delete Call worked
+						var id = _.last(res.value.config.url.split("/"));
+						var user =  _.find(self.selected, function(user){
+							return user.id == id;
+						});
+
+						deleted.push(user);
+
+						$mdToast.show(
+							$mdToast.simple()
+								.textContent('User ' + user.username + ' was deleted.')
+								.position("top right")
+								.hideDelay(3000)
+						);
+
+						// Temporarirly remove the user from the list
+						self.users = _.without(self.users, user);
+
+					}else{
+						$mdToast.show(
+							$mdToast.simple()
+								.textContent('Error: ' + res.reason.data.message )
+								.position("top right")
+								.hideDelay(3000)
+						);
+					}
+
+
+				});
+
+				// Re-update the list
+				self.getUsers();
+			});
+		}
+
+
+		function setState(state){
+			console.log("state is now " + state);
+			self.state = state;
+		}
+
 		function onReorder(order){
 			var reverse = false;
 			if( order.charAt(0) === '-'){

@@ -1,15 +1,40 @@
-<div flex style="background-color: #ececec">
 
-<md-content flex-gt-sm="60" flex-offset-gt-sm="20" flex="100" flex-offset="0" layout="column" layout-align="start center" layout-padding >
-  <section class="md-whiteframe-z1" layout-fill>
-
-		<md-toolbar class="md-table-toolbar md-primary md-hue-1">
+<md-content flex-gt-sm="60" flex-offset-gt-sm="20" flex="100" flex-offset="0" layout="column" layout-align="start center" layout-padding  class="md-whiteframe-z1">
+		
+		<!-- Default Toolbar -->
+		<md-toolbar class="md-table-toolbar" ng-show="vm.state === 'default'" class="md-table-toolbar md-primary md-hue-1">
 		  <div class="md-toolbar-tools">
 		    <span>Users</span>
+		    <span flex></span>
+			<md-button class="md-icon-button" ng-show="vm.selected.length === 0" aria-label="back" ng-click="vm.setState('search')">
+				<md-icon md-svg-icon="search-white"></md-icon>
+			</md-button>
+			<md-button class="md-icon-button" ng-hide="vm.selected.length === 0"  aria-label="back" ng-click="vm.deleteUsers()">
+				<md-icon md-svg-icon="delete-white"></md-icon>
+			</md-button>
 		  </div>
 		</md-toolbar>
 
-		<md-table-container layout-fill>
+		<!-- Search Toolbar -->
+		<md-toolbar class="md-table-toolbar" layout="row" ng-show="vm.state === 'search' && vm.selected.length === 0" class="md-table-toolbar md-primary md-hue-1">
+		  	<div class="md-toolbar-tools" layout-fill>
+				
+				<md-input-container layout-fill style="padding-top:15px">
+					<input ng-model="vm.search">
+				</md-input-container>	
+	
+			   	<span flex></span>
+	
+				<md-button ng-if="!vm.menu" class="md-icon-button" aria-label="back" ng-click="vm.setState('default')">
+					<md-icon md-svg-icon="close-black"></md-icon>
+				</md-button>
+	  
+			</div>
+		</md-toolbar>
+
+
+
+		<md-table-container style="width: 100%" >
 		  	<table md-table md-row-select ng-model="vm.selected">
 		    	
    				<thead md-head md-order="vm.query.order" md-on-reorder="vm.onReorder">
@@ -32,7 +57,4 @@
 			</table>
 
 		</md-table-container>
-	</section>
 </md-content>
-
-</div>
