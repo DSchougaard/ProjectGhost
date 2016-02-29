@@ -1,6 +1,6 @@
 (function(){
 
-	var ghost = angular.module('ghost', ['ngMaterial', 'ngMessages', 'md.data.table', 'satellizer', 'ui.router']);
+	var ghost = angular.module('ghost', ['ngMaterial', 'ngMessages', 'md.data.table', 'satellizer', 'ui.router', 'qAllSettled']);
 
 	ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider, $mdIconProvider){
 	    
@@ -156,6 +156,15 @@
 		.icon('tree:file', 				'img/icons/tree/file.svg')
 		.icon('back-white', 			'img/icons/back-white.svg')
 		.icon('back-black', 			'img/icons/back-black.svg')
+		.icon('search-white', 			'img/icons/search-white.svg')
+		.icon('search-black', 			'img/icons/search-black.svg')
+		.icon('close-white', 			'img/icons/close-white.svg')
+		.icon('close-black', 			'img/icons/close-black.svg')
+		.icon('edit-white', 			'img/icons/edit-white.svg')
+		.icon('edit-black', 			'img/icons/edit-black.svg')
+		.icon('delete-white', 			'img/icons/delete-white.svg')
+		.icon('delete-black', 			'img/icons/delete-black.svg')
+
 
 
 	});
