@@ -13,6 +13,7 @@ const ValidationRestError 		= require(__base + 'errors/ValidationRestError.js');
 // Models
 var User 						= require(__base + 'models/user.js')
 var Password 					= require(__base + 'models/password.js')
+var Category 					= require(__base + 'models/category.js')
 
 module.exports = function(req, res, next){
 
@@ -22,7 +23,8 @@ module.exports = function(req, res, next){
 	*/
 	var classNames = {
 		user: User,
-		password: Password
+		password: Password,
+		category: Category
 	};
 
 	// Create empty arrays for storage of identifiers and promises
