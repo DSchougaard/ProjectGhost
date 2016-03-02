@@ -10,7 +10,12 @@
     "forge": "^0.6.38",
     "angular-material": "^1.0.5",
     "angular-messages": "^1.5.0",
-    "angular-material-data-table": "^0.9.11"
+    "angular-material-data-table": "^0.9.11",
+    "mdDataTable": "^1.4.2"
   },
-  "private": true
+  "private": true,
+  "resolutions": {
+    "angular-material": "^1.0.5",
+    "angular": "^1.5.0"
+  }
 }

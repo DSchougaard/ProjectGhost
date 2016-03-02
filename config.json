@@ -4,6 +4,12 @@
 	"sqlite_connection": {
 		"filename": 	"./ghost.sqlite"
 	},
+	"mysql_connection": {
+	   "host"     : "127.0.0.1",
+		"user"     : "ghost",
+		"password" : "ghostpassword",
+		"database" : "ghostdb"
+	},
 	"port"			: 8080,
 	"ssl_key"		: "crypto/ssl/ghost.key",
 	"ssl_cert" 		: "crypto/ssl/ghost.crt"
