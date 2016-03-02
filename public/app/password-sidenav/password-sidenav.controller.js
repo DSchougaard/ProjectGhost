@@ -4,13 +4,14 @@
 	.controller('PasswordSideNavController', PasswordSideNavController);
 
 
-	function PasswordSideNavController($state, $auth, AuthorizationService){
+	function PasswordSideNavController($rootScope, $state, $http, $auth, AuthorizationService, $timeout){
 		var self = this;
 
 		// Literals
 		self.userMenu = [];
+		self.categories = [];
 
-		// Populate Menu
+		// Populate Menu	
 		self.userMenu.push('Preferences');
 		if( AuthorizationService.isAuthorized('user.list') ){
 			self.userMenu.push('Users');
@@ -19,6 +20,23 @@
 
 		// Exposed Interface
 		self.selectMenu 	= selectMenu;
+		self.treeSelect		= treeSelect;
+
+
+		fetch();
+
+		// Methods
+		function fetch(){
+			$http({
+				method: 'GET',
+				url: '/api/users/' + $auth.getPayload().uid + '/categories'
+			})
+			.then(function(res){
+				self.categories = createStructure(res.data);
+			}, function(err){
+				console.error(err);
+			})
+		}
 
 		function selectMenu(item){
 			switch(item){ 
@@ -40,61 +58,44 @@
 		}
 
 
-		// Test Data
-		self.selection = "";
-		self.treeStructure = [
-			{
-				title: 'Group 1',
-				type: 'node',
-				children: [
-					{
-						title: 'Other Title',
-						type: 'leaf'
-					},
-					{
-						title: 'Other Title 2',
-						type: 'leaf'
-					}
-				]
-			},
-			{
-				title: 'Group 2',
-				type: 'node',
-				children: [
-					{
-						title: 'Another Title',
-						type: 'leaf'
-					},
-					{
-						title: 'Another Title 2',
-						type: 'leaf'
-					}
-				]
-			},
-			{
-				title: 'This is interesting',
-				type: 'node',
-				children: [
-					{
-						title: 'A little more interesting',
-						type: 'node',
-						children:[
-							{
-								title: 'Hmmmmmm',
-								type: 'leaf',
-								selection: 'Bambus!'
-							}
-						]
-					}
-				]
-			},
-			{
-				title: 'Node Without children and a very very very very very very very looooooong title',
-				'type': 'node',
-				children: []
+		function createStructure(categories){
+			console.log("Creating tree structure..");
+			var map = {};
+			var structure = [];
+
+			for( var i = 0 ; i < categories.length ; i++ ){
+				map[categories[i].id] = categories[i];
 			}
 
-		];
+			for( var i = 0 ; i < categories.length ; i++ ){
+				// Create children list on the category
+				var category = categories[i];
+
+				// Append Values for the tree;
+				category.type = 'node';
+
+				// Create array in parent
+				var parent = map[category.parent];
+				if( parent !== undefined && parent !== null && category.parent !== category.id){
+					// Category has a parent1
+					if( parent.children === undefined ){
+						parent.children = [];
+					}
+					parent.children.push(category);
+				}else{
+					// Category does not have a parent.
+					structure.push(category);
+				}
+			}
+
+			return structure;
+
+		}
+
+		function treeSelect(selection){
+			$rootScope.$broadcast('category', selection);
+		}
+
 	};
 })();
 

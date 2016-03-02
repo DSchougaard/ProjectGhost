@@ -4,7 +4,8 @@
 	.component('treeMenu', {
 		bindings: {
 			data: '=',
-			selection: '='
+			onSelect: '=',
+			select: '='
 		},
 		controller: function () {
 			var self = this;
@@ -17,7 +18,12 @@
 
 			// Methods
 			function propagate(ret){
-				self.selection = ret;
+				if( ret[self.select] !== undefined ){
+					self.onSelect(ret[self.select]);	
+				}else{
+					self.onSelect(ret);
+				}
+				
 			}
 
 		},
@@ -64,11 +70,7 @@
 			function toggle(){
 				self.expanded = !self.expanded;
 				if( self.expanded ){
-					if( self.node.selection !== undefined ){
-						self.parent.propagate(self.node.selection);
-					}else{
-						self.parent.propagate(self.node);
-					}
+					self.parent.propagate(self.node);	
 				}
 			}
 
@@ -95,13 +97,7 @@
 
 			// Methods
 			function get(){
-				console.log("%j", self.leaf);
-				if( self.leaf.selection !== undefined ){
-					// User had set a selection criteria
-					self.parent.propagate(self.leaf.selection);
-				}else{
-					self.parent.propagate(self.leaf);
-				}
+				self.parent.propagate(self.leaf);
 			}
 
 

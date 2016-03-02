@@ -5,10 +5,11 @@
 		.controller('listController', ListController);
 
 
-	function ListController($scope, $http, $auth, $location, $state, $mdDialog, PasswordService, EncryptionService){
+	function ListController($rootScope, $scope, $http, $auth, $location, $state, $mdDialog, PasswordService, EncryptionService){
 		var self = this;
 		
 		self.selectedIndex = undefined;
+		self.selected = [];
 
 		// User Menu Entries
 		self.userMenu = ['Preferences', 'Log off'];
@@ -35,6 +36,13 @@
 		$scope.$on('passwords', function(res){
 			self.entries = PasswordService.passwords;
 		});
+
+		$rootScope.$on('category', function(event, args){
+			console.log("Password List Controller: %j", args);
+			self.entries = _.filter(PasswordService.passwords, function(password){
+				return args.id === password.parent;
+			});
+		})
 
 
 		// Method for determining wheter or not a field is shown	

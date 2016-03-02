@@ -41,6 +41,9 @@ module.exports = function(server, log){
 		.catch(SqlError, function(err){
 			if(err.message === 'Category already exists')
 			return next( new restify.errors.InternalServerError(err.message) );
+		})
+		.catch(function(err){
+			console.log(err);
 		});
 	});
 
