@@ -36,7 +36,7 @@ knex.schema.createTableIfNotExists('categories', function(table){
 	table.increments('id').primary();
 	table.integer('owner').unsigned().references('id').inTable('users').notNullable();
 	table.integer('parent').unsigned().references('id').inTable('categories').nullable();
-	table.string('label').notNullable();
+	table.string('title').notNullable();
 }).then();
 
 knex.schema.createTableIfNotExists('passwords', function(table){

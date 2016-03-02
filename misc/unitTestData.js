@@ -1,7 +1,7 @@
 const base64 	= require('../helpers/base64.js');
 const fs 		= require('fs');
 const bcrypt 	= require('bcrypt');
-var forge = require('node-forge');
+var forge 		= require('node-forge');
 
 var privateKey = fs.readFileSync('misc/unittest-private.key');
 var publicKey  = fs.readFileSync('misc/unittest-public.crt');
@@ -33,17 +33,17 @@ var categoryData = [
 	{
 		owner: 1,
 		parent: null,
-		label: 'Category1'
+		title: 'Category1'
 	},
 	{
 		owner: 1,
 		parent: null,
-		label: 'Category2'
+		title: 'Category2'
 	},
 	{
 		owner: 1,
 		parent: 1,
-		label: 'Category1.1'
+		title: 'Category1.1'
 	}
 ];
 
