@@ -5,11 +5,14 @@ global.__base 		= __dirname + '/';
 const restify 			= require('restify');
 const fs				= require('fs');
 const bunyan 			= require('bunyan');
+const bcrypt 			= require('bcrypt');
 
 // Routes
 const users 			= require(__base + 'routes/users.js');
 const auth 				= require(__base + 'routes/auth.js');
 const passwords			= require(__base + 'routes/passwords.js');
+const categories  		= require(__base + 'routes/categories.js');
+
 
 //Helpers
 const authHelpers 		= require(__base + 'helpers/authHelpers.js');
@@ -36,7 +39,6 @@ var log = bunyan.createLogger({
     }]
 });
 
-
 /*
 	Options for Project Ghost
 */
@@ -51,7 +53,11 @@ var opts = {
 // Override for DB connection objects
 if( config.database === 'sqlite' ){
 	opts.connection = config.sqlite_connection;
+}else if( config.database === 'mysql' ){
+	opts.connection = config.mysql_connection;
 }
+
+
 
 // Unittest DB Override
 if( process.env.NODE_ENV === 'test' ){
@@ -83,35 +89,70 @@ server.on('uncaughtException', function (req, res, route, err) {
 
 var knex = require(__base + 'database.js');
 
-
-
-// FOR SOME FUCKING REASON SQLITE DOES NOT HAVE FOREIGN KEYS ENABLED PER DEFAULT
-// SO IT HAS TO BE ENABLED MANUALLY.....
-knex.raw('PRAGMA foreign_keys = ON').then(function(resp){ });
-
-
 /*
 	Database Table Create
 */
 knex.schema.createTableIfNotExists('users', function(table){
 	table.increments('id').primary();
+	table.boolean('isAdmin').notNullable().defaultTo(false);
 	table.string("username").unique().notNullable();
 	table.string("salt").notNullable();
 	table.string("password").notNullable();
-	table.binary("privatekey").notNullable();
-	table.binary("publickey").notNullable();
+	table.string("privatekey", 4417).notNullable();
+	table.string('iv').notNullable();
+	table.string('pk_salt').notNullable();
+	table.string("publickey", 1189).notNullable();
+})
+.then(function(){
+	console.log("Database was empty. Creating default Admin account -- this will take some time.");
+	var User = require(__base + 'models/user.js');
+	var forge 		= require('node-forge');
+
+
+	var rootUser = {
+		username: 'admin',
+		isAdmin: true,
+		password: 'admin'
+	}
+
+	var keypair = forge.pki.rsa.generateKeyPair({bits: 4098, e: 0x10001});
+
+	var pem = {}
+	pem.privatekey = forge.pki.privateKeyToPem(keypair.privateKey);
+	pem.publickey  = forge.pki.publicKeyToPem(keypair.publicKey);
+
+	rootUser.publickey = forge.util.encode64(pem.publickey);
+
+	var pk_salt = forge.random.getBytes(32);
+	var iv 		= forge.random.getBytes(16);
+
+	var encryptionKey = forge.pkcs5.pbkdf2('password', pk_salt, 10000, 32);
+	var cipher = forge.cipher.createCipher('AES-CBC', encryptionKey);
+	cipher.start({iv: iv});
+	cipher.update(forge.util.createBuffer( pem.privatekey.toString('utf8') ));
+	cipher.finish();
+
+	rootUser.iv = forge.util.encode64(iv),
+	rootUser.pk_salt = forge.util.encode64(pk_salt), 
+	rootUser.privatekey =  forge.util.encode64(cipher.output.getBytes());
+
+	User.create(rootUser)
+	.then(function(id){
+		console.log("Admin user generated");
+	});
 })
 .catch(function(error){
-})
+	console.log(error);
+});
 
 knex.schema.createTableIfNotExists('categories', function(table){
 	table.increments('id').primary();
 	table.integer('owner').unsigned().references('id').inTable('users').notNullable();
-	table.integer('parent').unsigned().references('id').inTable('categories');
-	table.string('title');
+	table.integer('parent').unsigned().references('id').inTable('categories').nullable();
+	table.string('title').notNullable();
 })
 .catch(function(error){
-})
+});
 
 knex.schema.createTableIfNotExists('passwords', function(table){
 	table.increments('id').primary();
@@ -119,8 +160,8 @@ knex.schema.createTableIfNotExists('passwords', function(table){
 	table.integer('parent').unsigned().references('id').inTable('categories');
 	table.string('title').notNullable();
 	table.string('password').notNullable();
-	table.binary('iv', 16).notNullable();
 	table.string('username').nullable();
+	table.string('url').nullable();
 	table.string('note').nullable();
 })
 .catch(function(error){
@@ -161,6 +202,7 @@ server.get('/api/ping', function(req, res, next){
 users(server, log);
 auth(server, knex, log);
 passwords(server, knex, log);
+categories(server, log);
 
 var test = fs.readFileSync(__base + 'public/index.html');
 

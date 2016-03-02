@@ -1,12 +1,14 @@
 const config = require(__base + 'config.json');
 
-
 var opts = {
 	database : typeof config.database !== undefined ? config.database : 'sqlite'
 }
 
 if( config.database === 'sqlite' ){
+	opts.database = 'sqlite3';
 	opts.connection = config.sqlite_connection;
+}else if( config.database === 'mysql' ){
+	opts.connection = config.mysql_connection;
 }
 
 // Unittest DB Override
@@ -14,63 +16,24 @@ if( process.env.NODE_ENV === 'test' ){
 	opts.connection.filename = './unittest.sqlite';
 }
 
-var knex = require('knex')({
-	client: opts.database,
-	connection : opts.connection
-});
 
+var knex = undefined;
 
-module.exports = knex;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*module.exports.connect = function(opts){
+if( config.database === 'sqlite' || config.database === 'sqlite3' ){
+	console.log("LLALALA");
+	knex = require('knex')({
+		client: 'sqlite3',
+		connection: opts.connection,
+		pool:{
+			afterCreate: (conn, cb) =>
+				conn.run('PRAGMA foreign_keys = ON', cb)
+			}
+		});
+}else{
 	knex = require('knex')({
 		client: opts.database,
-		connection: opts.connection
+		connection : opts.connection
 	});
-	return knex;
 }
 
-module.exports.get = function(){
-	return knex;
-}*/
-/*
-var knex = undefined;
-module.exports.connect = function(opts){
-	knex = require('knex')(opts);
-	return knex;
-}
-
-module.exports.get = function(){
-	return knex;
-}
-*/
-/*
-module.exports = function(opts){
-
-	if( opts === undefined ){
-		console.log("Grabbing KNEX");
-		return knex;
-	}
-
-	knex = require('knex')(opts);
-	console.log("Creating new KNEX: %j", opts);
-	return knex;
-
-}
-*/
+module.exports = knex;
