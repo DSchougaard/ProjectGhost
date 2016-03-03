@@ -10,6 +10,8 @@ Gruntfile.js
 crypto
 *.sqlite
 notes
+public/vendor.js
+public/bundle.js
 
 # Bower
 components

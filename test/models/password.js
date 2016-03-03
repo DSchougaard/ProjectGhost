@@ -64,6 +64,40 @@ describe('Password', function(){
 	});
 
 	describe('#find', function(){
+		var user = {
+			username: 'Passwords#find-User001',
+			salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
+			password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+			isAdmin: false,
+			privatekey: 'cGFzc3dvcmQ=',
+			publickey: 'cGFzc3dvcmQ=',
+			iv: 'cGFzc3dvcmQ=',
+			pk_salt: 'cGFzc3dvcmQ='
+		};
+
+		var password = {
+			parent 		: null,
+			owner 		: undefined,
+			title 		: 'Passwords#find-Title001',
+			username 	: 'Passwords#find-User001',
+			password 	: 'cGFzc3dvcmQ=',
+			note 		: 'This is clearly a note!',
+			url 		: null
+		}
+
+		before(function(){
+			return knex('users')
+			.insert(user)
+			.then(function(ids){
+				user.id = ids[0];
+				password.owner = ids[0];
+				return knex('passwords')
+				.insert(password);
+			})
+			.then(function(ids){
+				password.id = ids[0];		
+			});
+		})
 		
 		it('should fail when trying to find a non-existing id', function(){
 			return Password.find(1337)
@@ -76,18 +110,16 @@ describe('Password', function(){
 		});
 
 		it('succeeds in finding existing password', function(){
-			return Password.find(1)
-			.then(function(password){
-				assert.equal(unittestData.passwordData[0].owner,	 password.owner);
-				
-				assert.equal(unittestData.passwordData[0].parent, 	password.parent);
+			return Password.find(password.id)
+			.then(function(password2){
 
-				assert.equal(unittestData.passwordData[0].title, 	password.title);
-				assert.equal(unittestData.passwordData[0].username, password.username);
-				assert.equal(unittestData.passwordData[0].password, password.password);
-				assert.equal(unittestData.passwordData[0].iv, 		password.iv);
-			
-				assert.equal(unittestData.passwordData[0].note, 	password.note);
+				assert.equal(password.owner,	password2.owner);
+				assert.equal(password.parent, 	password2.parent);
+				assert.equal(password.title, 	password2.title);
+				assert.equal(password.username, password2.username);
+				assert.equal(password.password, password2.password.toString());
+				assert.equal(password.iv, 		password2.iv);
+				assert.equal(password.note, 	password2.note);
 			})
 		});
         
@@ -102,9 +134,53 @@ describe('Password', function(){
             });
         });
         
+        after(function(){
+        	return knex('passwords')
+        	.where('id', password.id)
+        	.del()
+        	.then(function(r){
+        		return knex('users')
+        		.where('id', user.id)
+        		.del();
+        	})
+        	.then(function(r){
+
+        	});
+        })
 	});
     
     describe('#create', function(){
+
+		var user = {
+			username: 'Passwords#create-User001',
+			salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
+			password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+			isAdmin: false,
+			privatekey: 'cGFzc3dvcmQ=',
+			publickey: 'cGFzc3dvcmQ=',
+			iv: 'cGFzc3dvcmQ=',
+			pk_salt: 'cGFzc3dvcmQ='
+		};
+
+		var password = {
+			parent 		: null,
+			owner 		: undefined,
+			title 		: 'Passwords#create-Title001',
+			username 	: 'Passwords#create-User001',
+			password 	: 'cGFzc3dvcmQ=',
+			note 		: 'This is clearly a note!',
+			url 		: null
+		}
+
+		before(function(){
+			return knex('users')
+			.insert(user)
+			.then(function(ids){
+				user.id = ids[0];
+				password.owner = user.id;
+			});
+		})
+
         it('fails when exploiting data structure, to hardcode ID', function(){
             var temp = _.clone(validPassword);
             temp.id = 1337;
@@ -141,8 +217,6 @@ describe('Password', function(){
 			
 			return Password.create(temp)
 			.then(function(password){
-				//Assigned by the system. might have to re-adjust
-				assert.equal(password.id, 	5);
                 
                 // Actual inserts
                 assert.equal(password.owner , validPassword.owner );
@@ -158,7 +232,6 @@ describe('Password', function(){
                 .from('passwords')
                 .where('id', password.id)
                 .then(function(dbPassword){
-                    assert.equal(dbPassword[0].id, 5 );
                     
                     assert.equal(dbPassword[0].owner ,   	 password.owner );
                     assert.equal(dbPassword[0].parent ,      password.parent );
@@ -174,13 +247,8 @@ describe('Password', function(){
 		it('succeeds in creating a new password, without a note', function(){
 			var temp = _.clone(validPasswordWithoutANote);
 			
-			var expectedID = 6;
-			
 			return Password.create(temp)
-			.then(function(password){
-				//Assigned by the system. might have to re-adjust
-				assert.equal(password.id, expectedID);
-                
+			.then(function(password){                
                 // Actual inserts
                 assert.equal(password.owner, 	validPasswordWithoutANote.owner );
                 assert.equal(password.parent, 	validPasswordWithoutANote.parent );
@@ -194,7 +262,6 @@ describe('Password', function(){
                 .from('passwords')
                 .where('id', password.id)
                 .then(function(dbPassword){
-                    assert.equal(dbPassword[0].id, expectedID );
                     
                     assert.equal(dbPassword[0].owner ,   	 password.owner );
                     assert.equal(dbPassword[0].parent ,      password.parent );
@@ -252,17 +319,6 @@ describe('Password', function(){
 				});
 			});
 			
-
-			it('should throw an error when creating a new password with username field missing', function(){
-				return Password.create( _.omit(validPassword, 'username') )
-				.then(function(password){
-					assert.fail();
-				})
-				.catch(ValidationError, function(err){
-					assert.equal(err.num, 1);
-					assert.equal(err.message, '1 error: data.username is required.');
-				});
-			});
 
 			it('should throw an error when creating a new password with password field missing', function(){
 				return Password.create( _.omit(validPassword, 'password') )
@@ -370,6 +426,14 @@ describe('Password', function(){
 
 		});
 		
+		/*after(function(){
+			return knex('passwords')
+			.where('id', validPassword.id)
+			.orWhere('id', validPasswordWithoutANote.id)
+			.del()
+			.then(function(){});
+		});*/
+
     });
     
 	describe('#update', function(){
@@ -607,15 +671,83 @@ describe('Password', function(){
 	});
 	
 	describe('#findAll', function(){
+
+		var user = {
+			username: 'Passwords#findAll-User001',
+			salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
+			password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+			isAdmin: false,
+			privatekey: 'cGFzc3dvcmQ=',
+			publickey: 'cGFzc3dvcmQ=',
+			iv: 'cGFzc3dvcmQ=',
+			pk_salt: 'cGFzc3dvcmQ='
+		};
+
+		var passwords = [
+			{
+				parent 		: null,
+				owner 		: undefined,
+				title 		: 'Passwords#findAll-Title001',
+				username 	: 'Passwords#findAll-User001',
+				password 	: 'cGFzc3dvcmQ=',
+				note 		: 'This is clearly a note!',
+				url 		: null
+			},
+			{
+				parent 		: null,
+				owner 		: undefined,
+				title 		: 'Passwords#findAll-Title002',
+				username 	: 'Passwords#findAll-User002',
+				password 	: 'cGFzc3dvcmQ=',
+				note 		: 'This is clearly a note!',
+				url 		: null
+			},
+			{
+				parent 		: null,
+				owner 		: undefined,
+				title 		: 'Passwords#findAll-Title002',
+				username 	: 'Passwords#findAll-User002',
+				password 	: 'cGFzc3dvcmQ=',
+				note 		: 'This is clearly a note!',
+				url 		: null
+			}
+		];
+
+
+		before(function(){
+			return knex('users')
+			.insert(user)
+			.then(function(ids){
+				passwords[0].owner = ids[0];
+				passwords[1].owner = ids[0];
+				passwords[2].owner = ids[0];
+
+				user.id = ids[0];
+
+				return knex('passwords').insert(passwords[0]);
+			})
+			.then(function(ids){
+				passwords[0].id = ids[0];
+				return knex('passwords').insert(passwords[1]);
+			})
+			.then(function(ids){
+				passwords[1].id = ids[0];
+				return knex('passwords').insert(passwords[2]);
+			})
+			.then(function(ids){
+				passwords[2].id = ids[0];
+			});
+		})
+
+
 		it('successfully finds all of a user\'s passwords', function(){
-			return User.find(1)
+			return User.find( user.id )
 			.then(Password.findAll)
-			.then(function(passwords){
+			.then(function(passwords2){
 				
-				var expected = _.where(unittestData.passwordData, {owner: 1});
-				var passwordsWithoutIDs = _.map(passwords, function(o) { return _.omit(o, 'id'); });
+				//var passwordsWithoutIDs = _.map(passwords, function(o) { return _.omit(o, 'id'); });
 			
-				assert.deepEqual(passwordsWithoutIDs, expected);
+				assert.deepEqual(passwords, passwords2);
 			});
 		});
 		
@@ -651,6 +783,22 @@ describe('Password', function(){
 			});
 		});
 		
+
+        after(function(){
+        	return knex('passwords')
+        	.where('id', passwords[0].id)
+        	.orWhere('id', passwords[1].id)
+        	.orWhere('id', passwords[2].id)
+        	.del()
+        	.then(function(r){
+        		return knex('users')
+        		.where('id', user.id)
+        		.del();
+        	})
+        	.then(function(r){ });
+        })
+
+
 	});
     
     

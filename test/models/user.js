@@ -42,7 +42,7 @@ describe("User", function(){
 			.then(function(users){
 				
 				return knex
-				.select('id', 'username', 'publickey')
+				.select('id', 'username', 'publickey', 'isAdmin')
 				.from('users')
 				.then(function(dbUsers){
 					assert.deepEqual(users, dbUsers);
