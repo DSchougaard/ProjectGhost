@@ -4,6 +4,9 @@ const Promise = require('bluebird');
 const _ 		= require('underscore');
 const schemagic = require('schemagic');
 
+// Models
+var User 						= require(__base + 'models/user.js');
+
 // Errors
 const PasswordDoesNotExistError = require(__base + 'errors/PasswordDoesNotExistError.js');
 const ValidationError 			= require(__base + 'errors/ValidationError.js');
@@ -12,6 +15,10 @@ const SqlError 					= require(__base + 'errors/SqlError.js');
 const ValidationRestError 		= require(__base + 'errors/ValidationRestError.js');
 const CategoryDoesNotExistError = require(__base + 'errors/CategoryDoesNotExistError.js');
 const ConflictError 			= require(__base + 'errors/ConflictError.js');
+const UnauthorizedError 		= require(__base + 'errors/UnauthorizedError.js');
+
+
+
 
 // Database Handler
 var knex = require(__base + 'database.js');
@@ -30,21 +37,12 @@ module.exports = class Category{
 		}
 	}
 
-	addChild(child){
-		if(this.children === undefined){
-			this.children = [];
-		}
-		this.children.push(child);
-	}
-
-
 	static create(input){
 		var data = _.clone(input);
 
 		var validID = schemagic.categoryInput.validate(data);
 		
 		if( !validID.valid ){
-			console.log("%j", validID);
 			return new Promise.reject( new ValidationError(validID.errors) );
 		}
 
@@ -56,12 +54,13 @@ module.exports = class Category{
 		}, function(err){
 			// SQLite Username Exists error
 			if( err.errno === 19 && err.code === 'SQLITE_CONSTRAINT' ){
-	
 
-				var util = require('util');
-				console.log( util.inspect(err, {showHidden: true, depth: null}) );
-				//return new Promise.reject( new SqlError('Category already exists') );
-				return new Promise.reject( new ConflictError('Category', 'already exists') );
+				// This is a test. Don't know if it works...
+				console.info("Ghost: This is a test. Not sure it will work...");
+				return User.find(input.owner)
+				.then(function(user){
+					return new Promise.reject( new CategoryDoesNotExistError(data.parent) );
+				});
 			}else if( err.errno === 5 && err.code === 'SQLITE_BUSY'){
 				return new Promise.reject( new SqlError('Database temporarily unavailable') );
 			}
@@ -101,8 +100,6 @@ module.exports = class Category{
 	}
 
 	static findAll(user){
-		var self = this;
-
 		return knex('categories')
 		.where('owner', user.id)
 		.then(function(categories){
@@ -112,44 +109,93 @@ module.exports = class Category{
 		})
 	}
 
-	static createStructure(categories){
+	update(data){
 		var self = this;
 
-		var structure = [];
-
-		var map = new Map();
-
-		for( var i = 0 ; i < categories.length ; i++ ){
-			categories[i] = new Category(categories[i]);
-			map.set(categories[i].id, categories[i]);
+		var validate = schemagic.categoryUpdate.validate(data);
+		if( !validate.valid ){
+			return new Promise.reject( new ValidationError(validate.errors) );
 		}
 
-		for( var i = 0 ; i < categories.length ; i++ ){
-			// Create children list on the category
-			var category = categories[i];
+		function success(rows){
+			if( rows === 0 ){
+				// No rows was affected
+				return new Promise.reject(new SqlError('Category was not found'));
+			}
+			if( rows > 1 ){
+				// Multiple rows affected.. WHAT?!
+				return new Promise.reject(new SqlError('Catastrophic database error. Several categories were deleted'));
+			}
 
-			// Create array in parent
-			var parent = map.get(category.parent);
-			if( parent !== undefined ){
-				// Category has a parent
-				parent.addChild(category);
-			}else{
-				// Category does not have a parent.
-				structure.push(category);
+						// Applying the update
+			_.mapObject(data, function(val, key){
+				self[key] = val;
+			});
+			
+			return new Promise.resolve(self);
+		}
+
+		function fail(rows){
+			if( err.errno === 19 && err.code === 'SQLITE_CONSTRAINT' ){
+				console.log(err);
+				return new Promise.reject( new SqlError('Invalid owner or parent') );
+			}else if( err.errno === 5 && err.code === 'SQLITE_BUSY'){
+				return new Promise.reject( new SqlError('Database temporarily unavailable') );
 			}
 		}
 
-		var rootCategory = new Category({
-			meta: true,
-			children: structure,
-			map: map
-		})
+		if( _.has(data, 'parent') && data.parent !== null ){
+			return knex('categories')
+			.where('id', data.parent)
+			.then(function(parent){
+				if( parent[0].owner != self.owner ){
+					return new Promise.reject( new UnauthorizedError('New parent has different owner') );
+				}
 
+				return knex('categories')
+				.where('id', self.id)
+				.update(data)
+				.then(success, fail);
+			});
+		}
 
-		return rootCategory;
-	};	
-
-	static populateStructure(rootCategory){
+		return knex('categories')
+		.where('id', self.id)
+		.update(data)
+		.then(success, fail);
 	}
 
+	del(){
+		var self = this;
+
+		if( typeof this.id !== 'number' ){
+			return new Promise.reject( new ValidationError([{message: 'is the wrong type', property: 'user.id'}]) );
+		}
+
+		return knex('categories')
+		.where('id', self.id)
+		.del()
+		.then(function(rows){
+			if( rows === 0 ){
+				// No rows was affected
+				return new Promise.reject(new SqlError('Category was not found'));
+			}
+			if( rows > 1 ){
+				// Multiple rows affected.. WHAT?!
+				return new Promise.reject(new SqlError('Catastrophic database error. Several categories were deleted'));
+			}
+
+			return new Promise.resolve(true);
+		}, function(err){
+			if( err.errno === 19 && err.code === 'SQLITE_CONSTRAINT' ){
+				return new Promise.reject( new SqlError('Category had attached children') );
+			}
+
+			if( err.errno === 5 && err.code === 'SQLITE_BUSY'){
+				return new Promise.reject( new SqlError('database temporarily unavailable') );
+			}
+
+			return new Promise.reject( err );
+		});
+	}
 }

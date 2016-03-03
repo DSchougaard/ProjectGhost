@@ -18,6 +18,7 @@ describe('Errors', function(){
 describe('Models', function(){
 	require(__base + 'test/models/user.js');
 	require(__base + 'test/models/password.js');
+	require(__base + 'test/models/category.js');
 });
 
 describe('Middlewares', function(){
