@@ -73,7 +73,7 @@ module.exports = function(server, log){
 	});
 
 	server.put('/api/users/:userId/categories/:categoryId', function(req, res, next){
-		return next(new restify.errors.NotImplementedYet('API endpoint not implemented yet'));
+		return next(new restify.errors.NotImplementedError('API endpoint not implemented yet'));
 	});
 
 	server.get('/api/users/:userId/categories', authentication, resolve, authorization, function(req, res, next){
