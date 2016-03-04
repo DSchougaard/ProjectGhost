@@ -25,16 +25,10 @@ var knex = require(__base + 'database.js');
 
 module.exports = class Category{
 	constructor(data){
-		if( data.meta ){
-			this.children 	= data.children;
-			this.map 	 	= data.map;
-		}else{
-			this.meta 	= data.meta;
-			this.id 	= data.id;
-			this.owner 	= data.owner;
-			this.parent = data.parent;
-			this.title 	= data.title;
-		}
+		this.id 	= data.id;
+		this.owner 	= data.owner;
+		this.parent = data.parent;
+		this.title 	= data.title;
 	}
 
 	static create(input){
@@ -123,7 +117,6 @@ module.exports = class Category{
 
 			return new Promise.reject( err );
 		});
-
 	}
 
 	static findAll(user){
