@@ -77,9 +77,9 @@ server.pre(restify.pre.sanitizePath());
 
 server.use(restify.bodyParser());
 server.use(restify.queryParser());
-server.on('uncaughtException', function (req, res, route, err) {
+/*server.on('uncaughtException', function (req, res, route, err) {
     console.log('uncaughtException', err.stack);
-});
+});*/
 
 // Database through Knex
 /*var knex = require('knex')({
