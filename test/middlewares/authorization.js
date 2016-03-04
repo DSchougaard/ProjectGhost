@@ -236,9 +236,145 @@ describe('Authorization', function(){
 				assert.equal(res.body.message, 'Insufficient privileges');
 				return done();
 			});
-
 		});
 	});
+
+	describe('User -> Category', function(){
+		
+		var users = [
+			{
+				username 	: 'Middleware#Authorization#User-Category#User01',
+				isAdmin 	: false,
+				salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+				password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+				privatekey 	: 'cGFzc3dvcmQ=',
+				iv 			: 'cGFzc3dvcmQ=',
+				pk_salt 	: 'cGFzc3dvcmQ=',
+				publickey 	: 'cGFzc3dvcmQ='
+			},
+			{
+				username 	: 'Middleware#Authorization#User-Category#User02',
+				isAdmin 	: false,
+				salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+				password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+				privatekey 	: 'cGFzc3dvcmQ=',
+				iv 			: 'cGFzc3dvcmQ=',
+				pk_salt 	: 'cGFzc3dvcmQ=',
+				publickey 	: 'cGFzc3dvcmQ='
+			}
+		];
+
+		var categories = [
+			{
+				title  		: 'Middleware#Authorization#User-Category#Category0001',
+				owner 		: 1,
+				parent 		: null
+			},
+			{
+				title  		: 'Middleware#Authorization#User-Category#Category0002',
+				owner 		: 1,
+				parent 		: null
+			}
+		];
+
+		before(function(){
+			return knex('users')
+			.insert(users[0])
+			.then(function(ids){
+				categories[0].owner = ids[0];
+				users[0].id = ids[0];
+			})
+		});
+		before(function(){
+			return knex('users')
+			.insert(users[1])
+			.then(function(ids){
+				categories[1].owner = ids[0];
+				users[1].id = ids[0];
+			})
+		});
+		before(function(){
+			return knex('categories')
+			.insert(categories[0])
+			.then(function(ids){
+				categories[0].id = ids[0];
+			})
+		});
+		before(function(){
+			return knex('categories')
+			.insert(categories[1])
+			.then(function(ids){
+				categories[1].id = ids[0];
+			})
+		});
+
+		it('should allow a user access to his own category', function(done){
+			var req = {};
+			req.resolved = {};
+			req.resolved.user = new User(users[0]);
+			req.params = {};
+			req.params.userId = users[0].id;
+			req.params.categoryId = categories[0].id;
+
+			authorization(req, null, function(res){
+				assert.equal(res, undefined);
+				return done();
+			});
+		});
+
+		it('should not allow a user access to another user\'s category', function(done){
+			var req = {};
+			req.resolved = {};
+			req.resolved.user = new User(users[0]);
+			req.params = {};
+			req.params.userId = users[1].id;
+			req.params.categoryId = categories[1].id;
+
+			authorization(req, null, function(res){
+				assert.equal(res.message, 'Insufficient privileges');
+				assert.equal(res.statusCode, 403);
+
+				assert.equal(res.body.code, 'ForbiddenError');
+				assert.equal(res.body.message, 'Insufficient privileges');
+				return done();
+			});
+		});
+
+		it('should fail when user id and categry id does not match up', function(done){
+			var req = {};
+			req.resolved = {};
+			req.resolved.user = new User(users[0]);
+			req.params = {};
+			req.params.userId = users[0].id;
+			req.params.categoryId = categories[1].id;
+
+			authorization(req, null, function(res){
+				assert.equal(res.message, 'Insufficient privileges');
+				assert.equal(res.statusCode, 403);
+
+				assert.equal(res.body.code, 'ForbiddenError');
+				assert.equal(res.body.message, 'Insufficient privileges');
+				return done();
+			});
+		});
+
+
+		
+		after(function(){
+			return knex('categories')
+			.where('id', categories[0].id)
+			.orWhere('id', categories[1].id)
+			.del()
+			.then(function(){
+				return knex('users')
+				.where('id', users[0].id)
+				.orWhere('id', users[1].id)
+				.del()
+			})
+			.then(function(){ });
+		});
+
+	})
 
 	after(function(){
 		return knex('passwords')
