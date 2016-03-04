@@ -628,7 +628,7 @@ describe("API /categories", function(){
 		});
 	});
 
-	describe.only('PUT', function(){
+	describe('PUT', function(){
 		
 		var users = {
 			User1: {
@@ -839,10 +839,6 @@ describe("API /categories", function(){
 			});
 		});	
 
-		/*
-			
-		*/
-
 		it('should allow a user to change the parent of a category (w/ children) he owns, to another category he owns', function(done){
 			// Category0001 to child of Category0003
 			
@@ -863,7 +859,6 @@ describe("API /categories", function(){
 
 				return done();
 			});
-
 		});		
 
 		it('should allow a user to change the parent of a category to the root', function(done){
@@ -886,7 +881,6 @@ describe("API /categories", function(){
 
 				return done();
 			});
-
 		});		
 
 		it('should not allow a user to change the ID of the category', function(done){
@@ -906,7 +900,6 @@ describe("API /categories", function(){
 
 				return done();
 			});
-
 		});		
 
 		it('should not allow the user to change the owner of the category', function(done){
@@ -1010,37 +1003,309 @@ describe("API /categories", function(){
 					return done();
 				});		
 			});
-
 		});
 
 		after(function(){
+			var promises = [];
+			_.mapObject(users, function(val, key){
 
-		});	
+				if(childCategories[key] !== undefined ){
+					for( var i = childCategories[key].length; i--;){
+						promises.push( knex('categories').where('id', childCategories[key][i].id).del() ) ;
+					}
+				}
+
+				for(var i = categories[key].length; i--;){		
+					promises.push( knex('categories').where('id', categories[key][i].id).del() ) ;
+				}
+
+				promises.push( knex('users').where('id', val.id).del() );
+			});
+
+			return Promise.all(promises)
+			.then(function(){ });
+		});
 	});
 
 	describe('DEL', function(){
-		before(function(){
+		var users = {
+			User1: {
+				username 	: 'Routes#Categories#DELETE#id#User01',
+				isAdmin 	: false,
+				salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+				password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+				privatekey 	: 'cGFzc3dvcmQ=',
+				iv 			: 'cGFzc3dvcmQ=',
+				pk_salt 	: 'cGFzc3dvcmQ=',
+				publickey 	: 'cGFzc3dvcmQ='
+			},
+			User2: {
+				username 	: 'Routes#Categories#DELETE#id#User02',
+				isAdmin 	: false,
+				salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+				password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+				privatekey 	: 'cGFzc3dvcmQ=',
+				iv 			: 'cGFzc3dvcmQ=',
+				pk_salt 	: 'cGFzc3dvcmQ=',
+				publickey 	: 'cGFzc3dvcmQ='
+			}
+		};
 
+		var categories = {
+			User1: [
+				{
+					title  		: 'Routes#Categories#DELETE#Category0001',
+					owner 		: 1,
+					parent 		: null
+				},
+				{
+					title  		: 'Routes#Categories#DELETE#Category0002',
+					owner 		: 1,
+					parent 		: null
+				},
+				{
+					title  		: 'Routes#Categories#DELETE#Category0003',
+					owner 		: 1,
+					parent 		: null
+				},
+			],
+			User2: [
+				{
+					title  		: 'Routes#Categories#DELETE#Category0004',
+					owner 		: 1,
+					parent 		: null
+				},
+				{
+					title  		: 'Routes#Categories#DELETE#Category0005',
+					owner 		: 1,
+					parent 		: null
+				}	
+			]
+		};
+
+		var childCategories = {
+			User1: [
+				{
+					title  		: 'Routes#Categories#DELETE#ChildCategory0001',
+					parent 		: null
+				},
+				{
+					title  		: 'Routes#Categories#DELETE#ChildCategory0002',
+					parent 		: null
+				}
+			]
+		};
+
+		var passwords = {
+			User1: [
+				{
+					parent 		: null,
+					owner 		: 1,
+					title 		: 'Routes#Categories#DELETE#PasswordChild0001',
+					username 	: 'SomeUser1',
+					password 	: 'AAAA==',
+					note 		: 'This is clearly a note!',
+					url 		: null
+				},
+				{
+					parent 		: null,
+					owner 		: 1,
+					title 		: 'Routes#Categories#DELETE#PasswordChild0002',
+					username 	: 'SomeUser2',
+					password 	: 'AAAA==',
+					url 		: null
+				}
+			]
+		}
+
+		var tokens = {
+			User1: undefined,
+			User2: undefined
+		};
+
+
+		// User1
+		before(function(){
+			var USER = 'User1';
+			return knex('users')
+			.insert(users[USER])
+			.then(function(ids){
+				users[USER].id = ids[0];
+
+				for( var i  = 0 ; i < categories[USER].length ; i++ ){
+					categories[USER][i].owner = ids[0];
+				}
+
+				var promises = [];
+
+				for( var i = 0 ; i < categories[USER].length ; i++ ){
+					promises.push( knex('categories').insert( categories[USER][i] ) );
+				}
+
+				return Promise.all(promises);
+			})	
+			.then(function(ids){
+				for( var i = 0 ; i < ids.length ; i++ ){
+					categories[USER][i].id = ids[i][0];
+				}
+
+				var promises = [];
+
+				for( var i = 0 ; i < childCategories[USER].length ; i++ ){
+					childCategories[USER][i].parent = categories[USER][1].id;
+					childCategories[USER][i].owner  = categories[USER][1].owner;
+
+					promises.push( knex('categories').insert( childCategories[USER][i] ) );
+				}
+
+				return Promise.all(promises);
+			})
+			.then(function(ids){
+				for( var i = 0 ; i < ids.length ; i++ ){
+					childCategories[USER][i].id = ids[i][0];
+				}
+
+				var promises = [];
+
+				for( var i = 0 ; i < passwords[USER].length ; i++ ){
+					passwords[USER][i].owner  = users[USER].id;
+					passwords[USER][i].parent = categories[USER][2].id;
+
+					promises.push( knex('passwords').insert(passwords[USER][i]));
+				}
+				return Promise.all(promises);
+			})
+			.then(function(ids){
+				for( var i = 0 ; i < ids.length ; i++ ){
+					passwords[USER][i].id = ids[i][0];
+				}
+				return;
+			})
+		});
+		before(function(done){
+			var USER = 'User1';
+
+			server
+			.post('/api/auth/login')
+			.field('username', users[USER].username)
+			.field('password', 'password')
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+				tokens[USER] = res.body.token;
+				return done();
+			});
 		});
 
+		// User2
+		before(function(){
+			var USER = 'User2';
+			return knex('users')
+			.insert(users[USER])
+			.then(function(ids){
+				users[USER].id = ids[0];
+
+				for( var i  = 0 ; i < categories[USER].length ; i++ ){
+					categories[USER][i].owner = ids[0];
+				}
+
+				var promises = [];
+
+				for( var i = 0 ; i < categories[USER].length ; i++ ){
+					promises.push( knex('categories').insert( categories[USER][i] ) );
+				}
+				return Promise.all(promises);
+			})	
+			.then(function(ids){
+				for( var i = 0 ; i < ids.length ; i++ ){
+					categories[USER][i].id = ids[i][0];
+				}
+				return;
+			});
+		});
+
+		///////////////////////////////////////////////
+		// Before's Done!
+		///////////////////////////////////////////////
 		it('should allow a user to delete a category (w/o children) he owns', function(done){
-			return done();
+			// Index = 0;
+			server
+			.del('/api/users/'+users['User1'].id+'/categories/' + categories['User1'][0].id)
+			.set('Authorization', 'Bearer ' + tokens['User1'])
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body, 'OK');
+
+				return done();
+			});		
 		});		
 
-		it('should not allow a user to delete a category, another user owns', function(done){
-			return done();
+		it('should not allow the user to delete a category w. category children, that he owns', function(done){
+			// Index = 1;
+			server
+			.del('/api/users/'+users['User1'].id+'/categories/' + categories['User1'][1].id)
+			.set('Authorization', 'Bearer ' + tokens['User1'])
+			//.expect(409)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.code, 'ConflictError');
+				assert.equal(res.body.message, 'Category had attached children');
+
+				return done();
+			});		
+
 		});	
 
-		it('should not allow the user to delete a category w. children, that he owns', function(done){
-			return done();
+		it('should not allow the user to delete a category w. password children, that he owns', function(done){
+			// Index = 2;
+			server
+			.del('/api/users/'+users['User1'].id+'/categories/' + categories['User1'][2].id)
+			.set('Authorization', 'Bearer ' + tokens['User1'])
+			//.expect(409)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.code, 'ConflictError');
+				assert.equal(res.body.message, 'Category had attached children');
+
+				return done();
+			});	
 		});	
 
 		it('should return an error, when trying to delete category which does not exist', function(done){
-			return done();
+			server
+			.del('/api/users/'+users['User1'].id+'/categories/' + 1337)
+			.set('Authorization', 'Bearer ' + tokens['User1'])
+			.expect(404)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.code, 'NotFoundError');
+
+				return done();
+			});	
 		});	
 
-		after(function(){
 
+		it('should not allow a user to delete a category, another user owns', function(done){
+			server
+			.del('/api/users/'+users['User1'].id+'/categories/' + categories['User2'][0].id)
+			.set('Authorization', 'Bearer ' + tokens['User1'])
+			//.expect(403)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.code, 'ForbiddenError');
+
+				return done();
+			});	
+		});	
+
+		after(function(done){
+			return done();
 		});	
 	});
 });

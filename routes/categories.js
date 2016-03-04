@@ -53,10 +53,10 @@ module.exports = function(server, log){
 		});
 	});
 
-	server.del('/api/users/:userId/categories/:categoryId', function(req, res, next){
+	server.del('/api/users/:userId/categories/:categoryId', authentication, resolve, authorization, function(req, res, next){
 		
 		(req.resolved.params.category).del()
-		.then(function(res){
+		.then(function(rows){
 			res.send(200, 'OK');
 			return next();
 		})
@@ -64,10 +64,17 @@ module.exports = function(server, log){
 			return next( new restify.errors.NotFoundError(err) );
 		})
 		.catch(SqlError, function(err){
-			return next( new restify.errors.InternalServerError(err.message) );
+			if( err.message === 'Category had attached children'){
+				return next( new restify.errors.ConflictError(err.message) );
+			}else{
+				return next( new restify.errors.InternalServerError(err.message) );
+			}
 		})
 		.catch(ValidationError, function(err){
 			return next( new ValidationRestError('Validation error', err.errors));
+		})
+		.catch(function(e){
+			return next(e);
 		});
 
 	});
