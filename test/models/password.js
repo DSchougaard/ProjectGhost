@@ -330,7 +330,6 @@ describe('Password', function(){
 					assert.equal(err.message, '1 error: data.password is required.');
 				});
 			});
-
 		});
 		
 		describe('wrong field types', function(){
@@ -423,16 +422,19 @@ describe('Password', function(){
 					assert.equal(err.message, '1 error: data.note is the wrong type.');
 				});
 			});
-
 		});
 		
-		/*after(function(){
+		after(function(){
 			return knex('passwords')
-			.where('id', validPassword.id)
-			.orWhere('id', validPasswordWithoutANote.id)
+			.where('id', password.id)
 			.del()
-			.then(function(){});
-		});*/
+			.then(function(){
+				return knex('users')
+				.where('id', user.id)
+				.del()
+			})
+			.then(function(){ });
+		});
 
     });
     
@@ -630,8 +632,43 @@ describe('Password', function(){
 	});
 	
 	describe('#del', function(){
+		
+		var user = {
+			username: 'Models#Passwords#del-User001',
+			salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
+			password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+			isAdmin: false,
+			privatekey: 'cGFzc3dvcmQ=',
+			publickey: 'cGFzc3dvcmQ=',
+			iv: 'cGFzc3dvcmQ=',
+			pk_salt: 'cGFzc3dvcmQ='
+		};
+
+		var password = {
+			parent 		: null,
+			owner 		: undefined,
+			title 		: 'Models#Passwords#del-Title001',
+			username 	: 'Models#Passwords#del-User001',
+			password 	: 'cGFzc3dvcmQ=',
+			note 		: 'This is clearly a note!',
+			url 		: null
+		}
+
+		before(function(){
+			return knex('users')
+			.insert(user)
+			.then(function(ids){
+				user.id = ids[0];
+				password.owner = user.id;
+				return knex('passwords').insert(password);
+			})
+			.then(function(ids){
+				password.id = ids[0];
+			});
+		})
+
 		it('fails when id has been edited to be invalid', function(){
-			return Password.find(6)
+			return Password.find(password.id)
 			.then(function(password){
 				password.id = 1337;
 				return password.del();
@@ -644,8 +681,8 @@ describe('Password', function(){
 			});
 		})
 		
-		it('fails validation, when theuser has been tampered with and ID given another type', function(){
-			return Password.find(6)
+		it('fails validation, when the user has been tampered with and ID given another type', function(){
+			return Password.find(password.id)
 			.then(function(password){
 				password.id = true;
 				return password.del();
@@ -660,7 +697,7 @@ describe('Password', function(){
 		});
 		
 		it('succeedes in deleting a password', function(){
-			return Password.find(6)
+			return Password.find(password.id)
 			.then(function(password){
 				return password.del();
 			})
@@ -668,6 +705,18 @@ describe('Password', function(){
 				assert.equal(r, true);
 			});
 		});
+
+		after(function(){
+			return knex('passwords')
+			.where('id', password.id)
+			.del()
+			.then(function(){
+				return knex('users')
+				.where('id', user.id)
+				.del();
+			})
+			.then(function(){ });
+		})
 	});
 	
 	describe('#findAll', function(){

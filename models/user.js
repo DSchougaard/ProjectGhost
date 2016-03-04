@@ -20,7 +20,6 @@ const OperationalError 		= Promise.OperationalError;
 function SQLErrorHandler(err){
 	// SQLite Username Exists error
 	if( err.errno === 19 && err.code === 'SQLITE_CONSTRAINT' ){
-		console.log(err);
 		return new Promise.reject( new SqlError('Username already exists') );
 		//throw new SqlError('Username already exists.')
 	}else if( err.errno === 5 && err.code === 'SQLITE_BUSY'){

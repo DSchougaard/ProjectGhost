@@ -142,7 +142,6 @@ knex.schema.createTableIfNotExists('users', function(table){
 	});
 })
 .catch(function(error){
-	console.log(error);
 });
 
 knex.schema.createTableIfNotExists('categories', function(table){

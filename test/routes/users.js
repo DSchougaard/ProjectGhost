@@ -22,6 +22,7 @@ const unittestData 		= require(__base + 'misc/unitTestData.js');
 var testUser = {
 	username: 				'User3',
 	password: 				'password',
+	isAdmin: 				false,
 	privatekey: 			fs.readFileSync('misc/unittest-private.key').toString('utf8'),
 	publickey: 				fs.readFileSync('misc/unittest-public.crt').toString('utf8'),
 	pk_salt: 				"Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI=",
@@ -69,9 +70,6 @@ describe('API /users', function(){
 		});
 
 		it("Get contents of unittest.sqlite", function(done){
-
-			var contents = [{"username": "User1", 'publickey': testUser.base64.publickey},{"username": "User2", 'publickey': testUser.base64.publickey}];
-			//request(server)
 			server
 			.get('/api/users')
 			.set('Authorization', 'Bearer ' + authToken)
@@ -80,7 +78,7 @@ describe('API /users', function(){
 				if(err) return done(err);
 				assert.equal(res.body.length, 2);
 				
-				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'iv', 'pk_salt', 'privatekey', 'salt', 'password', 'isAdmin'); });	
+				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'iv', 'pk_salt', 'privatekey', 'salt', 'password'); });	
 				var usersWithoutIDs = _.map(res.body, function(o) { return _.omit(o, 'id'); });
 				
 				assert.deepEqual(usersWithoutIDs, filteredData);
@@ -263,6 +261,7 @@ describe("API /user", function(){
 				done();
 			});
 		});
+
 		it("Should fail at creating a user that already exists", function(done){
 			server
 			.post('/api/users')
@@ -328,17 +327,18 @@ describe("API /user", function(){
 				if(err) return done(err);
 				
 				assert.equal(res.body.length, 3);
-				var usersWithoutIDs = _.map(res.body, function(o) { return _.omit(o, 'id'); });
+				var usersWithoutIDs = _.map(res.body, function(o) { o.isAdmin === 1 ? o.isAdmin = true : o.isAdmin = false; return _.omit(o, 'id'); });
+
 				
 				var expectedInsertedUser = {
 					username: testUser.username,
-					publickey: testUser.base64.publickey
+					publickey: testUser.base64.publickey,
+					isAdmin: false
 				}
 				
-				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'iv', 'pk_salt','privatekey', 'salt', 'password', 'isAdmin'); });	
+				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'iv', 'pk_salt','privatekey', 'salt', 'password'); });	
 				filteredData.push(expectedInsertedUser);
-					
-			
+
 				assert.deepEqual(usersWithoutIDs, filteredData);
 					
 				done();
@@ -494,7 +494,6 @@ describe("API /user", function(){
 				return done();
 			});
 		});
-
 	});
 
 
@@ -576,7 +575,7 @@ describe("API /user", function(){
 				(res.body).should.have.length(2);
 				
 				var usersWithoutIDs = _.map(res.body, function(o) { return _.omit(o, 'id'); });
-				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'iv', 'pk_salt', 'privatekey', 'salt', 'password', 'isAdmin'); });	
+				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'iv', 'pk_salt', 'privatekey', 'salt', 'password'); });	
 				
 				assert.deepEqual(usersWithoutIDs, filteredData);
 				return done();

@@ -13,7 +13,7 @@ module.exports = function(server, knex, log){
 		log.info({ method: 'POST', path: '/api/auth/login', payload: req.body.username });
 
 		// Filter bad requests based on the username
-		if( req.body.username === undefined || req.body.username === '' || !validator.isAlphanumeric(req.body.username) ){
+		if( req.body.username === undefined || req.body.username === '' /*|| !validator.isAlphanumeric(req.body.username)*/ ){
 			log.debug({ method: 'POST', path: '/api/auth/login', payload: req.body.username, message: 'Missing username'});
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing username"));
 		}
