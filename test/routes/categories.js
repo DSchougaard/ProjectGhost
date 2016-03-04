@@ -10,7 +10,7 @@ var server 				= request(restifyInstance.server);
 
 var knex = require(__base + 'database.js');
 
-describe.only("API /categories", function(){
+describe("API /categories", function(){
 
 	/*
 		Template User
@@ -302,33 +302,261 @@ describe.only("API /categories", function(){
 
 	describe('POST', function(){
 		
-		before(function(){
+		var users = {
+			User1: {
+				username 	: 'Routes#Categories#POST#id#User01',
+				isAdmin 	: false,
+				salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+				password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+				privatekey 	: 'cGFzc3dvcmQ=',
+				iv 			: 'cGFzc3dvcmQ=',
+				pk_salt 	: 'cGFzc3dvcmQ=',
+				publickey 	: 'cGFzc3dvcmQ='
+			},
+			User2: {
+				username 	: 'Routes#Categories#POST#id#User02',
+				isAdmin 	: false,
+				salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+				password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+				privatekey 	: 'cGFzc3dvcmQ=',
+				iv 			: 'cGFzc3dvcmQ=',
+				pk_salt 	: 'cGFzc3dvcmQ=',
+				publickey 	: 'cGFzc3dvcmQ='
+			}
+		};
 
+		var categories = {
+			User1: [
+				{
+					title  		: 'Routes#Categories#POST#Category0001',
+					owner 		: 1,
+					parent 		: null
+				},
+				{
+					title  		: 'Routes#Categories#POST#Category0003',
+					owner 		: 1,
+					parent 		: null
+				},
+				{
+					title  		: 'Routes#Categories#POST#Category0003',
+					owner 		: 1,
+					parent 		: null
+				}	
+			],
+			User2: [
+				{
+					title  		: 'Routes#Categories#POST#Category0004',
+					owner 		: 1,
+					parent 		: null
+				},
+				{
+					title  		: 'Routes#Categories#POST#Category0005',
+					owner 		: 1,
+					parent 		: null
+				}	
+			]
+		}
+
+		var tokens = {
+			User1: undefined,
+			User2: undefined
+		}
+
+
+		// User1
+		before(function(){
+			var USER = 'User1';
+			return knex('users')
+			.insert(users[USER])
+			.then(function(ids){
+				users[USER].id = ids[0];
+				categories[USER] = _.map(categories[USER], function(cat){  cat.owner = ids[0]; return cat; });
+
+				var promises = [];
+
+				for( var i = 0 ; i < categories[USER].length ; i++ ){
+					promises.push( knex('categories').insert( categories[USER][i] ) );
+				}
+				return Promise.all(promises);
+			})	
+			.then(function(ids){
+				for( var i = 0 ; i < ids.length ; i++ ){
+					categories[USER][i].id = ids[i][0];
+				}
+			});
+		});
+		before(function(done){
+			var USER = 'User1';
+
+			server
+			.post('/api/auth/login')
+			.field('username', users[USER].username)
+			.field('password', 'password')
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+				tokens[USER] = res.body.token;
+				return done();
+			});
 		});
 
+		// User2
+		before(function(){
+			var USER = 'User2';
+			return knex('users')
+			.insert(users[USER])
+			.then(function(ids){
+				users[USER].id = ids[0];
+				categories[USER] = _.map(categories[USER], function(cat){  cat.owner = ids[0]; return cat; });
+
+				var promises = [];
+
+				for( var i = 0 ; i < categories[USER].length ; i++ ){
+					promises.push( knex('categories').insert( categories[USER][i] ) );
+				}
+				return Promise.all(promises);
+			})	
+			.then(function(ids){
+				for( var i = 0 ; i < ids.length ; i++ ){
+					categories[USER][i].id = ids[i][0];
+				}
+			});
+		});
+
+		///////////////////////////////////////////////
+		// Before's Done!
+		///////////////////////////////////////////////
+
+
 		it('should allow an user to create a new cateory in his root', function(done){
-			return done();
+			var cat = {
+				owner: users['User1'],
+				title: 'Routes#Categories#POST#Category0010'
+			}
+
+			server
+			.post('/api/users/'+users['User1'].id+'/categories')
+			.send(cat)
+			.set('Authorization', 'Bearer ' + tokens['User1'])
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(typeof res.body === 'number', true);
+				cat.id = res.body;
+				categories['User1'].push(cat);
+
+				return done();
+			});
 		});
 
 		it('should allow an user to create a new category, as a child to another category', function(done){
-			return done();
+			var cat = {
+				owner: users['User1'],
+				parent: categories['User1'][0].id,
+				title: 'Routes#Categories#POST#Category0011'
+			}
+
+			server
+			.post('/api/users/'+users['User1'].id+'/categories')
+			.send(cat)
+			.set('Authorization', 'Bearer ' + tokens['User1'])
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(typeof res.body === 'number', true);
+				cat.id = res.body;
+				categories['User1'].push(cat);
+
+				return done();
+			});
 		});
 
 		it('should not allow an user to create a new category, in other user\'s root', function(done){
-			return done();
+			var cat = {
+				owner: users['User2'],
+				title: 'Routes#Categories#POST#Category0021'
+			}
+
+			server
+			.post('/api/users/'+users['User2'].id+'/categories')
+			.send(cat)
+			.set('Authorization', 'Bearer ' + tokens['User1'])
+			.expect(403)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.code, 'ForbiddenError');
+				assert.equal(res.body.message, 'Insufficient privileges');
+
+				return done();
+			});
 		});
 
 		it('should not allow an user to create a new category, as a child to another user\'s category', function(done){
-			return done();
+			var cat = {
+				owner: users['User1'],
+				title: 'Routes#Categories#POST#Category0021',
+				parent: categories['User2'][0].id
+			}
+
+			server
+			.post('/api/users/'+users['User1'].id+'/categories')
+			.send(cat)
+			.set('Authorization', 'Bearer ' + tokens['User1'])
+			.expect(400)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.code, 'BadRequestError');
+				assert.equal(res.body.message, 'Parent category has other owner');
+
+				return done();
+			});
 		});
 
 		it('should not allow an user to create a new category, with another user as owner', function(done){
-			return done();
+			var cat = {
+				owner: users['User2'],
+				title: 'Routes#Categories#POST#Category0021',
+				parent: categories['User2'][0].id
+			}
+
+			server
+			.post('/api/users/'+users['User2'].id+'/categories')
+			.send(cat)
+			.set('Authorization', 'Bearer ' + tokens['User1'])
+			.expect(403)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.code, 'ForbiddenError');
+				assert.equal(res.body.message, 'Insufficient privileges');
+
+				return done();
+			});
 		});
 
 		describe('Missing Fields', function(){
 			it('should throw an error, when the title field is missing', function(done){
-				return done();
+				
+				var cat = {
+					owner: users['User1']
+				}
+
+				server
+				.post('/api/users/'+users['User1'].id+'/categories')
+				.send(cat)
+				.set('Authorization', 'Bearer ' + tokens['User1'])
+				.expect(400)
+				.end(function(err, res){
+					if(err) return done(err);
+
+					assert.equal(res.body.code, 'ValidationError');
+
+					return done();
+				});
 			});
 		});
 

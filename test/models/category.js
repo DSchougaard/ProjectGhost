@@ -255,6 +255,20 @@ describe('Category', function(){
 			parent: null
 		}
 
+		var otherCat = {
+			title: 'CREATE-TestCat0001',
+			owner: 2,
+			parent: null
+		}
+
+		before(function(){
+			return knex('categories')
+			.insert(otherCat)
+			.then(function(ids){
+				otherCat.id = ids[0];
+			});
+		});
+
 		it('should fail when creating category with non-existant parent', function(){
 			var tmp = _.clone(cat);
 			tmp.parent = 1337;
@@ -279,7 +293,6 @@ describe('Category', function(){
 				assert.equal(err.id, 1337);
 				assert.equal(err.name, "UserDoesNotExistError");
 			});
-
 		});
 
 		it('should fail when creating category with invalid parent', function(){
@@ -345,6 +358,19 @@ describe('Category', function(){
 			});
 		});
 
+		it('should fail when creating category as child to category owned by other user', function(){
+			var tmp = _.clone(cat);
+			tmp.parent = otherCat.id;
+
+			return Category.create(tmp)
+			.then(function(){
+                assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
+			})
+			.catch(UnauthorizedError, function(err){
+				assert.equal(err.cause, 'Parent category has other owner');
+			});		
+		})
+
 		it('should successfully create category', function(){
 			return Category.create(cat)
 			.then(function(category){
@@ -366,11 +392,13 @@ describe('Category', function(){
 
 			});
 		});
-
+		
 		after(function(){
 			return knex('categories')
 			.where('id', cat.id)
-			.del();
+			.orWhere('id', otherCat.id)
+			.del()
+			.then(function(){ })
 		});
 	});
 

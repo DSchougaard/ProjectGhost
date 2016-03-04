@@ -14,7 +14,7 @@ const UserDoesNotExistError 	= require(__base + 'errors/UserDoesNotExistError.js
 const SqlError 					= require(__base + 'errors/SqlError.js');
 const ValidationRestError 		= require(__base + 'errors/ValidationRestError.js');
 const CategoryDoesNotExistError = require(__base + 'errors/CategoryDoesNotExistError.js');
-
+const UnauthorizedError 		= require(__base + 'errors/UnauthorizedError.js');
 
 // Middleware
 const authentication 	= require(__base + 'middlewares/authentication.js');
@@ -27,7 +27,7 @@ module.exports = function(server, log){
 	server.post('/api/users/:userId/categories', authentication, resolve, authorization, function(req, res, next){
 
 		var category 	= _.clone(req.body);
-		//category.owner 	= req.resolved.user.id;
+		category.owner 	= req.resolved.user.id;
 		category 		= _.defaults(category, {parent: null});
 
 		Category.create(category)
@@ -35,11 +35,17 @@ module.exports = function(server, log){
 			res.send(200, category.id);
 			return next();
 		})
+		.catch(UnauthorizedError, function(err){
+			return next( new restify.errors.BadRequestError(err.cause) );
+		})
 		.catch(ValidationError, function(err){
 			return next( new ValidationRestError('Validation error', err.errors));
 		})
+		.catch(CategoryDoesNotExistError, function(err){
+			return next( new restify.errors.NotFoundError('Parent category not found') );
+		})
 		.catch(SqlError, function(err){
-			if(err.message === 'Category already exists')
+			//if(err.message === 'Category already exists')
 			return next( new restify.errors.InternalServerError(err.message) );
 		})
 		.catch(function(err){

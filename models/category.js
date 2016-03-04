@@ -46,12 +46,12 @@ module.exports = class Category{
 			return new Promise.reject( new ValidationError(validID.errors) );
 		}
 
-		return knex('categories')
-		.insert(data)
-		.then(function(ids){
+		function success(ids){
 			data.id = ids[0];
 			return new Promise.resolve( new Category(data) );
-		}, function(err){
+		}
+
+		function fail(err){
 			// SQLite Username Exists error
 			if( err.errno === 19 && err.code === 'SQLITE_CONSTRAINT' ){
 
@@ -66,10 +66,37 @@ module.exports = class Category{
 			}
 
 			return new Promise.reject( err );
-		});
+		}
+
+
+		if( input.parent === null || input.parent === undefined ){
+			return knex('categories')
+			.insert(data)
+			.then(success, fail);
+		}else{
+			return knex.transaction(function(trx){
+				return trx
+				.from('categories')
+				.where('id', input.parent)
+				.select('owner')
+				.then(function(rows){
+
+					if( rows.length === 0 ){
+						return new Promise.reject( new CategoryDoesNotExistError(input.parent) );
+					}
+
+					if( rows[0].owner === input.owner ){
+						return trx
+						.insert(input)
+						.into('categories')
+						.then(success, fail);
+					}else{
+						return new Promise.reject( new UnauthorizedError('Parent category has other owner') );
+					}
+				});
+			});
+		}
 	}
-
-
 
 	static find(id){
 		var validID = schemagic.id.validate(id);
