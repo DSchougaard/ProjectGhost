@@ -300,7 +300,7 @@ describe("API /categories", function(){
 		});
 	});
 
-	describe('POST', function(){
+	describe.only('POST', function(){
 		
 		var users = {
 			User1: {
@@ -370,13 +370,17 @@ describe("API /categories", function(){
 			.insert(users[USER])
 			.then(function(ids){
 				users[USER].id = ids[0];
-				categories[USER] = _.map(categories[USER], function(cat){  cat.owner = ids[0]; return cat; });
+
+				for( var i  = 0 ; i < categories[USER].length ; i++ ){
+					categories[USER][i].owner = ids[0];
+				}
 
 				var promises = [];
 
 				for( var i = 0 ; i < categories[USER].length ; i++ ){
 					promises.push( knex('categories').insert( categories[USER][i] ) );
 				}
+
 				return Promise.all(promises);
 			})	
 			.then(function(ids){
@@ -407,7 +411,10 @@ describe("API /categories", function(){
 			.insert(users[USER])
 			.then(function(ids){
 				users[USER].id = ids[0];
-				categories[USER] = _.map(categories[USER], function(cat){  cat.owner = ids[0]; return cat; });
+
+				for( var i  = 0 ; i < categories[USER].length ; i++ ){
+					categories[USER][i].owner = ids[0];
+				}
 
 				var promises = [];
 
@@ -430,7 +437,7 @@ describe("API /categories", function(){
 
 		it('should allow an user to create a new cateory in his root', function(done){
 			var cat = {
-				owner: users['User1'],
+				owner: users['User1'].id,
 				title: 'Routes#Categories#POST#Category0010'
 			}
 
@@ -452,7 +459,7 @@ describe("API /categories", function(){
 
 		it('should allow an user to create a new category, as a child to another category', function(done){
 			var cat = {
-				owner: users['User1'],
+				owner: users['User1'].id,
 				parent: categories['User1'][0].id,
 				title: 'Routes#Categories#POST#Category0011'
 			}
@@ -562,16 +569,62 @@ describe("API /categories", function(){
 
 		describe('Wrongly Formatted Fields', function(){
 			it('should return an error, when the parent field has the wrong type', function(done){
-				return done();
+				
+				var cat = {
+					owner: users['User1'],
+					title: 'Routes#Categories#POST#Category0022',
+					parent: true
+				}
+
+				server
+				.post('/api/users/'+users['User1'].id+'/categories')
+				.send(cat)
+				.set('Authorization', 'Bearer ' + tokens['User1'])
+				.expect(400)
+				.end(function(err, res){
+					if(err) return done(err);
+
+					assert.equal(res.body.code, 'ValidationError');
+
+					return done();
+				});
+
 			});	
 
 			it('should return an error, when the title field has the wrong type', function(done){
-				return done();
+				var cat = {
+					owner: users['User1'],
+					title: true
+				}
+
+				server
+				.post('/api/users/'+users['User1'].id+'/categories')
+				.send(cat)
+				.set('Authorization', 'Bearer ' + tokens['User1'])
+				.expect(400)
+				.end(function(err, res){
+					if(err) return done(err);
+
+					assert.equal(res.body.code, 'ValidationError');
+
+					return done();
+				});
 			});	
 		});
 	
 		after(function(){
+			var promises = [];
+			_.mapObject(users, function(val, key){
 
+				for(var i = categories[key].length; i--;){		
+					promises.push( knex('categories').where('id', categories[key][i].id).del() ) ;
+				}
+
+				promises.push( knex('users').where('id', val.id).del() );
+			});
+
+			return Promise.all(promises)
+			.then(function(){ });
 		});
 	});
 
