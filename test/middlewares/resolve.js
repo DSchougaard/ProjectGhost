@@ -11,7 +11,7 @@ var resolve = require(__base + 'middlewares/resolve.js');
 
 describe('Resolve', function(){
 
-	var testUser, testPassword;
+	var testUser, testPassword, testCategory;
 
 	before(function(){
 
@@ -42,11 +42,24 @@ describe('Resolve', function(){
 			};
 
 			return knex('passwords')
-			.insert(testPassword)
-			.then(function(id){
-				testPassword.id = id[0];
-			});
-		});
+			.insert(testPassword);
+			
+		})
+		.then(function(id){
+			testPassword.id = id[0];
+
+			testCategory = {
+				title  		: 'ResolveMiddleware#Category#Title',
+				owner 		: testUser.id,
+				parent 		: null
+			};
+
+			return knex('categories')
+			.insert(testCategory);
+		})
+		.then(function(id){
+			testCategory.id = id[0];
+		})
 	});
 
 
@@ -85,6 +98,25 @@ describe('Resolve', function(){
 		});
 	});
 	
+	it('resolves a user id and a category id', function(done){
+		var req = {
+			resolved:{
+				user: 1	
+			},
+			params:{
+				userId : testUser.id,
+				categoryId: testCategory.id
+			}
+		};
+
+		resolve(req, null, function(err){
+			assert.deepEqual(req.resolved.params.user, testUser);
+			assert.deepEqual(req.resolved.params.category, testCategory);
+
+			done();
+		});
+	});
+
 	it('throws an error when resolving a non-existing user id', function(done){
 		var req = {
 			resolved:{
@@ -129,6 +161,28 @@ describe('Resolve', function(){
 		});	
 	});
 
+	it('throws an error when resolving a non-existant category id', function(done){
+		var req = {
+			resolved:{
+				user: 1	
+			},
+			params:{
+				categoryId : 1337
+			}
+		};
+
+		resolve(req, null, function(err){
+
+			assert.equal(err.message, 'Category was not found');
+			assert.equal(err.statusCode, 404);
+
+			assert.equal(err.body.code, 'NotFoundError');
+			assert.equal(err.body.message, 'Category was not found');
+
+			done();
+		});	
+	});
+
 	it('ignores any non-existing classnames', function(done){
 		var req = {
 			resolved:{
@@ -168,11 +222,18 @@ describe('Resolve', function(){
 		.where('id', testPassword.id)
 		.del()
 		.then(function(rows){
-			return knex('users')
-			.where('id', testUser.id)
+
+			return knex('categories')
+			.where('id', testCategory.id)
 			.del()
 			.then(function(rows){
 
+				return knex('users')
+				.where('id', testUser.id)
+				.del()
+				.then(function(rows){
+
+				});
 			});
 		});
 	});

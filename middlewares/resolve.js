@@ -6,6 +6,7 @@ const _ 						= require('underscore');
 // Errors
 const UserDoesNotExistError 	= require(__base + 'errors/UserDoesNotExistError.js');
 const PasswordDoesNotExistError = require(__base + 'errors/PasswordDoesNotExistError.js');
+const CategoryDoesNotExistError = require(__base + 'errors/CategoryDoesNotExistError.js');
 const SqlError 					= require(__base + 'errors/SqlError.js');
 const ValidationError 			= require(__base + 'errors/ValidationError.js');
 const ValidationRestError 		= require(__base + 'errors/ValidationRestError.js');
@@ -83,6 +84,9 @@ module.exports = function(req, res, next){
 	.catch(PasswordDoesNotExistError, function(err){
 		return next(new restify.errors.NotFoundError('Password was not found'));
 	})
+	.catch(CategoryDoesNotExistError, function(err){
+		return next(new restify.errors.NotFoundError('Category was not found'));
+	})
 	.catch(ValidationError, function(err){
 		//return next( new restify.errors.BadRequestError('ValidationError: ' + err.errors[0].property + ' ' + err.errors[0].message) );
 
@@ -92,5 +96,8 @@ module.exports = function(req, res, next){
 	.catch(SqlError, function(err){
 		req.log.error({source: 'resolve middleware', error: err, message: 'Sql Error' });
 		return next( new restify.errors.InternalServerError('Internal database error') );
+	})
+	.catch(function(err){
+		return next( new restify.errors.InternalServerError(err) );
 	});
 };
