@@ -31,4 +31,5 @@ describe('Routes', function(){
 	require(__base + 'test/routes/auth.js');
 	require(__base + 'test/routes/users.js');
 	require(__base + 'test/routes/password.js');
+	require(__base + 'test/routes/categories.js');
 })
