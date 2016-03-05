@@ -147,7 +147,10 @@
 		.icon('edit-black', 			'img/icons/edit-black.svg')
 		.icon('delete-white', 			'img/icons/delete-white.svg')
 		.icon('delete-black', 			'img/icons/delete-black.svg')
-
+		.icon('add-white', 				'img/icons/add-white.svg')
+		.icon('add-black', 				'img/icons/add-black.svg')
+		.icon('remove-white', 			'img/icons/remove-white.svg')
+		.icon('remove-black', 			'img/icons/remove-black.svg')
 
 
 	});
