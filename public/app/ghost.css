@@ -45,3 +45,10 @@
     -ms-user-select: none;
     user-select: none;
 }
+
+.ghost-fab {
+	position: fixed;
+	bottom: 20px; /* Adjust to where you want it */
+	right: 20px; /* Adjust to where you want it */
+	z-index: 9999;
+}

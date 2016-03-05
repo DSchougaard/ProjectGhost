@@ -16,7 +16,8 @@
 
 		// List of Passwords
 		self.entries = [];
-		self.entries = PasswordService.passwords;
+		self.selectedCategory = '';
+		//self.entries = PasswordService.passwords;
 		// Fetch the data
 		PasswordService.fetch();
 
@@ -42,6 +43,7 @@
 			self.entries = _.filter(PasswordService.passwords, function(password){
 				return args.id === password.parent;
 			});
+			self.selectedCategory = args.title;
 		})
 
 
