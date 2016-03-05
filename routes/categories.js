@@ -79,8 +79,23 @@ module.exports = function(server, log){
 
 	});
 
-	server.put('/api/users/:userId/categories/:categoryId', function(req, res, next){
-		return next(new restify.errors.NotImplementedError('API endpoint not implemented yet'));
+	server.put('/api/users/:userId/categories/:categoryId', authentication, resolve, authorization,  function(req, res, next){
+		(req.resolved.params.category).update(req.body)
+		.then(function(){
+			res.send(200, 'OK');
+			return next();
+		})
+		.catch(ValidationError, function(err){
+			return next( new ValidationRestError('Validation error', err.errors));
+		})
+		.catch(CategoryDoesNotExistError, function(err){
+			return next( new restify.errors.NotFoundError('Category was not found') );
+		})
+		.catch(SqlError, function(err){
+			console.log(err);
+			return next( new restify.errors.InternalServerError(err) );
+		});
+
 	});
 
 	server.get('/api/users/:userId/categories', authentication, resolve, authorization, function(req, res, next){
