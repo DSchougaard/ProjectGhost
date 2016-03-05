@@ -8,22 +8,33 @@
 			select: '='
 		},
 		controller: function () {
-			var self = this;
+			var self 			= this;
 			// Literals
-			self.expanded = true;
-			self.indentation = 15;
+			self.expanded 		= true;
+			self.indentation 	= 15;
+			self.children 		= [];
 
 			// Exposed interface
-			self.propagate = propagate;
+			self.propagate 		= propagate;
+			self.register 		= register;
 
 			// Methods
 			function propagate(ret){
 				if( ret[self.select] !== undefined ){
-					self.onSelect(ret[self.select]);	
+					self.onSelect(ret[self.select]);
+					self.currentSelection = ret[self.select];
 				}else{
 					self.onSelect(ret);
+					self.currentSelection = ret.id;
 				}
-				
+
+				for( var i = 0 ; i < self.children.length ; i++ ){
+					self.children[i].currentSelection = (self.children[i].node.id === self.currentSelection);
+				}
+			}
+
+			function register(child){
+				self.children.push(child);
 			}
 
 		},
@@ -47,16 +58,21 @@
 			node: '=',
 			parent: '='
 		},
-		controller: function () {
+		controller: function ($scope, $element) {
 			var self = this;
 			// Literals
 			self.expanded = false;
+			self.currentSelection = false;
 			self.indentation = self.parent.indentation + 20;
 
 			// Exposed Interface
 			self.toggle = toggle;
 			self.check = check;
 			self.propagate = propagate;
+			self.register = register;
+
+			// Register itself with root node
+			self.register(self);
 
 			// Methods
 			function check(){
@@ -68,10 +84,28 @@
 			}
 
 			function toggle(){
-				self.expanded = !self.expanded;
-				if( self.expanded ){
-					self.parent.propagate(self.node);	
+				/*
+					Four cases:
+						The element should toggle its 
+						expansion boolean in the following cases:
+
+						1. It is not expanded and not selected.
+						2. It is expanded AND selected
+						3. It is NOT expanded AND selected
+
+						In the following cases, it should not toggle:
+
+						1. It is expanded and NOT selected
+				*/
+
+				if( !(self.expanded && !self.currentSelection) ){
+					self.expanded = !self.expanded;
 				}
+				self.parent.propagate(self.node);
+			}
+
+			function register(child){
+				self.parent.register(child);
 			}
 
 		
