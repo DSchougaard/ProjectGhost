@@ -10,11 +10,22 @@
 		self.password = {};
 		self.submit = submit;
 		self.title = "";
+		self.categories = [];
 
+		// Interface
+		self.treeSelect = treeSelect;
 
-		self.test = {
-			title: 'this is a test title'
-		}
+		// Load Content
+		$http({
+			method: 'GET',
+			url: '/api/users/' + $auth.getPayload().uid + '/categories'
+		})
+		.then(function(res){
+			self.categories = createStructure(res.data);
+		}, function(err){
+			console.error(err);
+		})
+
 
 		// UI Strings
 		var add = {
@@ -40,6 +51,11 @@
 			});
 		}
 		
+		function treeSelect(selection){
+			//$rootScope.$broadcast('category', selection);
+			console.log(selection);
+		}
+
 		function submit() {
 			console.log("Creating new password, %j", self.password);
 			EncryptionService.encrypt(self.password)
@@ -67,6 +83,39 @@
 				}
 				
 			});
+		}
+
+		function createStructure(categories){
+			var map = {};
+			var structure = [];
+
+			for( var i = 0 ; i < categories.length ; i++ ){
+				map[categories[i].id] = categories[i];
+			}
+
+			for( var i = 0 ; i < categories.length ; i++ ){
+				// Create children list on the category
+				var category = categories[i];
+
+				// Append Values for the tree;
+				category.type = 'node';
+
+				// Create array in parent
+				var parent = map[category.parent];
+				if( parent !== undefined && parent !== null && category.parent !== category.id){
+					// Category has a parent1
+					if( parent.children === undefined ){
+						parent.children = [];
+					}
+					parent.children.push(category);
+				}else{
+					// Category does not have a parent.
+					structure.push(category);
+				}
+			}
+
+			return structure;
+
 		}
 	};
 })();
