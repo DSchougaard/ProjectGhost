@@ -80,7 +80,6 @@
 			// Register itself with root node
 			self.register(self);
 			if( self.node.initial ){
-				console.log("Inital = %j", self.node);	
 				self.parent.propagate(self.node);
 				self.parent.pathExpand();
 			}
