@@ -39,7 +39,6 @@
 		});
 
 		$rootScope.$on('category', function(event, args){
-			console.log("Password List Controller: %j", args);
 			self.entries = _.filter(PasswordService.passwords, function(password){
 				return args.id === password.parent;
 			});

@@ -24,7 +24,6 @@
  
 
 		function toggleMenu(){
-			console.log("Toggling sidenav");
 			$mdSidenav('left').toggle();
 		}
 	};

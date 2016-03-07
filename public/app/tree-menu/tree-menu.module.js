@@ -17,6 +17,7 @@
 			// Exposed interface
 			self.propagate 		= propagate;
 			self.register 		= register;
+			self.pathExpand 	= pathExpand;
 
 			// Methods
 			function propagate(ret){
@@ -31,6 +32,10 @@
 				for( var i = 0 ; i < self.children.length ; i++ ){
 					self.children[i].currentSelection = (self.children[i].node.id === self.currentSelection);
 				}
+			}
+
+			function pathExpand(){
+				
 			}
 
 			function register(child){
@@ -70,9 +75,15 @@
 			self.check = check;
 			self.propagate = propagate;
 			self.register = register;
+			self.pathExpand = pathExpand;
 
 			// Register itself with root node
 			self.register(self);
+			if( self.node.initial ){
+				console.log("Inital = %j", self.node);	
+				self.parent.propagate(self.node);
+				self.parent.pathExpand();
+			}
 
 			// Methods
 			function check(){
@@ -81,6 +92,11 @@
 
 			function propagate(ret){
 				self.parent.propagate(ret);
+			}
+
+			function pathExpand(){
+				self.expanded = true;
+				self.parent.pathExpand();
 			}
 
 			function toggle(){

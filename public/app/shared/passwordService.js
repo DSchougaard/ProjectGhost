@@ -10,21 +10,58 @@
 		var self = this;
 
 		// Content for storing the actual passwords
-		this.passwords 	= [];
-		this.create 	= create;
-		this.del 		= del;
+		self.shownPasswords = [];
+		self.passwords 		= [];
 
-		this.fetch = function(){
-			console.log("Retrieving fresh data from remote");
+		// Exposed Interface
+		self.fetch  	= fetch;
+		// --- Category Password Controls
+		self.select 	= select;
 
-			console.log("%j", $auth.getPayload());
+		// --- Individual Password Controls
+		self.create 	= create;
+		self.del 		= del;
+		self.show  		= show;
+		self.hide  		= hide;
+
+		function select(source, category){
+			switch(source){
+				case 'own':
+					return select.own(category);
+					break;
+				case 'favorites':
+					break;
+				case 'shared':
+					break;
+			}
+		}
+
+
+		var select = {};
+		select.own = function(category){
+
+			if( self.cache[category.id] !== undefined ){
+				self.cache[category.id] = _.filter(self.passwords, function(password){
+					return password.parent === category.id;
+				});
+			}
+
+			return self.cache[category.id];
+		}
+
+
+
+
+
+
+
+		function fetch(){
 			$http({
 				method: 'GET',
 				url: '/api/users/' + $auth.getPayload().uid + '/passwords'
 			})
 			.then(function(res){
 				self.passwords = _.clone(res.data);
-				console.log("Passwords updated.\n%j", self.passwords);
 				$rootScope.$broadcast('passwords', 'fetched');
 			})
 			.catch(function(err){
@@ -40,7 +77,7 @@
 			});
 		}
 
-		this.show = function(index){
+		function show(){
 			console.log("Password Service: Showing password with ID %d, resolving to %j", index, this.passwords[index])
 			return EncryptionService.decrypt(this.passwords[index])
 			.then(function(password){
@@ -50,9 +87,9 @@
 			});
 		};
 
-		this.hide = function(index){
+		function hide(){
 			self.passwords[index].decryptedPassword = undefined;
-		}
+		};
 
 		function create(password){};
 
@@ -91,7 +128,6 @@
 			}, function(){
 				// User canceled the process
 			});
-
 		}
 
 	};

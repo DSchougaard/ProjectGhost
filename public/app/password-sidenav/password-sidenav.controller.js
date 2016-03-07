@@ -10,6 +10,7 @@
 		// Literals
 		self.userMenu = [];
 		self.categories = [];
+		self.initial = undefined;
 
 		// Populate Menu	
 		self.userMenu.push('Preferences');
@@ -32,7 +33,15 @@
 				url: '/api/users/' + $auth.getPayload().uid + '/categories'
 			})
 			.then(function(res){
-				self.categories = createStructure(res.data);
+				//self.categories = createStructure(res.data);
+				var personalPasswords = {
+					title: 'Personal Passwords',
+					id: null,
+					children: createStructure(res.data),
+					initial:true
+				};
+				self.categories.push(personalPasswords);
+
 			}, function(err){
 				console.error(err);
 			})
@@ -59,7 +68,6 @@
 
 
 		function createStructure(categories){
-			console.log("Creating tree structure..");
 			var map = {};
 			var structure = [];
 
@@ -89,7 +97,6 @@
 			}
 
 			return structure;
-
 		}
 
 		function treeSelect(selection){
