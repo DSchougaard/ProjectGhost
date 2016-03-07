@@ -1,0 +1,39 @@
+<md-dialog flex="50" aria-label="Create New Category">
+	<md-dialog-content >
+		<form name="categoryForm" novalidate ng-submit="vm.submit()">
+			<md-toolbar>
+				<div class="md-toolbar-tools">
+					<h2>Create New Category</h2>
+					<span flex></span>
+					<md-button class="md-icon-button" ng-click="cancel()">
+						<md-icon md-svg-icon="close-white"></md-icon>
+					</md-button>
+				</div>
+			</md-toolbar>
+
+			<div style="padding-left: 8px; padding-right: 8px" >
+
+				<md-input-container class="md-block" >
+					<label>Title</label>
+					<input ng-model="vm.category.title" ng-required="true" name="title">
+					<div ng-messages="categoryForm.title.$error">
+						<div ng-message="required">A title is required.</div>
+					</div>
+				</md-input-container>
+
+				<div style="padding-bottom: 20px;">
+					<label>Parent Category</label>
+					<tree-menu data="vm.categories" on-select="vm.treeSelect"></tree-menu>
+				</div>
+
+			</div>
+
+			<md-dialog-actions>
+				<md-button ng-click="vm.cancel()" class="md-raised" aria-label="Cancel">Cancel</md-button>
+				<md-button type="submit" class="md-primary md-raised" aria-label="Save">Save</md-button>
+			</md-dialog-actions>
+
+		</form>
+
+	</md-dialog-content>
+</md-dialog>
