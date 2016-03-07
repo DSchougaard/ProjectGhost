@@ -4,7 +4,7 @@
 	.controller('PasswordSideNavController', PasswordSideNavController);
 
 
-	function PasswordSideNavController($rootScope, $state, $http, $auth, AuthorizationService, $timeout){
+	function PasswordSideNavController($rootScope, $state, $http, $auth, AuthorizationService, CategoryService, $timeout, $mdDialog){
 		var self = this;
 
 		// Literals
@@ -22,10 +22,26 @@
 		// Exposed Interface
 		self.selectMenu 	= selectMenu;
 		self.treeSelect		= treeSelect;
+		self.category 		= {};
+		self.category.add 	= addCategory
 
 
+		CategoryService.structure()
+		.then(function(structure){
+			console.log("%j", structure);
+			var personalPasswords = {
+				title: 'Personal Passwords',
+				id: null,
+				children: structure,
+				initial:true
+			};
+			self.categories = [];
+			self.categories.push(personalPasswords);
+		})
+
+		/*
 		fetch();
-
+		*/
 		// Methods
 		function fetch(){
 			$http({
@@ -40,12 +56,33 @@
 					children: createStructure(res.data),
 					initial:true
 				};
+				self.categories = [];
 				self.categories.push(personalPasswords);
 
 			}, function(err){
 				console.error(err);
 			})
 		}
+
+		function addCategory(ev){
+			$mdDialog.show({
+				controller: 'CategoryController',
+				controllerAs: 'vm',
+				templateUrl: '/app/category/category.template.html',
+				parent: angular.element(document.body),
+				targetEvent: ev,
+				clickOutsideToClose:true,
+				fullscreen: true
+			})
+			.then(function(answer) {
+				console.log("Created new category with id %d", answer);
+				fetch();
+			}, function() {
+				console.log("Cancel");
+			});
+
+		}
+
 
 		function selectMenu(item){
 			switch(item){ 
@@ -66,7 +103,7 @@
 			};
 		}
 
-
+		/*
 		function createStructure(categories){
 			var map = {};
 			var structure = [];
@@ -98,7 +135,7 @@
 
 			return structure;
 		}
-
+		*/
 		function treeSelect(selection){
 			$rootScope.$broadcast('category', selection);
 		}
