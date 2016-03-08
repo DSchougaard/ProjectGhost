@@ -130,5 +130,14 @@
 			});
 		}
 
+		function update(password){
+			return $http({
+				metod: 'PUT',
+				url: '/api/users/' + $auth.getPayload().uid + '/passwords/' + password.id,
+				data: _.omit(password, 'id')
+			});
+		}
+
+
 	};
 })();
