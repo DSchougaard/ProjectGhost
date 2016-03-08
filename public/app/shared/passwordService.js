@@ -77,7 +77,7 @@
 			});
 		}
 
-		function show(){
+		function show(index){
 			console.log("Password Service: Showing password with ID %d, resolving to %j", index, this.passwords[index])
 			return EncryptionService.decrypt(this.passwords[index])
 			.then(function(password){
@@ -87,7 +87,7 @@
 			});
 		};
 
-		function hide(){
+		function hide(index){
 			self.passwords[index].decryptedPassword = undefined;
 		};
 
