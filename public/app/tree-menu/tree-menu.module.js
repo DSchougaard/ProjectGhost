@@ -5,7 +5,8 @@
 		bindings: {
 			data: '=',
 			onSelect: '=',
-			select: '='
+			select: '=',
+			selection: '='
 		},
 		controller: function () {
 			var self 			= this;
@@ -13,6 +14,7 @@
 			self.expanded 		= true;
 			self.indentation 	= 15;
 			self.children 		= [];
+			self.expandedList 	= [];
 
 			// Exposed interface
 			self.propagate 		= propagate;
@@ -34,12 +36,14 @@
 				}
 			}
 
-			function pathExpand(){
-				
-			}
+			function pathExpand(){}
 
 			function register(child){
 				self.children.push(child);
+				if( self.selection !== undefined && child.node.id === self.selection.id ){
+					child.currentSelection = true;
+					child.pathExpand();
+				}
 			}
 
 		},
