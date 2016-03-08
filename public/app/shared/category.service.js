@@ -14,6 +14,9 @@
 		// Exposed Interface
  		self.fetch 		= fetch;
  		self.structure  = structure;
+ 		self.del 		= del;
+ 		self.edit 		= edit;
+ 		self.create  	= create;
 
 		// Methods
 		function structure(){
@@ -59,7 +62,32 @@
 			}).then(function(res){
 				self.data = _.clone(res.data);
 				return $q.resolve(_.clone(self.data));
+			}, function(err){
+				return $q.reject(err.message);
 			});
+		}
+
+		function create(cat){
+			return $http({
+				method: 'POST',
+				url: '/api/users/' + $auth.getPayload().uid + '/categories',
+				data: cat
+			});
+		}
+
+		function del(cat){
+			return $http({
+				method: 'DELETE',
+				url: '/api/users/' + $auth.getPayload().uid + '/categories/' + cat.id
+			});
+		}
+
+		function edit(cat){
+			return $http({
+				method: 'POST',
+				url: '/api/users/' + $auth.getPayload().uid + '/categories/' + cat.id,
+				data: cat
+			});	
 		}
 	};
 })(); 
