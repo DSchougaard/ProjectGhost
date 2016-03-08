@@ -49,7 +49,7 @@
 		// Methods
 		function addCategory(ev){
 			$mdDialog.show({
-				controller: 'CategoryController',
+				controller: 'AddCategoryController',
 				controllerAs: 'vm',
 				templateUrl: '/app/category/category.template.html',
 				parent: angular.element(document.body),
@@ -118,6 +118,7 @@
 				fetch();
 			});
 		}
+
 
 		function selectMenu(item){
 			switch(item){ 

@@ -1,9 +1,9 @@
 (function(){
 	angular
 	.module('ghost')
-	.controller('CategoryController', CategoryController)
+	.controller('AddCategoryController', AddCategoryController)
 
-	function CategoryController(CategoryService, $mdDialog, $http, $auth){
+	function AddCategoryController(CategoryService, $mdDialog, $http, $auth){
 		var self = this;
 
 		self.category = {};

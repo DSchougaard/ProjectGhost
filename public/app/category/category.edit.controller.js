@@ -1,9 +1,9 @@
 (function(){
 	angular
 	.module('ghost')
-	.controller('EditCategoryController', CategoryController)
+	.controller('EditCategoryController', EditCategoryController)
 
-	function CategoryController(CategoryService, $mdDialog, $http, $auth, category){
+	function EditCategoryController(CategoryService, $mdDialog, $http, $auth, category){
 		var self = this;
 
 		// Literals
@@ -12,7 +12,8 @@
 		self.cancelText = "Cancel";
 		self.category 	= category;
 		self.categories = [];
-		
+		self.selection 	= undefined;
+
 		// Exposed Interface
 		self.treeSelect = treeSelect;
 		self.cancel 	= cancel;
@@ -26,9 +27,10 @@
 				title: 'Root',
 				id: null,
 				children: structure,
-				initial:true
 			};
 
+			self.selection = {};
+			self.selection.id = self.category.parent;
 			self.categories.push(rootCat);
 		})
 
