@@ -65,7 +65,7 @@
 	    	views: {
 	    		'content': {
 			    	templateUrl: 'app/password-form/password-form.template.html',
-	    			controller: 'addController',
+	    			controller: 'EditPasswordController',
 	    			controllerAs: 'vm',
 	    		},
 				'toolbar':{

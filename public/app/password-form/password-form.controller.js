@@ -4,7 +4,7 @@
 		.module('ghost')
 		.controller('addController', AddController);
 		
-	function AddController($http, $auth, $state, $stateParams, EncryptionService) {
+	function AddController(CategoryService, $http, $auth, $state, $stateParams, EncryptionService) {
 		var self = this;
 
 		self.password = {};
@@ -12,18 +12,23 @@
 		self.title = "";
 		self.categories = [];
 
+		// Field for the Tree-Menu to properly select the parent, when editting.
+		self.selection = {};
+
 		// Interface
 		self.treeSelect = treeSelect;
 
-		// Load Content
-		$http({
-			method: 'GET',
-			url: '/api/users/' + $auth.getPayload().uid + '/categories'
-		})
-		.then(function(res){
-			self.categories = createStructure(res.data);
-		}, function(err){
-			console.error(err);
+		// Fetch category data
+		CategoryService.structure()
+		.then(function(structure){
+			
+			var rootCat = {
+				title: 'Root',
+				id: null,
+				children: structure,
+			};
+
+			self.categories.push(rootCat);
 		})
 
 
@@ -38,10 +43,12 @@
 		if( $stateParams.password === undefined ){
 			// We're creating a new password
 			self.title = add.title;
+			self.selection.id = null;
 		}else{
 			// We're editing a password
-			self.title = edit.title;
-			self.password = $stateParams.password;
+			self.title 		= edit.title;
+			self.password 	= $stateParams.password;
+			self.selection.id = self.password.parent;
 			console.log("AddController: %j", self.password);
 
 			// Decrypt the password
