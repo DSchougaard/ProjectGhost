@@ -110,7 +110,7 @@
 				clickOutsideToClose:true,
 				fullscreen: true,
 				locals:{
-					category: self.cachedSelection
+					category: _.pick(self.cachedSelection, ['id', 'parent', 'title'])
 				} 
 			})
 			.then(function(answer) {

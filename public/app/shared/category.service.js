@@ -84,9 +84,9 @@
 
 		function edit(cat){
 			return $http({
-				method: 'POST',
+				method: 'PUT',
 				url: '/api/users/' + $auth.getPayload().uid + '/categories/' + cat.id,
-				data: cat
+				data: _.omit(cat, 'id')
 			});	
 		}
 	};
