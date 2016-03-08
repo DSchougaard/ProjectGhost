@@ -8,38 +8,39 @@
 
 		self.category = {};
 		self.categories = [];
+		self.title = "Create New Category";
+		self.submitText = "Save";
+		self.cancelText = "Cancel";
 
 		// Exposed Interface
 		self.treeSelect = treeSelect;
 		self.submit = submit;
 		self.cancel = cancel;
 
-		$http({
-			method: 'GET',
-			url: '/api/users/' + $auth.getPayload().uid + '/categories'
-		})
-		.then(function(res){
-			//self.categories = createStructure(res.data);
+
+		CategoryService.structure()
+		.then(function(structure){
 			var rootCat = {
 				title: 'Root',
 				id: null,
-				children: createStructure(res.data),
+				children: structure,
 				initial:true
 			};
 			self.categories.push(rootCat);
-		}, function(err){
+		})
+		.catch(function(err){
 			$mdDialog.show(
 				$mdDialog.alert()
 				.clickOutsideToClose(true)
 				.title('An error occured while retrieving categories')
-				.textContent(err.body)
+				.textContent(err)
 				.ariaLabel('Add Category Alert')
 				.ok('OK')
 			);		
 		})
 
 		function cancel(){
-			$mdDialog.cancel()
+   			$mdDialog.cancel();
 		}
 
 		function submit(){

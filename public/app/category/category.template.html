@@ -3,9 +3,13 @@
 		<form name="categoryForm" novalidate ng-submit="vm.submit()">
 			<md-toolbar>
 				<div class="md-toolbar-tools">
-					<h2>Create New Category</h2>
+					<h3>
+						<span ng-bind="vm.title"></span>
+					</h3>
+
 					<span flex></span>
-					<md-button class="md-icon-button" ng-click="cancel()">
+
+					<md-button class="md-icon-button" ng-click="vm.cancel()" aria-label="Cancel">
 						<md-icon md-svg-icon="close-white"></md-icon>
 					</md-button>
 				</div>
@@ -29,8 +33,8 @@
 			</div>
 
 			<md-dialog-actions>
-				<md-button ng-click="vm.cancel()" class="md-raised" aria-label="Cancel">Cancel</md-button>
-				<md-button type="submit" class="md-primary md-raised" aria-label="Save">Save</md-button>
+				<md-button ng-click="vm.cancel()" class="md-raised" aria-label="Cancel" ng-bind="vm.cancelText"></md-button>
+				<md-button type="submit" class="md-primary md-raised" aria-label="Save" ng-bind="vm.submitText"></md-button>
 			</md-dialog-actions>
 
 		</form>
