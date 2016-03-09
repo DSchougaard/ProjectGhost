@@ -159,7 +159,6 @@
 		}
 
 		self.decrypt = function(password){
-			console.log("Decrypting password with id %d", password.id);
 			return self.getEncryptionKey()
 			.then(function(privatekey){
 
