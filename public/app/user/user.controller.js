@@ -35,7 +35,6 @@
 			
 			$http.post('/api/auth/login', {username: self.user.username, password: self.update.password.oldPassword })
 			.then(function(res){
-				console.log("%j", res);
 
 				var payload = {};
 
@@ -67,7 +66,6 @@
 					}
 				})	
 				.then(function( encr ){
-					console.log("Encryption data received: %j", encr);
 					if( encr !== undefined ){
 						_.extend(payload, encr);
 					}
@@ -78,7 +76,7 @@
 							data: payload
 						});
 				}).then(function(res){
-					console.log("%j", res);
+
 				}, function(err){
 					console.log("%j", err);
 				})

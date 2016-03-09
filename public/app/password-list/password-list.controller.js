@@ -61,7 +61,6 @@
 		}	
 
 		function del(index){
-			console.log(index);
 			PasswordService.del(index);
 			self.selectedIndex = undefined;
 		}

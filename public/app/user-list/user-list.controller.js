@@ -29,7 +29,6 @@
 				url: '/api/users'
 			}).then(function(res){
 				self.users = res.data;
-				console.log("%j", self.users);
 			}, function(err){
 				console.log("Error!\n%j", err);
 			});
@@ -41,7 +40,6 @@
 			var deleted = [];
 			var fails = [];
 
-			console.log("%j",self.selected);
 			// Create array of promises
 			angular.forEach(self.selected, function(user){
 				deleteCalls.push(
@@ -55,7 +53,7 @@
 			$q.allSettled(deleteCalls)
 			.then(function(responses){
 				angular.forEach(responses, function(res){
-					console.log("%j", res);
+
 					if(res.state === 'fulfilled'){
 						// Delete Call worked
 						var id = _.last(res.value.config.url.split("/"));
@@ -94,7 +92,6 @@
 
 
 		function setState(state){
-			console.log("state is now " + state);
 			self.state = state;
 		}
 

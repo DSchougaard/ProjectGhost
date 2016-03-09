@@ -48,7 +48,6 @@
 		}
 
 		function submit() {
-			console.log("Creating new password, %j", self.password);
 			EncryptionService.encrypt(self.password)
 			.then(function(encrypted){
 
@@ -62,7 +61,6 @@
 				});
 			})
 			.then(function(res){
-				console.log("Password added!");
 				$state.transitionTo('home');
 			})
 			.catch(function(err){

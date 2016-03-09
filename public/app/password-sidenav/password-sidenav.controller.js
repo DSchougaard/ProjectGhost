@@ -32,7 +32,6 @@
 		function fetch(){
 			CategoryService.structure()
 			.then(function(structure){
-				console.log("%j", structure);
 				var personalPasswords = {
 					title: 'Personal Passwords',
 					id: null,
@@ -60,7 +59,6 @@
 			.then(function(answer) {
 				fetch();
 			}, function() {
-				console.log("Cancel");
 			});
 		}
 
@@ -81,7 +79,6 @@
 
 				})
 				.catch(function(err){
-					console.log("%j", err);
 					$mdDialog.show(
 						$mdDialog.alert()
 							.parent(angular.element(document.querySelector('#popupContainer')))

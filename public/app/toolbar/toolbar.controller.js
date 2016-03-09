@@ -4,13 +4,10 @@
 	.controller('ToolBarController', ToolBarController);
 
 	function ToolBarController($mdSidenav, $state){
-		console.log("ToolBarControlelr initiated");
-
 		var self = this;
 		self.menu = false;
 		
 		if( $state.is('home') ){
-			console.log("Menu it is...");
 			self.menu = true;
 		}
 

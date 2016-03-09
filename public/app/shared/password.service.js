@@ -79,7 +79,6 @@
 		}
 
 		function show(index){
-			console.log("Password Service: Showing password with ID %d, resolving to %j", index, this.passwords[index])
 			return EncryptionService.decrypt(this.passwords[index])
 			.then(function(password){
 
@@ -116,13 +115,9 @@
 					url: '/api/users/' + $auth.getPayload().uid + '/passwords/' + self.passwords[index].id
 				})
 				.then(function(res){
-					console.log("Deleted password");
 					self.fetch();
 				})
 				.catch(function(err){
-					console.log("Error Deleting Password");
-					console.log(err);
-
 				    $mdDialog.show(
 				        $mdDialog.alert()
 			            .parent(angular.element(document.querySelector('#popupContainer')))

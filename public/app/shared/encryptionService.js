@@ -29,9 +29,6 @@
 		function changeDecryptionKey(password){
 			return self.getEncryptionKey()
 			.then(function(){
-				console.log("new password: " + password);
-				console.log("%j", self.privateKey);
-
 				// Generate New Decryption key
 				var salt 	= forge.random.getBytes(32);
 				var iv 		= forge.random.getBytes(16);
@@ -41,9 +38,6 @@
 				cipher.start({iv: iv});
 				cipher.update(forge.util.createBuffer( forge.pki.privateKeyToPem(self.privateKey).toString('utf8') ));
 				cipher.finish();
-
-				console.log("Output:");
-				console.log("%j", cipher.output);
 
 				return { 
 					iv: forge.util.encode64(iv),
@@ -79,7 +73,6 @@
 
 		self.getEncryptionKey = function(){
 
-			console.log("Retrieving privatekey from remote server");
 			if( self.privateKey !== undefined ){
 				return $q.resolve(self.privateKey);
 			}
@@ -109,20 +102,12 @@
 					var privateKeyBinary = forge.util.decode64( res.data.privatekey );
 					var privateKeyBuffer = forge.util.createBuffer( privateKeyBinary);
 
-					console.log("Decrypting privatekey");
-
 					// Use the derived encryption key to decrypt the privatekey
 					var decipher = forge.cipher.createDecipher('AES-CBC', encryptionKey);
 					decipher.start({iv: forge.util.decode64(res.data.iv) });
 					decipher.update( privateKeyBuffer );
 					decipher.finish();
-					/*
-					console.log("Salt = " + res.data.pk_salt);
-					console.log("Encryption key = " + forge.util.encode64(encryptionKey));
-					console.log("IV = " + res.data.iv);
-					console.log("Private Key = " + res.data.privatekey);
-					console.log(decipher.output.data);
-					*/
+
 					self.privateKey = forge.pki.privateKeyFromPem(decipher.output.data);
 					self.publicKey = res.data.publickey;
 
@@ -175,8 +160,6 @@
 		};
 
 		function encrypt(password){
-			console.log('Encrypting password %j', password);
-
 			return self.getPublicKey()
 			.then(function(key){
 				var binaryPublicKey = forge.util.decode64(key);

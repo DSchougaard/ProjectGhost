@@ -184,7 +184,6 @@
 	ghost.controller('logoutController', function($auth){
 		if( $auth.isAuthenticated() ){
 			$auth.logout();
-			console.log('Auth token removed');
 		}
 	});
 
