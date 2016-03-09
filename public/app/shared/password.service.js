@@ -23,6 +23,7 @@
 		self.del 		= del;
 		self.show  		= show;
 		self.hide  		= hide;
+		self.decrypt 	= decrypt;
 
 		function select(source, category){
 			switch(source){
@@ -86,6 +87,14 @@
 
 			});
 		};
+
+		function decrypt(password){
+			return EncryptionService.decrypt(password)
+			.then(function(decrypted){
+				password.decryptedPassword = decrypted;
+				return password;
+			});
+		}
 
 		function hide(index){
 			self.passwords[index].decryptedPassword = undefined;

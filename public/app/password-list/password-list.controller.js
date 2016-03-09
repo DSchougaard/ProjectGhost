@@ -85,11 +85,11 @@
 		}
 
 		function show(index){
-			PasswordService.show(index);
+			PasswordService.decrypt( self.entries[index] );
 		}
 
 		function hide(index){
-			PasswordService.hide(index);
+			self.entries[index].decryptedPassword = undefined;
 		}
 	}
 })();
