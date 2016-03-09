@@ -4,29 +4,35 @@
 		.module('ghost')
 		.controller('loginController', LoginController);
 
-	function LoginController($scope, $auth, $location, $state){
-		$scope.alerts = [];
+	function LoginController($scope, $auth, $location, $state, $mdToast){
+		var self = this;
 
-		$scope.auth = function(){
-			// When submitting make sure that alerts arent stacked
-			$scope.alerts = [];
+		// Literals
+		self.user = {};
 
+		// Exposed Interface
+		self.submit = auth;
+
+
+		function auth(){
 			// Perform login
-			$auth.login($scope.user)
+			$auth.login(self.user)
 			.then(function(res){
 				// Change location to main page
 				$state.transitionTo("home");
 			})
 			.catch(function(err){
-				if( err.status === 401 ){
-					// Login credentials was wrong
-					$scope.alerts.push({type: 'danger', message: 'Invalid login'});
-				}
+
+				var error = err.data.message ? err.data.message : 'Unidentified error loggin in';
+
+				$mdToast.show(
+					$mdToast.simple()
+					.textContent(error)
+					.position("top right")
+					.hideDelay(3000)
+				);
 			});
 		}
 
-		$scope.closeAlert = function(index){
-			$scope.alerts.splice(index, 1);
-		}
 	};
 })();

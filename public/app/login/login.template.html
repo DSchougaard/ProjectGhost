@@ -1,10 +1,35 @@
-<div class="container col-md-4 col-md-offset-4">
-	<form class="form-signin" ng-submit="auth()">
-		<h2 class="form-signin-heading">Please sign in</h2>
-		<label for="inputEmail" class="sr-only">Username</label>
-		<input type="input" class="form-control" placeholder="Username"  ng-model="user.username">
-		<label for="inputPassword" class="sr-only">Password</label>
-		<input type="password" class="form-control" placeholder="Password" ng-model="user.password">
-		<button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-	</form>
+<div flex layout="row" layout-align="center center" style="background-color: #ececec">
+
+
+	<md-content md-whiteframe="5" flex="100" flex-gt-xs="50">
+		<form novalidate name="loginForm" novalidate ng-submit="loginForm.$valid && vm.submit()">
+			<md-toolbar>
+				<div class="md-toolbar-tools">
+					<h3>Login</h3>
+				</div>
+			</md-toolbar>
+
+
+			<md-input-container class="md-block">
+				<label>Username</label>
+				<input name="username" ng-model="vm.user.username" required>
+				<div ng-messages="loginForm.username.$error">
+					<div ng-message="required">This is required!</div>
+				</div>
+			</md-input-container>
+			<md-input-container class="md-block">
+				<label>Password</label>
+				<input type="password" ng-model="vm.user.password" required>
+				<div ng-messages="loginForm.username.$error">
+					<div ng-message="required">This is required!</div>
+				</div>
+			</md-input-container>
+
+			<div layout="row" layout-align="end center">
+				<md-button type="submit" aria-label="Submit" class="md-primary md-raised md-block">
+					Login
+				</md-button>
+			</div>
+		</form>
+	</md-content>
 </div>

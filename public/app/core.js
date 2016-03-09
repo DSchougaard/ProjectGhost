@@ -35,7 +35,8 @@
 			views: {
 				'content':{
 					templateUrl 	: 'app/login/login.template.html',
-					controller 		: 'loginController'
+					controller 		: 'loginController',
+					controllerAs 	: 'vm'
 				}
 			}
 	    })
