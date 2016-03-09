@@ -58,7 +58,6 @@
 				fullscreen: true
 			})
 			.then(function(answer) {
-				console.log("Created new category with id %d", answer);
 				fetch();
 			}, function() {
 				console.log("Cancel");
@@ -142,7 +141,6 @@
 		function treeSelect(selection){
 			$rootScope.$broadcast('category', selection);
 			self.cachedSelection = selection;
-			console.log("Caching selection %j", self.cachedSelection);
 		}
 	};
 })();

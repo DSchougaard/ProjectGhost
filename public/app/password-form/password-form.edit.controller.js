@@ -24,7 +24,8 @@
 		self.password 		= {};
 		self.submit 		= submit;
 		self.title 			= "";
-
+		self.decryptEnabled = true;
+		
 		// Field for the Tree-Menu to properly select the parent, when editting.
 		self.selection 		= {};
 		self.categories 	= [];
