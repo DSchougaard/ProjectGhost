@@ -8,8 +8,13 @@
 	function ListController($rootScope, $scope, $http, $auth, $location, $state, $mdDialog, PasswordService, EncryptionService){
 		var self = this;
 		
-		self.selectedIndex = undefined;
-		self.selected = [];
+		// Literals
+		self.selectedIndex 	= undefined;
+		self.selected 		= [];
+		self.searching 		= false;
+		self.search 		= undefined;
+		self.filter 		= undefined;
+		self.cachedFilter  	= undefined;
 
 		// User Menu Entries
 		self.userMenu = ['Preferences', 'Log off'];
@@ -33,16 +38,23 @@
 		// UI show/hide statusses
 		self.isVisible = isVisible;
 
+		// Searching
+		self.search = search;
+
+
 		// Watch for change, need this for initial load
 		$scope.$on('passwords', function(res){
 			self.entries = PasswordService.passwords;
 		});
 
 		$rootScope.$on('category', function(event, args){
-			self.entries = _.filter(PasswordService.passwords, function(password){
+			/*self.entries = _.filter(PasswordService.passwords, function(password){
 				return args.id === password.parent;
-			});
+			});*/
+			console.log("%j", args);
+
 			self.selectedCategory = args.title;
+			self.filter = {parent: args.id};
 		})
 
 
@@ -90,5 +102,16 @@
 		function hide(index){
 			self.entries[index].decryptedPassword = undefined;
 		}
+
+		function search(){
+			if( !self.searching ){
+				self.cachedFilter = self.filter;
+				self.filter = '';
+			}else{
+				self.filter = self.cachedFilter;
+			}
+			self.searching = !self.searching;
+		}
+
 	}
 })();
