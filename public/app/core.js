@@ -95,6 +95,22 @@
 	    		}
 	    	}
 	    })
+	    .state('users/add', {
+	    	url: '/users/add',
+	    	authenticate: true,
+	    	views: {
+	    		'content': {
+	    			templateUrl: 'app/user/user.template.html',
+	    			controller: 'UserAddController',
+	    			controllerAs: 'vm'
+	    		},
+	    		'toolbar': {
+			        templateUrl: 'app/toolbar/toolbar.template.html',
+       				controller: 'ToolBarController',
+	        		controllerAs: 'vm',
+	    		}
+	    	}
+	    })
 	    .state('user-list', {
 	    	url: '/users',
 	    	authenticate: true,

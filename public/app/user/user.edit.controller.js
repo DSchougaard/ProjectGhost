@@ -6,6 +6,17 @@
 		
 	function UserController($q, $scope, $http, $auth, $state, EncryptionService) {
 		var self 				= this;
+		
+		// Config
+		self.config = {
+			text:{
+				title: 'Edit Your Profile',
+				submit: 'Create',
+				password: 'Current Password'
+			},
+			edit: true,
+			add: false
+		}
 
 		// Literals
 		self.title 				= "Edit Your Profile";
