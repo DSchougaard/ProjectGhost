@@ -63,7 +63,6 @@
 	    .state('edit', {
 	    	url: '/edit',
 	    	authenticate: true,
-	    	authorization: 2,
 	    	views: {
 	    		'content': {
 			    	templateUrl: 'app/password-form/password-form.template.html',
@@ -99,6 +98,7 @@
 	    .state('user-list', {
 	    	url: '/users',
 	    	authenticate: true,
+	    	authorization: 1, // Admin Authorization
 	    	views: {
 	    		'toolbar': {
 			        templateUrl: 'app/toolbar/toolbar.template.html',
@@ -174,6 +174,11 @@
 
 	ghost.run(function ($rootScope, $state, $auth) {
 		$rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
+			if( $auth.isAuthenticated() && toState.authorization !== undefined && $auth.getPayload().lvl < toState.authorization ){
+				// User is authenticated but has insufficient priviledges
+				$state.transitionTo("home");
+				event.preventDefault(); 
+			}
 			if (toState.authenticate && !$auth.isAuthenticated()){
 				// User isn’t authenticated
 				$state.transitionTo("login");
