@@ -4,12 +4,13 @@
 
 	ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider, $mdIconProvider){
 	    
-	    $urlRouterProvider.otherwise('/');
+	    $urlRouterProvider.otherwise('/login');
 	   
 	    // HOME STATES AND NESTED VIEWS ========================================
 		$stateProvider
 	    .state('home', {
 	    	url:'/',
+			authenticate: true,
 	    	views: {
 				'toolbar':{
 			        templateUrl: 'app/toolbar/toolbar.template.html',
