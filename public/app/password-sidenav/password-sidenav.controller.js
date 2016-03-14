@@ -3,7 +3,7 @@
 	.module('ghost')
 	.controller('PasswordSideNavController', PasswordSideNavController);
 
-	function PasswordSideNavController($rootScope, $state, $http, $auth, AuthorizationService, CategoryService, $timeout, $mdDialog){
+	function PasswordSideNavController($rootScope, $state, $http, $auth, AuthorizationService, CategoryService, UserService, $timeout, $mdDialog){
 		var self = this;
 
 		// Literals
@@ -11,6 +11,13 @@
 		self.categories = [];
 		self.initial = undefined;
 		self.select = undefined;
+
+		self.username = '';
+
+		UserService.get()
+		.then(function(data){
+			self.username = data.username;
+		});
 
 		// Populate Menu	
 		self.userMenu.push('Preferences');
@@ -42,7 +49,7 @@
 				self.categories.push(personalPasswords);
 				self.select = self.cachedSelection ? self.cachedSelection : self.categories[0];
 				treeSelect(self.select);
-			})
+			}) 
 		}
 
 		// Methods
