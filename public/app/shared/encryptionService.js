@@ -8,15 +8,107 @@
 	function EncryptionService($q, $http, $auth, $mdDialog, $mdToast, $mdMedia){
 		var self = this;
 		// Variables
-		self.encryptionKey 	= undefined;
-		self.privateKey 	= undefined;
-		self.publicKey 		= undefined;
+		self.encryptionKey 			= undefined;
+		self.privateKey 			= undefined;
+		self.publicKey 				= undefined;
 		
 		// Exposed Interface
-		self.getPublicKey 	= getPublicKey;
-		self.encrypt  		= encrypt;
-		self.generateKeyPair = generateKeyPair;
-		self.changeDecryptionKey = changeDecryptionKey;
+		self.generateKeyPair 		= generateKeyPair;
+		self.createEncryptionKey  	= createEncryptionKey;
+		self.encryptPrivateKey 		= encryptPrivateKey;
+
+
+
+		self.getEncryptionKey 		= getEncryptionKey;
+		self.getPublicKey 			= getPublicKey;
+		self.encrypt  				= encrypt;
+		self.decrypt 				= decrypt;
+		self.changeDecryptionKey 	= changeDecryptionKey;
+
+		function generateKeyPair(){
+			console.log("Generating KeyPair");
+ 			var deferred = $q.defer();
+
+			// Default RSA key length. Optional later?
+			var keyLength = 4096;
+			var options = {
+				bits: 4096,
+				e: 0x1001,
+				workerScript: 'components/forge/js/prime.worker.js', // Forge SUUUUUCKS
+				workers: -1
+			}
+
+			forge.pki.rsa.generateKeyPair(options, function(err, keypair) {
+				if(err){
+					console.err(err);
+					deferred.reject(err);
+				}else{
+					console.log("Generated KeyPair successfully.");
+					deferred.resolve(keypair);
+				}
+			});
+			return deferred.promise;
+		};
+
+		function createEncryptionKey(params){
+			var pk_salt  = params.pk_salt  !== undefined ? params.pk_salt  : forge.random.getBytes(32);
+			var password = params.password !== undefined ? params.password : params;
+
+			var encryptionKey = forge.pkcs5.pbkdf2(password, pk_salt, 10000, 32);
+			return $q.resolve( { encryptionKey: forge.util.encode64(encryptionKey), pk_salt: forge.util.encode64(pk_salt)} );
+		}
+
+		function encryptPrivateKey(key, encryptionKey, iv){
+			var privateKey = key.privateKey !== undefined ? key.privateKey : key;
+			iv = iv !== undefined ? iv : forge.random.getBytes(16);
+
+			var cipher = forge.cipher.createCipher('AES-CBC', forge.util.decode64(encryptionKey));
+			cipher.start({iv: iv});
+			cipher.update(forge.util.createBuffer( forge.pki.privateKeyToPem(privateKey).toString('utf8') ));
+			cipher.finish();
+
+			var returnObject = {
+				iv: forge.util.encode64(iv),
+				privatekey: forge.util.encode64(cipher.output.getBytes())
+			}
+			if( key.publicKey !== undefined ){
+				returnObject.publickey = forge.util.encode64( forge.pki.publicKeyToPem(key.publicKey) );
+			}
+
+			return $q.resolve(returnObject);
+		}
+		/*
+			
+			$q.all([generateKeyPair(), createEncryptionKey(..)])
+			.then(function(output){
+				output[0] from generateKeyPair
+				output[1] from createEncryptionKey
+
+				return encryptPrivateKey(output[0], output[1]);
+			})
+			.then(function(encr){
+	
+			});
+
+		*/
+
+		function decryptPrivateKey(){
+
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 		function fetch(){
@@ -24,7 +116,7 @@
 				method: 'GET',
 				url: '/api/users/me'
 			});
-		}
+		};
 
 		function changeDecryptionKey(password){
 			return self.getEncryptionKey()
@@ -45,34 +137,34 @@
 					privatekey: forge.util.encode64(cipher.output.getBytes()) };
 
 			})
-		}
+		};
 
-		function generateKeyPair(){
- 			var deferred = $q.defer();
 
-			// Default RSA key length. Optional later?
-			var keyLength = 4096;
-			var options = {
-				bits: 4096,
-				e: 0x1001,
-				workerScript: 'components/forge/js/prime.worker.js', // Forge SUUUUUCKS
-				workers: -1
-			}
+		function createNewEncryptionKey(){
+		};
 
-			forge.pki.rsa.generateKeyPair(options, function(err, keypair) {
-				if(err){
-					deferred.reject(err);
-				}else{
-					deferred.resolve(keypair);
-				}
-			});
+		function _encryptPrivateKey(password, key){
+			console.log("Encrypting privatekey");
+			var privatekey = key.privateKey !== undefined ? key.privateKey : key;
 
-		
-			return deferred.promise;
-		}
+			// Generate New Decryption key
+			var salt 	= forge.random.getBytes(32);
+			var iv 		= forge.random.getBytes(16);
 
-		self.getEncryptionKey = function(){
+			var encryptionKey = forge.pkcs5.pbkdf2(password, salt, 10000, 32);
+			var cipher = forge.cipher.createCipher('AES-CBC', encryptionKey);
+			cipher.start({iv: iv});
+			cipher.update(forge.util.createBuffer( forge.pki.privateKeyToPem(privatekey).toString('utf8') ));
+			cipher.finish();
 
+			return { 
+				publickey: forge.util.encode64( forge.pki.publicKeyToPem(key.publicKey) ),
+				iv: forge.util.encode64(iv),
+				pk_salt: forge.util.encode64(salt), 
+				privatekey: forge.util.encode64(cipher.output.getBytes()) };
+		};
+
+		function getEncryptionKey(){
 			if( self.privateKey !== undefined ){
 				return $q.resolve(self.privateKey);
 			}
@@ -141,9 +233,9 @@
 				self.publicKey = res.data.publickey;
 				return self.publicKey;
 			});
-		}
+		};
 
-		self.decrypt = function(password){
+		function decrypt(password){
 			return self.getEncryptionKey()
 			.then(function(privatekey){
 
@@ -171,7 +263,7 @@
 
 				return forge.util.encode64(encrypted);
 			});
-		}
+		};
 	}
 
 })();

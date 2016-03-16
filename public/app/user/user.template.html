@@ -1,76 +1,84 @@
-<md-content flex="60" flex-offset="20" layout="column" layout-align="start center" layout-padding>
-
+<md-content id="addUser" flex="60" flex-offset="20" layout="column" layout-align="start center" layout-padding >
 	<section class="md-whiteframe-z1" layout-fill>
 
-		<md-toolbar >
-			<div class="md-toolbar-tools">
-				<h3>
-					<span ng-bind="vm.config.text.title"></span>
-				</h3>
-			</div>
-		</md-toolbar>
-
-
-		<form name="userForm" novalidate ng-submit="userForm.$valid && vm.submit()" class="md-inline-form">
-
-			<!-- Username Input -->
-			<md-input-container class="md-block">
-				<label>Username</label>
-				<input ng-model="vm.update.user.username" name="username">
-			</md-input-container>
-
-			<md-input-container class="md-block">
-				<label ng-bind="vm.config.text.password"></label>
-				<input type="password" required ng-model="vm.update.password.oldPassword" name="oldPassword">
-
-				<div ng-messages="userForm.oldPassword.$error" multiple>
-					<div ng-message="required">It is required to input your password, to perform any changes.</div>
-					<div ng-message="invalid">Invalid password</div>
+			<md-toolbar >
+				<div class="md-toolbar-tools">
+					<h3>
+						<span ng-bind="vm.config.text.title"></span>
+					</h3>
 				</div>
-			</md-input-container>
+			</md-toolbar>
 
-			<!-- Controls for changing password, only for edditing -->
-			<div ng-if="vm.config.edit">
-			<md-subheader class="md-hue-1">Change your password</md-subheader>
 
-			<md-input-container class="md-block">
-				<label>New password</label>
-				<input type="password" ng-model="vm.update.password.newPassword" name="newPassword" >
-			</md-input-container>
+			<form name="userForm" novalidate ng-submit="userForm.$valid && vm.submit()" class="md-inline-form">
 
-			<md-input-container class="md-block">
-				<label>Repeat New password</label>
-				<input type="password" equals="vm.update.password.newPassword" ng-model="vm.update.password.newPasswordRepeated" ng-match="vm.update.password.newPassword" name="newPasswordRepeated">
+				<!-- Username Input -->
+				<md-input-container class="md-block">
+					<label>Username</label>
+					<input ng-model="vm.user.username" name="username" ng-disabled="!vm.enabled">
+				</md-input-container>
 
-				<div ng-messages="userForm.newPasswordRepeated.$error">
-					<ng-message when="equals">The passwords does not match</ng-message>
+				<md-input-container class="md-block">
+					<label ng-bind="vm.config.text.password"></label>
+					<input type="password" required ng-model="vm.user.password" name="oldPassword" ng-disabled="!vm.enabled">
+
+					<div ng-messages="userForm.oldPassword.$error" multiple>
+						<div ng-message="required">It is required to input your password, to perform any changes.</div>
+						<div ng-message="invalid">Invalid password</div>
+					</div>
+				</md-input-container>
+
+				<!-- Controls for changing password, only for edditing -->
+				<div ng-if="vm.config.edit">
+				<md-subheader class="md-hue-1">Change your password</md-subheader>
+
+				<md-input-container class="md-block">
+					<label>New password</label>
+					<input type="password" ng-model="vm.new.password" name="newPassword" ng-disabled="!vm.enabled" >
+				</md-input-container>
+
+				<md-input-container class="md-block">
+					<label>Repeat New password</label>
+					<!-- equals="vm.new.password"-->
+					<input type="password"  ng-model="vm.new.passwordRepeat" ng-match="vm.update.password.newPassword" name="newPasswordRepeated" ng-disabled="!vm.enabled" >
+
+					<div ng-messages="userForm.newPasswordRepeated.$error">
+						<ng-message when="equals">The passwords does not match</ng-message>
+					</div>
+				</md-input-container>
+				</div> <!-- Changing Password Ends -->
+
+				<!-- Controls for managing encryption keys -->
+				<md-subheader class="md-hue-1">Encryption Keys</md-subheader>
+
+				<md-input-container class="md-block">
+					<label>New Decryption Password</label>
+					<input ng-model="vm.encryption.decryptionPassword" name="decryptionPassword" ng-disabled="!vm.enabled">
+				</md-input-container>
+
+				<!-- Generating new encryption key is only for edditing -->
+				<div ng-if="vm.config.edit">
+				<md-input-container class="md-block">
+					<md-switch ng-model="vm.encryption.generateNewEncryptionKey" class="md-primary" aria-label="Generate encryption keys" ng-disabled="!vm.enabled">
+					Generate new encryption keys <b><i>(WILL take some time)</i></b>
+					</md-switch>
+				</md-input-container>
+				</div> <!-- End of generate encryption key -->
+
+
+				<!-- Buttons -->
+				<div ng-show="vm.enabled">
+					<md-button type="submit" class="md-primary md-raised" ng-disabled="!vm.enabled">Update</md-button>
+					<md-button ng-click="vm.cancel()" class="md-primary md-raised" ng-disabled="!vm.enabled">Cancel</md-button>
 				</div>
-			</md-input-container>
-			</div> <!-- Changing Password Ends -->
+				<!-- Loading -->
 
-			<!-- Controls for managing encryption keys -->
-			<md-subheader class="md-hue-1">Encryption Keys</md-subheader>
-
-			<md-input-container class="md-block">
-				<label>New Decryption Password</label>
-				<input ng-model="vm.encryption.decryptionPassword" name="decryptionPassword">
-			</md-input-container>
-
-			<!-- Generating new encryption key is only for edditing -->
-			<div ng-if="vm.config.edit">
-			<md-input-container class="md-block">
-				<md-switch ng-model="vm.encryption.generateNewEncryptionKey" class="md-primary" aria-label="Generate encryption keys" ng-model="data.cb5">
-				Generate new encryption keys <b><i>(WILL take some time)</i></b>
-				</md-switch>
-			</md-input-container>
-			</div> <!-- End of generate encryption key -->
-
-
-			<!-- Buttons -->
-			<md-button type="submit" class="md-primary md-raised">Update</md-button>
-			<md-button ng-click="vm.cancel()" class="md-primary md-raised">Cancel</md-button>
-
-		</form>
+				<div ng-show="!vm.enabled">
+					<md-progress-circular ng-show="!vm.enabled"></md-progress-circular>
+					<p>Please wait... This might take some time.</p>
+				</div>
+					
+			</form>
 
 	</section>
 
