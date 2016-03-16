@@ -10,7 +10,9 @@
 
 		// Literals
 		var fetched 	= false;
-		self.data 		= undefined;
+		self.username 	= '';
+		self.isAdmin 	= false;
+		self.data 		= {};
 
 		// Exposed Interface
 		self.isAdmin 	= isAdmin;
@@ -34,16 +36,17 @@
 			return $q(obj[str]);
 		}
 
-		function fetch(){
+		function fetch(force){
 			console.log("Fetching data");
 			return $http({
-				cache: true,
+				cache: force,
 				method:'GET',
 				url:'/api/users/me',
 			})
 			.then(function(res){
 				console.log("Data fetched");
 				self.data = _.clone(res.data);
+				self.username = self.data.username;
 				return $q.resolve(self.data);
 			});
 		}

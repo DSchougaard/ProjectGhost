@@ -4,7 +4,7 @@
 		.module('ghost')
 		.controller('UserController', UserController);
 		
-	function UserController($q, $scope, $http, $auth, $state, EncryptionService) {
+	function UserController($q, $scope, $http, $auth, $state, EncryptionService, UserService) {
 		var self 				= this;
 		
 		// Config
@@ -21,6 +21,9 @@
 		// Literals
 		self.title 				= "Edit Your Profile";
 		self.user 				= {};
+		self.new 				= {};
+
+		self.enabled 			= true;
 		
 		// Variables to contain update information
 		self.update 			= {};
@@ -43,21 +46,22 @@
 		self.errors = [];
 
 		function submit(){
-			
-			$http.post('/api/auth/login', {username: self.user.username, password: self.update.password.oldPassword })
+			// Authenticate to verify user's password
+			console.log(self.user.password)
+			$http.post('/api/auth/login', {username: self.old.username, password: self.user.password })
 			.then(function(res){
 
 				var payload = {};
 
 				// Get an idea of the tasks at hand
-				if( self.update.user.username !== self.user.username ){
+				if( self.old.username !== self.user.username ){
 					// User requested Username change.
-					payload.username = self.update.user.username;
+					payload.username = self.user.username;
 				}
 
-				if( self.update.password.newPassword !== '' && self.update.password.newPasswordRepeat !== '' ){
+				if( self.new.password !== '' && self.new.passwordRepeat !== '' ){
 					// We need to change the authorization password
-					payload.password = self.update.password.newPassword;
+					payload.password = self.new.password;
 				}
 
 				if( self.encryption.decryptionPassword !== '' ){
@@ -87,14 +91,17 @@
 							data: payload
 						});
 				}).then(function(res){
-
+					console.log("Success!");
+					UserService.fetch(true)
+					.then(function(){
+						$state.transitionTo('home');
+					});
 				}, function(err){
 					console.log("%j", err);
 				})
 
-
-
 			}, function(err){
+				console.warn(err);
 				console.log("Invalid password");
 			})
 
@@ -103,8 +110,8 @@
 
 		$http.get('/api/users/me')
 		.then(function(res){
-			self.user 			= res.data;
-			self.update.user 	= _.clone(res.data);
+			self.user 			= _.omit(res.data, 'password');
+			self.old 	 		= _.clone(res.data);
 		}, function(err){
 
 		});

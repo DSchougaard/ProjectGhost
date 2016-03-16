@@ -40,7 +40,7 @@
 				<md-input-container class="md-block">
 					<label>Repeat New password</label>
 					<!-- equals="vm.new.password"-->
-					<input type="password"  ng-model="vm.new.passwordRepeat" ng-match="vm.update.password.newPassword" name="newPasswordRepeated" ng-disabled="!vm.enabled" >
+					<input type="password"  ng-model="vm.new.passwordRepeat" ng-match="vm.new.password" name="newPasswordRepeated" ng-disabled="!vm.enabled" >
 
 					<div ng-messages="userForm.newPasswordRepeated.$error">
 						<ng-message when="equals">The passwords does not match</ng-message>

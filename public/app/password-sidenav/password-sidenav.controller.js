@@ -12,11 +12,11 @@
 		self.initial = undefined;
 		self.select = undefined;
 
-		self.username = '';
+		self.username = UserService.username;
 
 		UserService.get()
 		.then(function(data){
-			self.username = data.username;
+			self.username = UserService.username;
 		});
 
 		// Populate Menu	
