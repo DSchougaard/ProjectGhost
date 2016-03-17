@@ -4,6 +4,7 @@ const Promise 		= require('bluebird');
 const assert 		= require('assert');
 const _ 			= require('underscore');
 const moment 		= require('moment');
+const uuid 			= require('uuid');
 
 const unittestData 	= require(__base + 'misc/unitTestData.js');
 const knex 			= require(__base + 'database.js');
@@ -16,6 +17,7 @@ const UserDoesNotExistError 	= require(__base + 'errors/UserDoesNotExistError.js
 const ValidationError 			= require(__base + 'errors/ValidationError.js');
 const SqlError 					= require(__base + 'errors/SqlError.js');
 const InviteDoesNotExistError 	= require(__base + 'errors/InviteDoesNotExistError.js');
+const InvalidInviteError 		= require(__base + 'errors/InvalidInviteError.js');
 const OperationalError 			= Promise.OperationalError;
 
 describe.only('Invite', function(){
@@ -44,7 +46,7 @@ describe.only('Invite', function(){
 					assert.equal(rows.length, 1);
 
 					assert.equal(invite.id, rows[0].id);
-					assert.equal(invite.expires, rows[0].expires);
+					assert.equal(invite.expires.unix(), rows[0].expires);
 					assert.equal(invite.link, rows[0].link);
 					assert.equal(invite.used, rows[0].used);
 
@@ -131,39 +133,154 @@ describe.only('Invite', function(){
 	});
 
 	describe('#use', function(){
-		var inviteUser = {
-			username 	: 'Models#Invite#Use#User01',
-			password 	: 'password',
-			publickey 	: 'dGVzdA==',
-			privatekey 	: 'dGVzdA==',
-			pk_salt 	: 'dGVzdA==',
-			iv 			: 'dGVzdA=='
-		}				
 
+		var invites = [
+			{
+				used: false,
+				link: uuid.v4(),
+				expires: moment().subtract(10, 'days').unix()
+			}
+		];
+
+		var createdInvite = undefined;
+
+		before(function(){
+			return knex('invites')
+			.insert(invites[0])
+			.then(function(rows){
+				invites[0].id = rows[0];
+			});
+		})
+
+		var users = [
+			{
+				username 	: 'Models#Invite#Use#User01',
+				password 	: 'password',
+				publickey 	: 'dGVzdA==',
+				privatekey 	: 'dGVzdA==',
+				pk_salt 	: 'dGVzdA==',
+				iv 			: 'dGVzdA=='
+			},
+			{
+				username 	: 'Models#Invite#Use#User02',
+				password 	: 'password',
+				publickey 	: 'dGVzdA==',
+				privatekey 	: 'dGVzdA==',
+				pk_salt 	: 'dGVzdA==',
+				iv 			: 'dGVzdA=='
+			},
+			{
+				username 	: 'Models#Invite#Use#User03',
+				password 	: 'password',
+				publickey 	: 'dGVzdA==',
+				privatekey 	: 'dGVzdA==',
+				pk_salt 	: 'dGVzdA==',
+				iv 			: 'dGVzdA=='
+			},
+			{
+				username 	: 'Models#Invite#Use#User04',
+				password 	: 'password',
+				publickey 	: 'dGVzdA==',
+				privatekey 	: 'dGVzdA==',
+				pk_salt 	: 'dGVzdA==',
+				iv 			: 'dGVzdA=='
+			},
+			{
+				username 	: 'Models#Invite#Use#User05',
+				password 	: 'password',
+				publickey 	: 'dGVzdA==',
+				privatekey 	: 'dGVzdA==',
+				pk_salt 	: 'dGVzdA==',
+				iv 			: 'dGVzdA=='
+			}									
+		]
 
 		it('successfully creates a user, using an invite', function(){
 			return Invite.create()
 			.then(function(invite){
-				console.log("Invite created..");
-				return invite.use(inviteUser);
+				createdInvite = invite;
+				return invite.use(users[0]);
 			})
 			.then(function(user){
-				assert.equal(user.username, 	inviteUser.username);
-				assert.equal(user.publickey, 	inviteUser.publickey);
-				assert.equal(user.privatekey, 	inviteUser.privatekey);
-				assert.equal(user.iv, 			inviteUser.iv);
-				assert.equal(user.pk_salt, 		inviteUser.pk_salt);
+				assert.equal(user.username, 	users[0].username);
+				assert.equal(user.publickey, 	users[0].publickey);
+				assert.equal(user.privatekey, 	users[0].privatekey);
+				assert.equal(user.iv, 			users[0].iv);
+				assert.equal(user.pk_salt, 		users[0].pk_salt);
+
+				users[0].id = user.id;
+
 			})
 			.catch(function(err){
                 assert.fail(undefined,undefined, 'Method failed, when it should have succeeded');
 			})
+		});
 
+		it('should fail when trying to re-use an invite', function(){
+			return Invite.find(createdInvite.link)
+			.then(function(invite){
+				return invite.use(users[1]);
+			})
+			.then(function(){
+    	        assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
+			})
+			.catch(InvalidInviteError, function(err){
+				assert.equal(err.message, 'Invite already used');
+			});
+		
+		});
+
+		it('fails at creating user, using spoofed invite', function(){
+			var invite = new Invite({
+				id: 123,
+				link: 'de305d54-75b4-431b-adb2-eb6b9e546014',
+				used: false,
+				expires: moment().unix()
+			});
+
+			return invite.use(users[2])
+			.then(function(user){
+                assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
+			})
+			.catch(InviteDoesNotExistError, function(err){
+				assert.equal(err.message, invite.link);
+			});
+		});
+
+		it('should not allow two users to be created using same invite', function(){
+			return Invite.create()
+			.then(function(invite){
+
+				var promises = [];
+				promises.push( invite.use(users[2]) );
+				promises.push( invite.use(users[3]) );
+
+				return Promise.all(promises).finally(function() {
+					return Promise.settle(promises);
+				})
+
+			})
+			.then(function(re){
+				console.dir(re);
+			})
+			.catch(InvalidInviteError, function(err){
+				assert.equal(err.message, 'Invite already used');
+			});
+		});
+
+		it('should fail when trying to create a user using an expired invite', function(){
+			return Invite.find(invites[0].link)
+			.then(function(invite){
+				return invite.use( users[4] );
+			})
+			.then(function(user){
+    	        assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
+			})
+			.catch(InvalidInviteError, function(err){
+				assert.equal(err.message, 'Invite is expired');
+			});
 		});
 
 	});
-
-
-
-
 
 });

@@ -112,9 +112,16 @@ module.exports = class Invite{
 					return Promise.reject( new InviteDoesNotExistError(self.link) );
 				}
 
+				// Sigh... SQLite...
 				if( rows[0].used === true || rows[0].used === 1 ){
 					trx.rollback;
 					return Promise.reject( new InvalidInviteError('Invite already used') );
+				}
+
+				// if now is after expires
+				if( moment().isAfter( moment.unix(rows[0].expires) ) ){
+					trx.rollback;
+					return Promise.reject( new InvalidInviteError('Invite is expired') );
 				}
 
 				return User.create(user, trx);
