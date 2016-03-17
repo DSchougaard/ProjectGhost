@@ -15,6 +15,7 @@ const UserDoesNotExistError 	= require(__base + 'errors/UserDoesNotExistError.js
 const ValidationError 			= require(__base + 'errors/ValidationError.js');
 const SqlError 					= require(__base + 'errors/SqlError.js');
 const InviteDoesNotExistError 	= require(__base + 'errors/InviteDoesNotExistError.js');
+const InvalidInviteError 		= require(__base + 'errors/InvalidInviteError.js');
 const OperationalError 			= Promise.OperationalError;
 
 // Error handler for SQL
@@ -34,7 +35,7 @@ module.exports = class Invite{
 	constructor(data){
 		var self 		= this;
 		self.id  		= data.id;
-		self.expires 	= moment(data.expires);
+		self.expires 	= moment.unix(data.expires);
 		self.link 		= data.link;
 		self.used 		= data.used 	|| false;
 	}
@@ -78,10 +79,13 @@ module.exports = class Invite{
 			return new Promise.reject( new ValidationError(validUUID.errors) );
 		}
 
+		//console.log("Invite#find " + link);
+
 		return knex('invites')
 		.select()
 		.where('link', link)
 		.then(function(rows){
+
 			if( rows.length === 0 ){
 				return Promise.reject( new InviteDoesNotExistError(link) );
 			}
@@ -99,13 +103,18 @@ module.exports = class Invite{
 			return trx
 			.select()
 			.from('invites')
-			.where('id', self.id)
+			.where('link', self.link)
 			.then(function(rows){
 
-				if( rows.length !== 1 || rows[0].used === true ){
-					console.log("Rolling back...");
+				if( rows.length < 1 ){
+					// No invite was found
 					trx.rollback;
-					return Promise.reject( new Error('Invite already used') );
+					return Promise.reject( new InviteDoesNotExistError(self.link) );
+				}
+
+				if( rows[0].used === true || rows[0].used === 1 ){
+					trx.rollback;
+					return Promise.reject( new InvalidInviteError('Invite already used') );
 				}
 
 				return User.create(user, trx);
@@ -117,17 +126,15 @@ module.exports = class Invite{
 					Promise.resolve(user),
 					trx
 					.into('invites')
-					.where('id', self.id)
+					.where('link', self.link)
 					.update('used', true)
 				]);
 			})
-			.then(function(user, rows){
+			.then(function(resolved){
 				trx.commit;
-				return Promise.resolve(rows[0]);
+				return Promise.resolve(resolved[0]);
 			})
 			.catch(trx.rollback);
 		});
 	}
-
-
 }
