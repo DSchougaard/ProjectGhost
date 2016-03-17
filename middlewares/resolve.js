@@ -7,6 +7,7 @@ const _ 						= require('underscore');
 const UserDoesNotExistError 	= require(__base + 'errors/UserDoesNotExistError.js');
 const PasswordDoesNotExistError = require(__base + 'errors/PasswordDoesNotExistError.js');
 const CategoryDoesNotExistError = require(__base + 'errors/CategoryDoesNotExistError.js');
+const InviteDoesNotExistError  	= require(__base + 'errors/InviteDoesNotExistError.js');
 const SqlError 					= require(__base + 'errors/SqlError.js');
 const ValidationError 			= require(__base + 'errors/ValidationError.js');
 const ValidationRestError 		= require(__base + 'errors/ValidationRestError.js');
@@ -15,6 +16,7 @@ const ValidationRestError 		= require(__base + 'errors/ValidationRestError.js');
 var User 						= require(__base + 'models/user.js')
 var Password 					= require(__base + 'models/password.js')
 var Category 					= require(__base + 'models/category.js')
+var Invite  					= require(__base + 'models/invite.js')
 
 module.exports = function(req, res, next){
 
@@ -25,7 +27,8 @@ module.exports = function(req, res, next){
 	var classNames = {
 		user: User,
 		password: Password,
-		category: Category
+		category: Category,
+		invite: Invite
 	};
 
 	// Create empty arrays for storage of identifiers and promises
@@ -56,7 +59,6 @@ module.exports = function(req, res, next){
 
 			objectTypes.push(key.slice(0, -2));
 			objects.push( (classNames[key.slice(0, -2)]).find(val) );
-
 		}
 
 	});
@@ -86,6 +88,9 @@ module.exports = function(req, res, next){
 	})
 	.catch(CategoryDoesNotExistError, function(err){
 		return next(new restify.errors.NotFoundError('Category was not found'));
+	})
+	.catch(InviteDoesNotExistError, function(err){
+		return next(new restify.errors.NotFoundError('Invite was not found'));
 	})
 	.catch(ValidationError, function(err){
 		//return next( new restify.errors.BadRequestError('ValidationError: ' + err.errors[0].property + ' ' + err.errors[0].message) );

@@ -20,7 +20,7 @@ const InviteDoesNotExistError 	= require(__base + 'errors/InviteDoesNotExistErro
 const InvalidInviteError 		= require(__base + 'errors/InvalidInviteError.js');
 const OperationalError 			= Promise.OperationalError;
 
-describe.only('Invite', function(){
+describe('Invite', function(){
 
 	describe('#create', function(){
 
@@ -227,7 +227,6 @@ describe.only('Invite', function(){
 			.catch(InvalidInviteError, function(err){
 				assert.equal(err.message, 'Invite already used');
 			});
-		
 		});
 
 		it('fails at creating user, using spoofed invite', function(){
@@ -282,7 +281,6 @@ describe.only('Invite', function(){
 				assert.equal(err.message, 'Invite is expired');
 			});
 		});
-
 
 		after(function(){
 			return knex('users')

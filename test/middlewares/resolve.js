@@ -1,19 +1,27 @@
 "use strict";
 
-var Promise = require('bluebird');
-var assert = require('assert');
-var bcrypt = require('bcrypt');
+const Promise 		= require('bluebird');
+const assert 		= require('assert');
+const bcrypt 		= require('bcrypt');
+const moment 		= require('moment');
+const uuid 			= require('uuid');
 
-var base64 = require(__base + 'helpers/base64.js');
-var knex = require(__base + 'database.js');
-var resolve = require(__base + 'middlewares/resolve.js');
+const base64 		= require(__base + 'helpers/base64.js');
+const knex 			= require(__base + 'database.js');
+const resolve 		= require(__base + 'middlewares/resolve.js');
 
 
 describe('Resolve', function(){
 
-	var testUser, testPassword, testCategory;
+	var testUser, testPassword, testCategory, testInvite;
 
 	before(function(){
+
+		testInvite = {
+			expires: moment().add('24', 'hours').unix(),
+			link: uuid.v4(),
+			used: false
+		}
 
 		testUser = {
 			username: 'ResolveMiddlewareNormalUser',
@@ -59,7 +67,13 @@ describe('Resolve', function(){
 		})
 		.then(function(id){
 			testCategory.id = id[0];
+
+			return knex('invites')
+			.insert(testInvite);
 		})
+		.then(function(id){
+			testInvite.id = id[0];
+		});
 	});
 
 
@@ -112,6 +126,26 @@ describe('Resolve', function(){
 		resolve(req, null, function(err){
 			assert.deepEqual(req.resolved.params.user, testUser);
 			assert.deepEqual(req.resolved.params.category, testCategory);
+
+			done();
+		});
+	});
+
+	it('resolves a invite id', function(done){
+		var req = {
+			resolved:{
+				user: 1	
+			},
+			params:{
+				inviteId : testInvite.link
+			}
+		};
+
+		resolve(req, null, function(err){
+			assert.equal(req.resolved.params.invite.id, 			testInvite.id);
+			assert.equal(req.resolved.params.invite.used, 			testInvite.used);
+			assert.equal(req.resolved.params.invite.link, 			testInvite.link);
+			assert.equal(req.resolved.params.invite.expires.unix(), testInvite.expires);
 
 			done();
 		});
@@ -178,6 +212,28 @@ describe('Resolve', function(){
 
 			assert.equal(err.body.code, 'NotFoundError');
 			assert.equal(err.body.message, 'Category was not found');
+
+			done();
+		});	
+	});
+
+	it('throws an error when resolving a non-existant invite id', function(done){
+		var req = {
+			resolved:{
+				user: 1	
+			},
+			params:{
+				inviteId : 'de305d54-75b4-431b-adb2-eb6b9e546014'
+			}
+		};
+
+		resolve(req, null, function(err){
+
+			assert.equal(err.message, 'Invite was not found');
+			assert.equal(err.statusCode, 404);
+
+			assert.equal(err.body.code, 'NotFoundError');
+			assert.equal(err.body.message, 'Invite was not found');
 
 			done();
 		});	
