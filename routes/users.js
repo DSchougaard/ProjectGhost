@@ -62,15 +62,16 @@ module.exports = function(server, log){
 		return next();
 	});
 
-
 	server.post('/api/users', function(req, res, next){
 		log.info({ method: 'POST', path: '/api/user', payload: req.body.username });
 		/*
 			Request Content
 			Username: String
 			Password: String
-			PrivateKey: Binary
-			PublicKey: String
+			PrivateKey: Base64
+			iv: Base64
+			Pk_Salt: Base64
+			PublicKey: Base64
 		*/	
 		// Validate Input
 		User.create(req.body)
