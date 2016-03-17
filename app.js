@@ -12,6 +12,7 @@ const users 			= require(__base + 'routes/users.js');
 const auth 				= require(__base + 'routes/auth.js');
 const passwords			= require(__base + 'routes/passwords.js');
 const categories  		= require(__base + 'routes/categories.js');
+const invite 			= require(__base + 'routes/invite.js');
 
 
 //Helpers

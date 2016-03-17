@@ -50,7 +50,9 @@ module.exports = class User{
 
 	}
 
-	static create(input){
+	static create(input, trx){
+		var db = trx === undefined ? knex : trx;
+
 		var data = _.clone(input);
 		
 		
@@ -70,7 +72,7 @@ module.exports = class User{
 			data.salt = hash.substring(0, 29);
 			return new Promise.resolve(data);
 		})
-		.then(knex('users').insert.bind( knex('users') ))
+		.then(db('users').insert.bind( db('users') ))
 		.then(function(id){
 
 			if( id.length === 0 ){

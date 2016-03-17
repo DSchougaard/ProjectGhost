@@ -50,6 +50,12 @@ knex.schema.createTableIfNotExists('passwords', function(table){
 	table.string('note').nullable();
 }).then();
 
+knex.schema.createTableIfNotExists('invites', function(table){
+	table.increments('id').primary();
+	table.uuid('link').unique().notNullable();
+	table.dateTime('expires').notNullable();
+	table.boolean('used').defaultTo(false);
+}).then();
 
 knex('users').insert(data.userData)
 .then(function(r){
