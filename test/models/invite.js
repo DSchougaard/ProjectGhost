@@ -251,6 +251,8 @@ describe.only('Invite', function(){
 			return Invite.create()
 			.then(function(invite){
 
+				invites.push(invite);
+
 				var promises = [];
 				promises.push( invite.use(users[2]) );
 				promises.push( invite.use(users[3]) );
@@ -279,6 +281,27 @@ describe.only('Invite', function(){
 			.catch(InvalidInviteError, function(err){
 				assert.equal(err.message, 'Invite is expired');
 			});
+		});
+
+
+		after(function(){
+			return knex('users')
+			.where('username', 		users[0].username)
+			.orWhere('username', 	users[1].username)
+			.orWhere('username', 	users[2].username)
+			.orWhere('username', 	users[3].username)
+			.orWhere('username', 	users[4].username)
+			.del()
+			.then(function(){});
+		});
+
+		after(function(){
+			return knex('invites')
+			.where('id', 	invites[0].id)
+			.orWhere('id', 	invites[1].id)
+			.orWhere('id', 	createdInvite.id)
+			.del()
+			.then(function(){});
 		});
 
 	});
