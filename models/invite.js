@@ -17,6 +17,8 @@ const SqlError 					= require(__base + 'errors/SqlError.js');
 const InviteDoesNotExistError 	= require(__base + 'errors/InviteDoesNotExistError.js');
 const InvalidInviteError 		= require(__base + 'errors/InvalidInviteError.js');
 const OperationalError 			= Promise.OperationalError;
+const AlreadyExistError 		= require(__base + 'errors/Internal/AlreadyExistError.js');
+
 
 // Error handler for SQL
 function SQLErrorHandler(err){
@@ -56,7 +58,6 @@ module.exports = class Invite{
 			used: false
 		}
 
-		var link = uuid.v4();
 		return knex('invites')
 		.insert(data)
 		.then(function(id){
@@ -99,7 +100,6 @@ module.exports = class Invite{
 		var self = this;
 
 		return knex.transaction(function(trx){
-			
 			return trx
 			.select()
 			.from('invites')
@@ -126,9 +126,8 @@ module.exports = class Invite{
 
 				return User.create(user, trx);
 
-			})
+			}, SQLErrorHandler)
 			.then(function(user){
-
 				return Promise.all([
 					Promise.resolve(user),
 					trx
@@ -141,7 +140,13 @@ module.exports = class Invite{
 				trx.commit;
 				return Promise.resolve(resolved[0]);
 			})
+			//.catch(function(err){
+			//	trx.rollback;
+			//	//return Promise.reject(err);
+			//	throw err;
+			//});			
 			.catch(trx.rollback);
+		
 		});
 	}
 }

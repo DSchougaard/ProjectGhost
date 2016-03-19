@@ -12,7 +12,7 @@ const users 			= require(__base + 'routes/users.js');
 const auth 				= require(__base + 'routes/auth.js');
 const passwords			= require(__base + 'routes/passwords.js');
 const categories  		= require(__base + 'routes/categories.js');
-const invite 			= require(__base + 'routes/invite.js');
+const invites 			= require(__base + 'routes/invite.js');
 
 
 //Helpers
@@ -78,9 +78,10 @@ server.pre(restify.pre.sanitizePath());
 
 server.use(restify.bodyParser());
 server.use(restify.queryParser());
-/*server.on('uncaughtException', function (req, res, route, err) {
-    console.log('uncaughtException', err.stack);
-});*/
+
+//server.on('uncaughtException', function (req, res, route, err) {
+//    console.log('uncaughtException', err.stack);
+//});
 
 // Database through Knex
 /*var knex = require('knex')({
@@ -167,6 +168,13 @@ knex.schema.createTableIfNotExists('passwords', function(table){
 .catch(function(error){
 });
 
+//knex.schema.createTableIfNotExists('invites', function(table){
+//	table.increments('id').primary();
+//	table.uuid('link').unique().notNullable();
+//	table.dateTime('expires').notNullable();
+//	table.boolean('used').defaultTo(false);
+//}).then();
+
 
 /*
 	Passwords Table
@@ -203,6 +211,7 @@ users(server, log);
 auth(server, knex, log);
 passwords(server, knex, log);
 categories(server, log);
+invites(server, log);
 
 var test = fs.readFileSync(__base + 'public/index.html');
 

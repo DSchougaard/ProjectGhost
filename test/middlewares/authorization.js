@@ -373,7 +373,81 @@ describe('Authorization', function(){
 			})
 			.then(function(){ });
 		});
+	});
 
+	describe('Invite', function(){
+
+		var users = [
+			{
+				username 	: 'Middleware#Authorization#Invite#User01',
+				isAdmin 	: false,
+				salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+				password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+				privatekey 	: 'cGFzc3dvcmQ=',
+				iv 			: 'cGFzc3dvcmQ=',
+				pk_salt 	: 'cGFzc3dvcmQ=',
+				publickey 	: 'cGFzc3dvcmQ='
+			},
+			{
+				username 	: 'Middleware#Authorization#Invite#User02',
+				isAdmin 	: true,
+				salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+				password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+				privatekey 	: 'cGFzc3dvcmQ=',
+				iv 			: 'cGFzc3dvcmQ=',
+				pk_salt 	: 'cGFzc3dvcmQ=',
+				publickey 	: 'cGFzc3dvcmQ='
+			}
+		];
+
+		before(function(){
+			return knex('users').insert(users).then( );
+		});
+
+
+		it('should not allow an user to create an invite', function(done){
+			var req = {};
+			req.resolved = {};
+			req.resolved.user = new User(normalUser);
+			req.params = {};
+			req.params.userId = normalUser.id;
+			req.params.passwordId = normalUserPassword.id;
+
+			authorization(req, null, function(res){
+				//assert.equal(res.message, 'Insufficient privileges');
+				//assert.equal(res.statusCode, 403);
+
+				//assert.equal(res.body.code, 'ForbiddenError');
+				//assert.equal(res.body.message, 'Insufficient privileges');
+
+				return done();
+			});
+
+		});
+
+		it('should allow an admin to create an invite', function(done){
+			var req = {};
+			req.resolved = {};
+			req.resolved.user = new User(normalUser);
+			req.params = {};
+			req.params.userId = normalUser.id;
+			req.params.passwordId = normalUserPassword.id;
+
+			authorization(req, null, function(res){
+				//assert.notEqual(res, undefined);
+
+				return done();
+			});
+		});
+
+		after(function(){
+			return knex('users')
+			.whereIn('username', _.pluck(users, 'username'))
+			.del()
+			.then(function(rows){
+
+			});
+		});
 	})
 
 	after(function(){

@@ -11,6 +11,7 @@ const knex 			= require(__base + 'database.js');
 
 // Models
 var Invite  		= require(__base + 'models/invite.js');
+var User 	 		= require(__base + 'models/user.js');
 
 // Errors
 const UserDoesNotExistError 	= require(__base + 'errors/UserDoesNotExistError.js');
@@ -19,6 +20,8 @@ const SqlError 					= require(__base + 'errors/SqlError.js');
 const InviteDoesNotExistError 	= require(__base + 'errors/InviteDoesNotExistError.js');
 const InvalidInviteError 		= require(__base + 'errors/InvalidInviteError.js');
 const OperationalError 			= Promise.OperationalError;
+const AlreadyExistError 		= require(__base + 'errors/Internal/AlreadyExistError.js');
+
 
 describe('Invite', function(){
 
@@ -75,6 +78,7 @@ describe('Invite', function(){
 		before(function(){
 			return Invite.create()
 			.then(function(invite){
+				//console.log("Created invite: %j", invite);
 				deleteThis.push(invite.id);
 				createdLink = invite.link;
 			});
@@ -83,6 +87,8 @@ describe('Invite', function(){
 		it('finds an existing invite', function(){
 			return Invite.find(createdLink)
 			.then(function(invite){
+				//console.log("Found invite: %j", invite);
+
 				assert.notEqual(invite, undefined);
 
 				assert.notEqual(invite.id, undefined);
@@ -144,6 +150,8 @@ describe('Invite', function(){
 
 		var createdInvite = undefined;
 
+		var createdInviteIds = [];
+
 		before(function(){
 			return knex('invites')
 			.insert(invites[0])
@@ -192,13 +200,27 @@ describe('Invite', function(){
 				privatekey 	: 'dGVzdA==',
 				pk_salt 	: 'dGVzdA==',
 				iv 			: 'dGVzdA=='
-			}									
+			},
+			{
+				username 	: 'Models#Invite#Use#User06',
+				password 	: 'password',
+				publickey 	: 'dGVzdA==',
+				privatekey 	: 'dGVzdA==',
+				pk_salt 	: 'dGVzdA==',
+				iv 			: 'dGVzdA=='
+			}		
 		]
+
+		before(function(){
+			return User.create(users[5])
+			.then()
+		})
 
 		it('successfully creates a user, using an invite', function(){
 			return Invite.create()
 			.then(function(invite){
 				createdInvite = invite;
+				createdInviteIds.push(invite.id);
 				return invite.use(users[0]);
 			})
 			.then(function(user){
@@ -282,6 +304,82 @@ describe('Invite', function(){
 			});
 		});
 
+		it('should fail when using invite with invalid user information', function(){
+			var invalidUser = {
+				username 	: 'Models#Invite#Use#User01',
+				password 	: 'password',
+				publickey 	: 'dGVzdA',
+				privatekey 	: 'dGVzdA==',
+				pk_salt 	: 'dGVzdA==',
+				iv 			: 'dGVzdA=='
+			}
+
+			// Publickey has wrong encoding
+
+			return Invite.create()
+			.then(function(invite){
+				// for clean up
+				createdInviteIds.push(invite.id);
+
+				return invite.use(invalidUser);
+			})
+			.then(function(user){
+                assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
+			})
+			.catch(ValidationError, function(err){
+				assert.equal(err.num, 1);
+				assert.equal(err.message, '1 error: data.publickey pattern mismatch.');
+			});
+		});
+
+		it('should not mark the invite as used, when the user information is invalid', function(){
+			var invalidUser = {
+				username 	: 'Models#Invite#Use#User01',
+				password 	: 'password',
+				publickey 	: 'dGVzdA',
+				privatekey 	: 'dGVzdA==',
+				pk_salt 	: 'dGVzdA==',
+				iv 			: 'dGVzdA=='
+			}
+
+			// Publickey has wrong encoding
+			var carry = undefined;
+
+			return Invite.create()
+			.then(function(invite){
+				// for clean up
+				createdInviteIds.push(invite.id);
+
+				return invite.use(invalidUser);
+			})
+			.then(function(user){
+                assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
+			})
+			.catch(ValidationError, function(err){
+
+				return knex('invites')
+				.select()
+				.where('id', _.last(createdInviteIds))
+				.then(function(db_invite){
+					assert.equal(db_invite.length, 1);
+					assert.equal(db_invite[0].used, false);
+				});
+			});
+		});
+
+		it('should throw an error when trying to create already existing user', function(){
+			return Invite.create()
+			.then(function(invite){
+				return invite.use(users[5]);
+			})
+			.then(function(){
+                assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
+			})
+			.catch(AlreadyExistError, function(err){
+				assert.equal(err.message, 'Username already exists');
+			});
+		});
+
 		after(function(){
 			return knex('users')
 			.where('username', 		users[0].username)
@@ -289,6 +387,7 @@ describe('Invite', function(){
 			.orWhere('username', 	users[2].username)
 			.orWhere('username', 	users[3].username)
 			.orWhere('username', 	users[4].username)
+			.orWhere('username', 	users[5].username)
 			.del()
 			.then(function(){});
 		});
@@ -296,8 +395,9 @@ describe('Invite', function(){
 		after(function(){
 			return knex('invites')
 			.where('id', 	invites[0].id)
-			.orWhere('id', 	invites[1].id)
-			.orWhere('id', 	createdInvite.id)
+			.orWhere('id', 	createdInviteIds[0])
+			.orWhere('id', 	createdInviteIds[1])
+			.orWhere('id', 	createdInviteIds[2])
 			.del()
 			.then(function(){});
 		});
