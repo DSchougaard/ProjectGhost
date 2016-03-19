@@ -9,6 +9,7 @@ const _ 		= require('underscore');
 const ValidationError 		= require(__base + 'errors/ValidationError.js');
 const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js');
 const SqlError 				= require(__base + 'errors/SqlError.js');
+const AlreadyExistError 	= require(__base + 'errors/Internal/AlreadyExistError.js');
 
 const unittestData = require(__base + 'misc/unitTestData.js');
 
@@ -73,7 +74,7 @@ describe("User", function(){
 			.then(function(user){
 				assert.fail(user);
 			})
-			.catch(SqlError, function(err){
+			.catch(AlreadyExistError, function(err){
 				assert.equal(err.message, 'Username already exists');
 			});
 		})

@@ -16,11 +16,13 @@ const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js'
 const ValidationError 		= require(__base + 'errors/ValidationError.js');
 const SqlError 				= require(__base + 'errors/SqlError.js');
 const OperationalError 		= Promise.OperationalError;
+const AlreadyExistError 	= require(__base + 'errors/Internal/AlreadyExistError.js');
 
 function SQLErrorHandler(err){
 	// SQLite Username Exists error
 	if( err.errno === 19 && err.code === 'SQLITE_CONSTRAINT' ){
-		return new Promise.reject( new SqlError('Username already exists') );
+		//return new Promise.reject( new SqlError('Username already exists') );
+		return new Promise.reject( new AlreadyExistError('Username') );
 		//throw new SqlError('Username already exists.')
 	}else if( err.errno === 5 && err.code === 'SQLITE_BUSY'){
 		return new Promise.reject( new SqlError('database temporarily unavailable') );
@@ -55,7 +57,6 @@ module.exports = class User{
 
 		var data = _.clone(input);
 		
-		
 		var validate = schemagic.userInput.validate(data);
 		if( !validate.valid ){
 			return new Promise.reject( new ValidationError(validate.errors) );
@@ -82,13 +83,13 @@ module.exports = class User{
 			if( id.length > 1 ){
 				return new Promise.reject( new SqlError('Catastrophic database error') );	
 			}
-
 			data.id = id[0];
 			return new Promise.resolve( new User(data) );
 		}, function(err){
 			// SQLite Username Exists error
 			if( err.errno === 19 && err.code === 'SQLITE_CONSTRAINT' ){
-				return new Promise.reject( new SqlError('Username already exists') );
+				//return new Promise.reject( new SqlError('Username already exists') );
+				return new Promise.reject( new AlreadyExistError('Username') );
 				//throw new SqlError('Username already exists.')
 			}else if( err.errno === 5 && err.code === 'SQLITE_BUSY'){
 				return new Promise.reject( new SqlError('database temporarily unavailable') );

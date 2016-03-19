@@ -16,6 +16,7 @@ var Password = require(__base + 'models/password.js')
 var Category = require(__base + 'models/category.js')
 
 module.exports = function(req, res, next){
+
 	var targetUser  	= req.params.userId;
 	var targetPassword 	= req.params.passwordId;
 	var targetCategory 	= req.params.categoryId;
@@ -60,7 +61,7 @@ module.exports = function(req, res, next){
 			return next();
 		});
 
-	}else{
+	}else if( targetUser !== undefined) {
 		User.find(targetUser)
 		.then(function(user){
 			if( req.resolved.user.id === user.id || req.resolved.user.isAdmin ){
@@ -70,5 +71,8 @@ module.exports = function(req, res, next){
 			}
 
 		})
+	}else{
+		console.error('Unknown Authorization target.');
+		return next();
 	}
  }

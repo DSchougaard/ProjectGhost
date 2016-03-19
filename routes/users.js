@@ -1,19 +1,19 @@
-const fs 			= require('fs');
-const restify 		= require('restify');
-const validator 	= require('validator');
-const crypto 		= require('crypto');
-const bcrypt 		= require('bcrypt');
-const schemagic 	= require('schemagic');
-const _				= require('underscore');
+const fs 							= require('fs');
+const restify 						= require('restify');
+const validator 					= require('validator');
+const crypto 						= require('crypto');
+const bcrypt 						= require('bcrypt');
+const schemagic 					= require('schemagic');
+const _								= require('underscore');
 
-const base64 		= require(__base + 'helpers/base64.js');
-const authHelpers	= require(__base + 'helpers/authHelpers.js');
-const authorized 	= require(__base + 'helpers/authorization.js');
+const base64 						= require(__base + 'helpers/base64.js');
+const authHelpers					= require(__base + 'helpers/authHelpers.js');
+const authorized 					= require(__base + 'helpers/authorization.js');
 
 // Middleware
-const authentication 	= require(__base + 'middlewares/authentication.js');
-const authorization  	= require(__base + 'middlewares/authorization.js');
-const resolve 			= require(__base + 'middlewares/resolve.js');
+const authentication 				= require(__base + 'middlewares/authentication.js');
+const authorization  				= require(__base + 'middlewares/authorization.js');
+const resolve 						= require(__base + 'middlewares/resolve.js');
 
 // Errors
 const UnauthorizedError 			= require(__base + 'errors/UnauthorizedError.js');
@@ -21,7 +21,7 @@ const UserDoesNotExistError 		= require(__base + 'errors/UserDoesNotExistError.j
 const PasswordDoesNotExistError 	= require(__base + 'errors/PasswordDoesNotExistError.js');
 const ValidationError 				= require(__base + 'errors/ValidationError.js');
 const SqlError 						= require(__base + 'errors/SqlError.js');
-
+const AlreadyExistError 			= require(__base + 'errors/Internal/AlreadyExistError.js');
 
 
 // Models
@@ -78,6 +78,9 @@ module.exports = function(server, log){
 		.then(function(user){
 			res.send(200, {message: 'OK', id: user.id});
 			return next();
+		})
+		.catch(AlreadyExistError, function(err){
+			return next( new restify.errors.BadRequestError(err.message) );
 		})
 		.catch(ValidationError, function(err){
 			var parsedErrors = [];

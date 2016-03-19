@@ -264,7 +264,7 @@ describe("API /categories", function(){
 			.end(function(err, res){
 				if(err) return done(err);
 
-				assert.equal(res.body.code, 'ValidationError');
+				assert.equal(res.body.code, 'BadRequestError');
 
 				return done();
 			});		
@@ -560,7 +560,7 @@ describe("API /categories", function(){
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.code, 'ValidationError');
+					assert.equal(res.body.code, 'BadRequestError');
 
 					return done();
 				});
@@ -584,7 +584,7 @@ describe("API /categories", function(){
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.code, 'ValidationError');
+					assert.equal(res.body.code, 'BadRequestError');
 
 					return done();
 				});
@@ -605,7 +605,7 @@ describe("API /categories", function(){
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.code, 'ValidationError');
+					assert.equal(res.body.code, 'BadRequestError');
 
 					return done();
 				});
@@ -898,7 +898,7 @@ describe("API /categories", function(){
 			.end(function(err, res){
 				if(err) return done(err);
 
-				assert.equal(res.body.code, 'ValidationError');
+				assert.equal(res.body.code, 'BadRequestError');
 				assert.equal(res.body.errors.length, 1);
 
 				assert.equal(res.body.errors[0].field, 'data');
@@ -921,7 +921,7 @@ describe("API /categories", function(){
 			.end(function(err, res){
 				if(err) return done(err);
 
-				assert.equal(res.body.code, 'ValidationError');
+				assert.equal(res.body.code, 'BadRequestError');
 				assert.equal(res.body.errors.length, 1);
 
 				assert.equal(res.body.errors[0].field, 'data');
@@ -985,7 +985,7 @@ describe("API /categories", function(){
 				.end(function(err, res){
 					if(err) return done(err);
 					
-					assert.equal(res.body.code, 'ValidationError');
+					assert.equal(res.body.code, 'BadRequestError');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'parent');
 					assert.equal(res.body.errors[0].error, 'is the wrong type');
@@ -1007,7 +1007,7 @@ describe("API /categories", function(){
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.code, 'ValidationError');
+					assert.equal(res.body.code, 'BadRequestError');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'title');
 					assert.equal(res.body.errors[0].error, 'is the wrong type');

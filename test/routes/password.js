@@ -177,7 +177,7 @@ describe("API /password", function(){
 				if(err) return done(err);
 
 
-				assert.equal(res.body.code, 'ValidationError');
+				assert.equal(res.body.code, 'BadRequestError');
 				assert.equal(res.body.errors.length, 1);
 				assert.equal(res.body.errors[0].field, 'id');
 				assert.equal(res.body.errors[0].error, 'is the wrong type');
@@ -394,7 +394,7 @@ describe("API /password", function(){
 			.end(function(err, res){
 				if(err) return done(err);
 				
-				assert.equal(res.body.code, 'ValidationError');
+				assert.equal(res.body.code, 'BadRequestError');
 				assert.equal(res.body.errors.length, 1);
 				assert.equal(res.body.errors[0].field, 'id');
 				assert.equal(res.body.errors[0].error, 'is the wrong type');
@@ -650,7 +650,7 @@ describe("API /password", function(){
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.code, 'ValidationError');
+					assert.equal(res.body.code, 'BadRequestError');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'title');
 					assert.equal(res.body.errors[0].error, 'is the wrong type');
@@ -667,7 +667,7 @@ describe("API /password", function(){
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.code, 'ValidationError');
+					assert.equal(res.body.code, 'BadRequestError');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'username');
 					assert.equal(res.body.errors[0].error, 'is the wrong type');
@@ -684,7 +684,7 @@ describe("API /password", function(){
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.code, 'ValidationError');
+					assert.equal(res.body.code, 'BadRequestError');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'url');
 					assert.equal(res.body.errors[0].error, 'is the wrong type');
@@ -701,7 +701,7 @@ describe("API /password", function(){
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.code, 'ValidationError');
+					assert.equal(res.body.code, 'BadRequestError');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'password');
 					assert.equal(res.body.errors[0].error, 'is the wrong type');
@@ -718,7 +718,7 @@ describe("API /password", function(){
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.code, 'ValidationError');
+					assert.equal(res.body.code, 'BadRequestError');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'password');
 					assert.equal(res.body.errors[0].error, 'pattern mismatch');
@@ -735,7 +735,7 @@ describe("API /password", function(){
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.code, 'ValidationError');
+					assert.equal(res.body.code, 'BadRequestError');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'parent');
 					assert.equal(res.body.errors[0].error, 'is the wrong type');
@@ -752,7 +752,7 @@ describe("API /password", function(){
 				.end(function(err, res){
 					if(err) return done(err);
 
-					assert.equal(res.body.code, 'ValidationError');
+					assert.equal(res.body.code, 'BadRequestError');
 					assert.equal(res.body.errors.length, 1);
 					assert.equal(res.body.errors[0].field, 'note');
 					assert.equal(res.body.errors[0].error, 'is the wrong type');
@@ -855,7 +855,7 @@ describe("API /password", function(){
 			.end(function(err, res){
 				if(err) return done(err);
 
-				assert.equal(res.body.code, 'ValidationError');
+				assert.equal(res.body.code, 'BadRequestError');
 				assert.equal(res.body.errors.length, 1);
 				assert.equal(res.body.errors[0].field, 'id');
 				assert.equal(res.body.errors[0].error, 'is the wrong type');

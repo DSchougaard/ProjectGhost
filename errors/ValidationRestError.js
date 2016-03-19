@@ -3,7 +3,7 @@ const util 		= require('util');
 
 function ValidationRestError(message, errors) {
 	restify.RestError.call(this, {
-		restCode: 'ValidationError',
+		restCode: 'BadRequestError',
 		statusCode: 400,
 		message: message,
 		constructorOpt: ValidationRestError

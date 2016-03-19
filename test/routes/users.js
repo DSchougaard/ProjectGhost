@@ -278,7 +278,8 @@ describe("API /user", function(){
 					return done(err);	
 				} 
 				
-				assert.equal(res.body, 'Username already exists');
+				assert.equal(res.body.code, 'BadRequestError');
+				assert.equal(res.body.message, 'Username already exists');
 				return done();
 			});
 		});
@@ -525,7 +526,7 @@ describe("API /user", function(){
 			.end(function(err, res){
 				if(err) return done(err);
 
-				assert.equal(res.body.code, 'ValidationError');
+				assert.equal(res.body.code, 'BadRequestError');
 				assert.equal(res.body.errors.length, 1);
 				assert.equal(res.body.errors[0].field, 'id');
 				assert.equal(res.body.errors[0].error, 'is the wrong type');
@@ -645,7 +646,7 @@ describe("API /user", function(){
 			.end(function(err,res){
 				if(err) return done(err);
 
-				assert.equal(res.body.code, 'ValidationError');
+				assert.equal(res.body.code, 'BadRequestError');
 				assert.equal(res.body.errors.length, 1);
 				assert.equal(res.body.errors[0].field, 'id');
 				assert.equal(res.body.errors[0].error, 'is the wrong type');

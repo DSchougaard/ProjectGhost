@@ -35,9 +35,15 @@ module.exports = function(req, res, next){
 	var objects = [];
 	var objectTypes = [];
 
+	if( req.resolved === undefined ){
+		req.resolved = {};
+	}
+
 	// Hell, if this is set it isnt an authenicated user and this middleware should NOT be called...
-	if(req.resolved.user === undefined )
-		return next( new restify.errors.InternalServerError('Authentication and authorization mismatch'));
+	//if(req.resolved.user === undefined ){
+	//	console.log("REsolver");
+	//	return next( new restify.errors.InternalServerError('Authentication and authorization mismatch'));
+	//}
 
 	/* 	All url parameters in restify, is localted in the req.params object.
 	 	They're called exactly the same as in the URLs created...
