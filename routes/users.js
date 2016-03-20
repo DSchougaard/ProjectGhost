@@ -14,6 +14,8 @@ const authorized 					= require(__base + 'helpers/authorization.js');
 const authentication 				= require(__base + 'middlewares/authentication.js');
 const authorization  				= require(__base + 'middlewares/authorization.js');
 const resolve 						= require(__base + 'middlewares/resolve.js');
+const authorization2  				= require(__base + 'middlewares/test.authorization.js');
+
 
 // Errors
 const UnauthorizedError 			= require(__base + 'errors/UnauthorizedError.js');
@@ -47,7 +49,7 @@ module.exports = function(server, log){
 		});
 	});
 	
-	server.get('/api/users/me', authentication, function(req, res, next){
+	server.get('/api/users/me', authentication, authorization2({object: 'user', method: 'get/me'}), function(req, res, next){
 		log.info({ method: 'GET', path: '/api/users/me/' });
 		
 		//res.send(200, _.pick(req.resolved.user, ['privatekey', 'iv']));
@@ -55,14 +57,14 @@ module.exports = function(server, log){
 		return next();
 	});
 
-	server.get('/api/users/:userId', authentication, resolve, authorization, function(req, res, next){
+	server.get('/api/users/:userId', authentication, resolve, authorization2({object: 'user', method: 'get'}), function(req, res, next){
 		log.info({ method: 'GET', path: '/api/user/'+req.params.userId });
 
 		res.send(200, _.pick(req.resolved.user, ['id', 'username', 'publickey']));
 		return next();
 	});
 
-	server.post('/api/users', function(req, res, next){
+	server.post('/api/users', authentication, resolve, authorization2({object: 'user', method: 'create'}), function(req, res, next){
 		log.info({ method: 'POST', path: '/api/user', payload: req.body.username });
 		/*
 			Request Content
@@ -96,7 +98,7 @@ module.exports = function(server, log){
 		});
 	});	
 
-	server.put('/api/users/:userId', authentication, resolve, authorization, function(req, res, next){
+	server.put('/api/users/:userId', authentication, resolve, authorization2({object: 'user', method: 'update'}), function(req, res, next){
 		log.info({ method: 'PUT', path: '/api/user/'+req.params.userId, payload: req.body, auth: req.user });
 			
 		//(req.resolved.user).update(req.body)
@@ -125,7 +127,7 @@ module.exports = function(server, log){
 		});
 	});
 
-	server.del('/api/users/:userId', authentication, resolve, authorization, function(req, res, next){
+	server.del('/api/users/:userId', authentication, resolve, authorization2({object: 'user', method: 'delete'}), function(req, res, next){
 		log.info({ method: 'DEL', path: '/api/user/'+req.params.userId, payload: req.body, auth: req.user });
 		
 		(req.resolved.params.user).del()

@@ -7,6 +7,8 @@ var Invite  					= require(__base + 'models/invite.js');
 // Middleware
 const authentication 			= require(__base + 'middlewares/authentication.js');
 const authorization  			= require(__base + 'middlewares/authorization.js');
+const testauthorization 		= require(__base + 'middlewares/test.authorization.js');
+
 const resolve 					= require(__base + 'middlewares/resolve.js');
 const argument 					= require(__base + 'middlewares/argument.js');
 
@@ -25,7 +27,7 @@ const ValidationRestError 		= require(__base + 'errors/ValidationRestError.js');
 
 
 module.exports = function(server, log){
-	server.post('/api/invites', /*argument('Testie testie'),*/ authentication, resolve, authorization, function(req, res, next){
+	server.post('/api/invites', authentication, resolve, testauthorization({object: 'invite', method:'create'}), function(req, res, next){
 		Invite.create()
 		.then(function(invite){
 			res.send(200, invite.link);
