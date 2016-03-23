@@ -407,20 +407,6 @@ describe.only('API /auth', function(){
 
 		secrets = [undefined, undefined, undefined]
 
-		//before(function(done){
-		//	server
-		//	.post('/api/auth/hotp/generate')
-		//	.set('Authorization', 'Bearer ' + authTokens[0])
-		//	.expect(200)
-		//	.end(function(err, res){
-		//		if(err) return done(err);
-//
-//		//		secrets[0] = res.body;
-//
-//		//		return done();
-//		//	});
-		//})
-
 		before(function(done){
 			server
 			.post('/api/auth/hotp/generate')
@@ -555,6 +541,14 @@ describe.only('API /auth', function(){
 			});
 		});
 
+		after(function(){
+			return knex('users')
+			.where('username',  	users[0].username)
+			.orWhere('username', 	users[1].username)
+			.orWhere('username', 	users[2].username)
+			.del()
+			.then();
+		})
 	});
 
 });
