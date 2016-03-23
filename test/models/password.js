@@ -810,7 +810,8 @@ describe('Password', function(){
 				privatekey: base64.encode('fake'),
 				publickey: base64.encode('fake'),
 				iv: base64.encode('11111111'),
-				pk_salt: "Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI="
+				pk_salt: "Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI=",
+				two_factor_enabled: false
 			}
 			var fake = new User(fakeData);
 			
@@ -827,8 +828,8 @@ describe('Password', function(){
 				assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
 			})
 			.catch(ValidationError, function(err){
-				assert.equal(err.num, 8);
-				assert.equal(err.message, '8 errors: data.id is required. data.isAdmin is required. data.salt is required. data.password is required. data.publickey is required. data.privatekey is required. data.iv is required. data.pk_salt is required.');
+				assert.equal(err.num, 9);
+				assert.equal(err.message, '9 errors: data.id is required. data.isAdmin is required. data.salt is required. data.password is required. data.publickey is required. data.privatekey is required. data.iv is required. data.pk_salt is required. data.two_factor_enabled is required.');
 			});
 		});
 		

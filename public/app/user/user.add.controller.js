@@ -4,7 +4,7 @@
 		.module('ghost')
 		.controller('UserAddController', UserAddController);
 		
-	function UserAddController($rootScope, $q, $http, $auth, $state, EncryptionService, $mdDialog, LoadingOverlayService) {
+	function UserAddController($rootScope, $q, $http, $auth, $state, EncryptionService, $mdDialog) {
 		var self 				= this;
 
 		// Config
@@ -19,9 +19,9 @@
 		}
 		
 		// Literals
-		self.user = {};
-		self.new = {};
-		self.enabled = true;
+		self.user 				= {};
+		self.new 				= {};
+		self.enabled 			= true;
 
 		// Exposed Interface
 		self.cancel  			= cancel;

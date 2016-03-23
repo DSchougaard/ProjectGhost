@@ -35,21 +35,23 @@ function SQLErrorHandler(err){
 
 module.exports = class User{
 	constructor(data){
-		this.id 		= data.id;
-		this.username 	= data.username;
-		this.isAdmin 	= data.isAdmin;
-		this.publickey 	= data.publickey;
+		this.id 				= data.id;
+		this.username 			= data.username;
+		this.isAdmin 			= data.isAdmin;
+		this.publickey 			= data.publickey;
 
 		// User Authentication Fields
-		this.password 	= data.password;
-		this.salt 		= data.salt;
+		this.password 			= data.password;
+		this.salt 				= data.salt;
 
+		// Two Factor Authentication Fields
+		this.two_factor_enabled = data.two_factor_enabled;
+		this.two_factor_secret 	= data.two_factor_secret;
+		
 		// User Private Key Fields
-		this.privatekey = data.privatekey;
-		this.iv 		= data.iv;
-		this.pk_salt 	= data.pk_salt;
-
-
+		this.privatekey 		= data.privatekey;
+		this.iv 				= data.iv;
+		this.pk_salt 			= data.pk_salt;
 	}
 
 	static create(input, trx){
@@ -143,6 +145,7 @@ module.exports = class User{
 				if( typeof rows[0].isAdmin === 'number' ){
 					rows[0].isAdmin = (rows[0].isAdmin === 1);
 				}
+
 				var validate = schemagic.user.validate(rows[0]);
 				if( !validate.valid ){
 					return new Promise.reject( new ValidationError(validate.errors) );
@@ -181,7 +184,12 @@ module.exports = class User{
 		if( input.publickey !== undefined && input.publickey !== this.publickey ){
 			updated.publickey = input.publickey;
 		}
-
+		if( input.two_factor_enabled !== undefined && input.two_factor_enabled !== this.two_factor_enabled ){
+			updated.two_factor_enabled = input.two_factor_enabled;
+		}
+		if( input.two_factor_secret !== undefined && input.two_factor_secret !== this.two_factor_secret ){
+			updated.two_factor_secret = input.two_factor_secret;
+		}
 
 		if( _.has(updated, 'password') ){
 			return genSalt()
@@ -214,12 +222,15 @@ module.exports = class User{
 				this.privatekey = ( typeof updated.privatekey 	!== undefined ? updated.privatekey 	: this.privatekey );
 				this.publickey 	= ( typeof updated.publickey 	!== undefined ? updated.publickey 	: this.publickey );*/
 
-				this.username 	= updated.username 		|| this.username;
-				this.password 	= updated.password 		|| this.password;
-				this.salt 		= updated.salt 			|| this.salt;
-				this.isAdmin 	= updated.isAdmin 		|| this.isAdmin;
-				this.privatekey = updated.privatekey 	|| this.privatekey;
-				this.publickey 	= updated.publickey 	|| this.publickey;
+				this.username 			= updated.username 			|| this.username;
+				this.password 			= updated.password 			|| this.password;
+				this.salt 				= updated.salt 				|| this.salt;
+				this.isAdmin 			= updated.isAdmin 			|| this.isAdmin;
+				this.privatekey 		= updated.privatekey 		|| this.privatekey;
+				this.publickey 			= updated.publickey 		|| this.publickey;
+				this.two_factor_enabled 	= updated.two_factor_enabled 	|| this.two_factor_enabled;
+				this.two_factor_secret 	= updated.two_factor_secret 	|| this.two_factor_secret;
+
 
 				return new Promise.resolve( this );
 

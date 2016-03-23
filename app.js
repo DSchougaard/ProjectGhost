@@ -199,6 +199,46 @@ knex.schema.createTableIfNotExists('passwords', function(table){
 
 */
 
+var tempSecret = undefined;
+
+server.post('/api/test', function(req, res, next){
+		var speakeasy 	= require("speakeasy");
+
+	var userToken = req.body;	
+	console.log("asdasda");
+	var base32secret = 'NRAGQNDNFZITAVJ7MNTUQP2GPEVDUNTXGBKX2LD3HIZDG5CIMQ3Q';
+	console.log("asdasda");
+
+	var verified = speakeasy.totp.verify({ secret: base32secret,
+                                       encoding: 'base32',
+                                       token: userToken });
+	console.log("asdasda");
+	console.log("User verified?! " + verified);
+	res.send(verified);
+
+})
+
+server.get('/api/test', function(req, res, next){
+	var speakeasy 	= require("speakeasy");
+	var qr 			= require('qr-image');
+
+
+
+	var secret = speakeasy.generateSecret();
+	tempSecret = secret.base32;
+	//var url 	= speakeasy.otpauthUrl({secret: secret.ascii, label: 'Ghost', algorithm: 'sha512'})
+	console.log(secret.base32);
+
+
+
+
+	console.log(secret.otpauth_url);
+	var qr_png = qr.imageSync( secret.otpauth_url );
+	console.dir(qr_png);
+  	
+	res.send(secret.otpauth_url);
+});
+
 
 // Routes
 server.get('/api/ping', function(req, res, next){

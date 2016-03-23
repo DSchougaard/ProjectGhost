@@ -22,6 +22,7 @@
 		self.title 				= "Edit Your Profile";
 		self.user 				= {};
 		self.new 				= {};
+		self.auth 				= {};
 
 		self.enabled 			= true;
 		
@@ -37,7 +38,13 @@
 		// Exposed Interface
 		self.cancel  			= cancel;
 		self.submit 			= submit;
+		self.onChange 			= onChange;
 
+		function onChange(){	
+			if( self.auth.twoFactorEnabled ){
+				
+			}
+		}
 
 		function cancel(){
 						
@@ -104,8 +111,6 @@
 				console.warn(err);
 				console.log("Invalid password");
 			})
-
-
 		}
 
 		$http.get('/api/users/me')

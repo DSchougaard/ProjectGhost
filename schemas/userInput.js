@@ -1,5 +1,5 @@
 module.exports = {
-	"description" : "User",
+	"description" : "Schema for posting new user User",
 	"required": true,
 	"type": "object",
 	"properties": {

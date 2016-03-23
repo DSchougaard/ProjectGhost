@@ -30,6 +30,8 @@ knex.schema.createTableIfNotExists('users', function(table){
 	table.string('iv').notNullable();
 	table.string('pk_salt').notNullable();
 	table.string("publickey").notNullable();
+	table.string('two_factor_secret').nullable();
+	table.boolean('two_factor_enabled').defaultTo(false);
 }).then();
 
 knex.schema.createTableIfNotExists('categories', function(table){

@@ -1,5 +1,5 @@
 module.exports = {
-	"description" : "User",
+	"description" : "Schema for updating User",
 	"required": true,
 	"type": "object",
 	"properties": {
@@ -44,6 +44,16 @@ module.exports = {
 			"required": false,
 			"type": ["string", 'null'],
 			"pattern":/^([A-Za-z0-9+\/]{4})*([A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}==)$/
+		},
+		'two_factor_secret':{
+			'description': 'Secret used for two-factor authentication',
+			'required': false,
+			'type': ['string', 'null']
+		},
+		'two_factor_enabled':{
+			'description': 'Determines if two-factor authentication is enabled',
+			'required': false,
+			'type': ['boolean', 'integer', 'null']
 		}
 	}
 };

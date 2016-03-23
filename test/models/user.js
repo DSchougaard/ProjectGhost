@@ -50,8 +50,7 @@ describe("User", function(){
 				});
 			});
 		});
-	})
-	
+	});
 	
 	describe('#create', function(){
 
@@ -602,8 +601,6 @@ describe("User", function(){
 				assert.equal(err.message, '1 error: user.id is the wrong type.');
 			});
 		});
-
-
 	});
 
 });

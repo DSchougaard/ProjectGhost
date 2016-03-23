@@ -5,7 +5,7 @@ var request = require('supertest');
 var should 	= require('should');
 var sinon 	= require('sinon');
 
-
+var knex 				= require(__base + 'database.js');
 
 var fs 		= require('fs');
 var base64 	= require(__base + 'helpers/base64.js');
@@ -34,7 +34,7 @@ const privateKey 		= fs.readFileSync(__base + '/crypto/jwt/ghost-jwt.key');
 const publicKey 		= fs.readFileSync(__base + '/crypto/jwt/ghost-jwt.crt');
 
 
-describe('Authentication', function(){
+describe('API /auth', function(){
 	describe('AuthToken', function(){
 		it('returns an auth token for a user that exists', function(done){
 			server
@@ -219,5 +219,81 @@ describe('Authentication', function(){
 			});
 		});
 	});
+
+
+	describe.skip('POST /hotp/generate', function(){
+
+		var user = {
+			username 	: 'Routes#Invites#POST#Admin',
+			isAdmin 	: true,
+			salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+			password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+			privatekey 	: 'cGFzc3dvcmQ=',
+			iv 			: 'cGFzc3dvcmQ=',
+			pk_salt 	: 'cGFzc3dvcmQ=',
+			publickey 	: 'cGFzc3dvcmQ='
+		}
+
+		var authToken  = undefined;
+
+		before(function(){
+			return knex('users').insert(user)
+			.then(function(ids){
+				user.id = ids[0];
+			});
+		});
+
+		before(function(done){
+			var USER = 'admin';
+
+			server
+			.post('/api/auth/login')
+			.field('username', user.username)
+			.field('password', 'password')
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+				authToken = res.body.token;
+				return done();
+			});
+		});
+
+		it('should return an error when the user is not authenticated', function(done){
+			server
+			.post('/api/auth/hotp/generate')
+			.expect(403)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.code, 'ForbiddenError');
+				assert.equal(res.body.message, 'Insufficient privileges');
+
+				return done();
+			});
+		});
+
+		it('should generate a new 2fa url for an authenticated user', function(done){
+			server
+			.post('/api/auth/hotp/generate')
+			.set('Authorization', 'Bearer ' + authToken)
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				var regex = /otpauth:\/\/totp\/SecretKey\?secret\=[A-Z0-9]+/;
+
+				assert.equal(regex.test(res.body), true);
+
+				return done();
+			});
+		});
+
+
+	});
+
+	describe.skip('POST /hotp/verify', function(){
+
+	});
+
 
 });

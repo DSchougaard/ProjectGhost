@@ -28,6 +28,19 @@
 					</div>
 				</md-input-container>
 
+
+				<!-- Two Factor Controls -->
+				<div ng-if="vm.config.edit">
+				<md-switch class="md-primary" ng-model="vm.auth.twoFactorEnabled" aria-label="Switch Two Factor" ng-change="vm.onChange()">
+					Enable Two-Factor Authorization
+				</md-switch>
+
+				<div ng-show="vm.auth.twoFactorEnabled">
+					
+				</div>
+				</div>
+
+
 				<!-- Controls for changing password, only for edditing -->
 				<div ng-if="vm.config.edit">
 				<md-subheader class="md-hue-1">Change your password</md-subheader>

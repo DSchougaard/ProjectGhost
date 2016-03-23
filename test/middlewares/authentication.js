@@ -30,12 +30,14 @@ var authentication = require(__base + 'middlewares/authentication.js');
 describe('Authentication', function(){
 
 	var testUser = {
-		username: 'AuthenticationMiddlewareUser',
-		isAdmin: false,
-		privatekey: base64.encode('privatekey'),
-		publickey: base64.encode('publickey'),
-		pk_salt 	: "Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI=",
-		iv 			: base64.encode('111111111')
+		username 			: 'AuthenticationMiddlewareUser',
+		isAdmin 			: false,
+		privatekey 			: base64.encode('privatekey'),
+		publickey 			: base64.encode('publickey'),
+		pk_salt 			: "Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI=",
+		iv 					: base64.encode('111111111'),
+		two_factor_enabled 	: 0,
+		two_factor_secret 	: null
 	};
 
 	before(function(){

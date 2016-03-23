@@ -1,6 +1,6 @@
 (function(){
 
-	var ghost = angular.module('ghost', ['ngMaterial', 'ngMessages', 'md.data.table', 'satellizer', 'ui.router', 'qAllSettled']);
+	var ghost = angular.module('ghost', ['ngMaterial', 'ngMessages', 'md.data.table', 'satellizer', 'ui.router', 'qAllSettled', 'monospaced.qrcode']);
 
 	ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider, $mdIconProvider){
 	    
@@ -17,7 +17,7 @@
        				controller: 'ToolBarController',
 	        		controllerAs: 'vm',
 				},
-				'content': {
+				'content': { 
 			        templateUrl: 'app/password-list/password-list.template.html',
        				controller: 'listController',
 	        		controllerAs: 'vm'
@@ -30,6 +30,16 @@
 	    	}
 	    })
 
+	    .state('test', {
+	    	url: '/test',
+	    	views:{
+	    		content:{
+					templateUrl 	: 'app/test/test.template.html',
+					controller 		: 'TestController',
+					controllerAs 	: 'vm'
+	    		}
+	    	}
+	    })		
 	    // ABOUT PAGE AND MULTIPLE NAMED VIEWS =================================
 	    .state('login', {
 	    	url: '/login',

@@ -142,8 +142,8 @@ describe("API /invites", function(){
 
 		after(function(){
 			return knex('users')
-			.where('id', users['admin'].id)
-			.orWhere('id', users['user'].id)
+			.where('username', users['admin'].username)
+			.orWhere('username', users['user'].username)
 			.del()
 			.then(function(){
 				return knex('invites')

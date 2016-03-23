@@ -1270,7 +1270,6 @@ describe("API /categories", function(){
 
 				return done();
 			});		
-
 		});	
 
 		it('should not allow the user to delete a category w. password children, that he owns', function(done){
@@ -1303,7 +1302,6 @@ describe("API /categories", function(){
 			});	
 		});	
 
-
 		it('should not allow a user to delete a category, another user owns', function(done){
 			server
 			.del('/api/users/'+users['User1'].id+'/categories/' + categories['User2'][0].id)
@@ -1318,8 +1316,34 @@ describe("API /categories", function(){
 			});	
 		});	
 
-		after(function(done){
-			return done();
+		after(function(){
+			return knex('passwords')
+			.where('title',  			passwords['User1'][0].title)
+			.orWhere('title',			passwords['User1'][1].title)
+			.del()
+			.then(function(){
+				return knex('categories')
+				.where('title',  		childCategories['User1'][0].title)
+				.orWhere('title',  		childCategories['User1'][1].title)
+				.orWhere('title', 		categories['User1'][0].title)
+				.orWhere('title', 		categories['User1'][1].title)
+				.orWhere('title', 		categories['User1'][2].title)
+				.orWhere('title', 		categories['User2'][0].title)
+				.orWhere('title', 		categories['User2'][1].title)
+				.del();
+			})
+			.then(function(){
+				return knex('users')
+				.where('username',  	'Routes#Categories#DELETE#id#User01')
+				.orWhere('username', 	'Routes#Categories#DELETE#id#User02')
+				.del();
+			})
+			.then(function(){
+				
+			})
+			.catch(function(err){
+				console.log(err);
+			})
 		});	
 	});
 });

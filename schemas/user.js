@@ -1,5 +1,5 @@
 module.exports = {
-	"description" : "User",
+	"description" : "Full schema for User, as found in DB.",
 	"required": true,
 	"type": "object",
 	"properties": {
@@ -54,6 +54,16 @@ module.exports = {
 			"required": true,
 			"type": "string",
 			"pattern":/^([A-Za-z0-9+\/]{4})*([A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}==)$/
+		},
+		'two_factor_secret':{
+			'description': 'Secret used for two-factor authentication',
+			'required': false,
+			'type': ['string', 'null']
+		},
+		'two_factor_enabled':{
+			'description': 'Determines if two-factor authentication is enabled',
+			'required': true,
+			'type': ['boolean', 'integer']
 		}
 	}
 };
