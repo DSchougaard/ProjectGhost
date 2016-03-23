@@ -29,67 +29,6 @@ const AlreadyExistError 		= require(__base + 'errors/Internal/AlreadyExistError.
 // Rest Errors
 const ValidationRestError 		= require(__base + 'errors/ValidationRestError.js');
 
-
-class TwoFactor{
-	constructor(data){
-		var self = this;
-	
-		// Temporary Cachce to store 2FA Secrets in, until first authentication
-		self.cache = {};
-	}
-
-	generate(id){
-		var secret = speakeasy.generateSecret();
-
-		// Cache Value for First Auth attempt.
-		tempSecrets[req.resolved.user.id] = secret.base32;
-		return secret.otpauth_url;
-	}
-
-	getSecret(id){
-
-	}
-
-	internalVerify(base32secret, token){
-		return speakeasy.totp.verify({ 	secret: base32secret,
-	                                   	encoding: 'base32',
-	                                    token: token });
-
-	}
-
-	verify(user, token){
-
-		/*
-			Cases:
-			1. User has no secret key, and temp does not exists -- ERROR!?
-			2. User has no secret key, and temp exists -- verify and update user
-			3. User has secret key, and temp does not exist -- verify db
-			4. User has secret key, and temp exists -- verify and update
-		*/
-
-		if( !user.twoFactorEnabled ){
-			// Error?!
-		}
-
-		var secret = undefined;
-
-		// Do stuff here
-
-
-		// Verify token and update user to use this
-		if( self.internalVerify(secret, token) ){
-
-		}else{
-
-		}
-
-	}
-
-}
-
-var twoFactor = new TwoFactor();
-
-
 var tempSecrets 			= {};
 
 	
@@ -118,10 +57,18 @@ module.exports = function(server, knex, log){
 			}
 			if( rows.length > 1 ){
 				log.error({ method: 'POST', path: '/api/auth/login', payload: req.body.username, message: 'Several user IDs found for same username. Fatal error.'});
-				return next(new restify.errors.InternalServerError());
+				return next(new restify.errors.InternalServerError('Catastrophic DB error. Multiple users with same ID found.'));
 			}
 
-			if( rows[0].twoFactorEnabled && !req.body.twoFactorSecret ){
+			// User has chosen to enable two factor, but no secret exists in db
+			if( rows[0].two_factor_enabled && (rows[0].two_factor_secret === undefined || rows[0].two_factor_secret === null) ){
+				console.log('a');
+				return next( new restify.errors.InternalServerError('Misconfiguration of Two Factor authentication. Please generate new secret.'));
+			}
+
+			// User has chosen to enable two factor, but no token was passed in URL.
+			if( rows[0].two_factor_enabled && !req.body.twoFactorToken ){
+				console.log('b');
 				return next(new restify.errors.ForbiddenError('Missing two factor token') );
 			}
 
@@ -138,12 +85,21 @@ module.exports = function(server, knex, log){
 					return next(new restify.errors.UnauthorizedError('Wrong login credentials'));
 				}
 
+				if( rows[0].two_factor_enabled ){
+					var valid = speakeasy.totp.verify({	secret: rows[0].two_factor_secret,
+	                                   					encoding: 'base32',
+	                                    				token: req.body.twoFactorToken });
+					if( !valid ){
+						console.log(b);
+						return next( new restify.errors.BadRequestError('Invalid Two-Factor Authentication token') );
+					}
+				}else{
+					log.info({ method: 'POST', path: '/api/auth/login', payload: req.body.username, message: 'Login successful'});
 
+					// Login Succeeded
+					res.send(200, {token: authHelpers.createJWT(rows[0]) });
+				}
 
-				log.info({ method: 'POST', path: '/api/auth/login', payload: req.body.username, message: 'Login successful'});
-
-				// Login Succeeded
-				res.send(200, {token: authHelpers.createJWT(rows[0]) });
 			});
 		});
 	});
@@ -177,7 +133,7 @@ module.exports = function(server, knex, log){
 
 		// Fetch key
 		if( tempSecrets[req.resolved.user.id] === undefined ){
-			return next( new restify.errors.BadRequestError('Two factor secret missing') );
+			return next( new restify.errors.NotFoundError('Found no secret to verify') );
 		}
 
 
@@ -190,6 +146,9 @@ module.exports = function(server, knex, log){
 
 			req.resolved.user.update({twoFactorEnabled: true, twoFactorSecret: base32secret})
 			.then(function(user){
+				// Clear secret from cache
+				tempSecrets[req.resolved.user.id] = undefined;
+				// Send OK!
 				res.send(200, 'OK');
 				return next();
 

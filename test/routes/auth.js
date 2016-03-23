@@ -11,6 +11,7 @@ var fs 		= require('fs');
 var base64 	= require(__base + 'helpers/base64.js');
 var jwt 	= require('jsonwebtoken');
 var moment 	= require('moment');
+const speakeasy		 			= require("speakeasy");
 
 // SuperTest Connection
 var server 	= request(require(__base + 'app.js').server);
@@ -34,7 +35,7 @@ const privateKey 		= fs.readFileSync(__base + '/crypto/jwt/ghost-jwt.key');
 const publicKey 		= fs.readFileSync(__base + '/crypto/jwt/ghost-jwt.crt');
 
 
-describe('API /auth', function(){
+describe.only('API /auth', function(){
 	describe('AuthToken', function(){
 		it('returns an auth token for a user that exists', function(done){
 			server
@@ -221,10 +222,10 @@ describe('API /auth', function(){
 	});
 
 
-	describe.skip('POST /hotp/generate', function(){
+	describe('POST /hotp/generate', function(){
 
 		var user = {
-			username 	: 'Routes#Invites#POST#Admin',
+			username 	: 'Routes#Auth/hotp/generate#User',
 			isAdmin 	: true,
 			salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
 			password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
@@ -244,8 +245,6 @@ describe('API /auth', function(){
 		});
 
 		before(function(done){
-			var USER = 'admin';
-
 			server
 			.post('/api/auth/login')
 			.field('username', user.username)
@@ -261,12 +260,12 @@ describe('API /auth', function(){
 		it('should return an error when the user is not authenticated', function(done){
 			server
 			.post('/api/auth/hotp/generate')
-			.expect(403)
+			.expect(401)
 			.end(function(err, res){
 				if(err) return done(err);
 
-				assert.equal(res.body.code, 'ForbiddenError');
-				assert.equal(res.body.message, 'Insufficient privileges');
+				assert.equal(res.body.code, 'UnauthorizedError');
+				assert.equal(res.body.message, 'No Authorization header was found');
 
 				return done();
 			});
@@ -288,12 +287,274 @@ describe('API /auth', function(){
 			});
 		});
 
+		it('should not propegate to the db, before the secret has been verified', function(){
+			return knex('users')
+			.select()
+			.where('username', user.username)
+			.then(function(users){
+				assert.equal(users.length, 1);
 
+				assert.equal(users[0].two_factor_secret, null);
+				assert.equal(users[0].two_factor_enabled, 0);
+			});
+		});
+
+		after(function(){
+			return knex('users')
+			.where('username', user.username)
+			.del()
+			.then();
+		})
 	});
 
-	describe.skip('POST /hotp/verify', function(){
+
+	describe('POST /hotp/verify', function(){
+		var users = [
+			{
+				username 	: 'Routes#Auth/hotp/verifyspeak#User01',
+				isAdmin 	: true,
+				salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+				password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+				privatekey 	: 'cGFzc3dvcmQ=',
+				iv 			: 'cGFzc3dvcmQ=',
+				pk_salt 	: 'cGFzc3dvcmQ=',
+				publickey 	: 'cGFzc3dvcmQ=',
+
+			},
+			{
+				username 	: 'Routes#Auth/hotp/verifyspeak#User02',
+				isAdmin 	: true,
+				salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+				password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+				privatekey 	: 'cGFzc3dvcmQ=',
+				iv 			: 'cGFzc3dvcmQ=',
+				pk_salt 	: 'cGFzc3dvcmQ=',
+				publickey 	: 'cGFzc3dvcmQ=',
+			},		
+			{
+				username 	: 'Routes#Auth/hotp/verifyspeak#User03',
+				isAdmin 	: true,
+				salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+				password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+				privatekey 	: 'cGFzc3dvcmQ=',
+				iv 			: 'cGFzc3dvcmQ=',
+				pk_salt 	: 'cGFzc3dvcmQ=',
+				publickey 	: 'cGFzc3dvcmQ=',
+				two_factor_enabled: true,
+				two_factor_secret:  speakeasy.generateSecret().base32
+
+			},			
+		]
+
+
+		var authTokens  = [undefined, undefined, undefined];
+
+		before(function(){
+			return knex('users').insert(users[0])
+			.then(function(ids){
+				users[0].id = ids[0];
+			});
+		});
+		before(function(){
+			return knex('users').insert(users[1])
+			.then(function(ids){
+				users[1].id = ids[0];
+			});
+		});		
+		before(function(){
+			return knex('users').insert(users[2])
+			.then(function(ids){
+				users[2].id = ids[0];
+			});
+		});		
+
+		before(function(done){
+			server
+			.post('/api/auth/login')
+			.field('username', users[0].username)
+			.field('password', 'password')
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+				authTokens[0] = res.body.token;
+				return done();
+			});
+		});
+		before(function(done){
+			server
+			.post('/api/auth/login')
+			.field('username', users[1].username)
+			.field('password', 'password')
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+				authTokens[1] = res.body.token;
+				return done();
+			});
+		});
+		before(function(done){
+			server
+			.post('/api/auth/login')
+			.field('username', users[2].username)
+			.field('password', 'password')
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+				authTokens[2] = res.body.token;
+				return done();
+			});
+		});
+
+		secrets = [undefined, undefined, undefined]
+
+		//before(function(done){
+		//	server
+		//	.post('/api/auth/hotp/generate')
+		//	.set('Authorization', 'Bearer ' + authTokens[0])
+		//	.expect(200)
+		//	.end(function(err, res){
+		//		if(err) return done(err);
+//
+//		//		secrets[0] = res.body;
+//
+//		//		return done();
+//		//	});
+		//})
+
+		before(function(done){
+			server
+			.post('/api/auth/hotp/generate')
+			.set('Authorization', 'Bearer ' + authTokens[1])
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				secrets[1] = res.body;
+
+				return done();
+			});
+		})
+
+		before(function(done){
+			server
+			.post('/api/auth/hotp/generate')
+			.set('Authorization', 'Bearer ' + authTokens[2])
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				secrets[2] = res.body;
+
+				return done();
+			});
+		})
+
+
+
+
+		it('should return an error when no new secret is present in cache', function(done){
+			// User1
+			var token = speakeasy.hotp({
+				secret: secrets[0],
+				encoding: 'base32',
+				counter: 123
+			});
+
+			server
+			.post('/api/auth/hotp/verify')
+			.send(token)
+			.set('Authorization', 'Bearer ' + authTokens[0])
+			.expect(404)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.message, 'Found no secret to verify');
+
+				return done();
+			});
+		});
+
+
+		it('it should fail when a user tries to verify with invalid token', function(done){
+			// User2
+			var token = speakeasy.hotp({
+				secret: secrets[1],
+				encoding: 'base32',
+				counter: 123
+			});
+
+			server
+			.post('/api/auth/hotp/verify')
+			.send(token)
+			.set('Authorization', 'Bearer ' + authTokens[1])
+			.expect(400)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.message, 'Invalid token');
+
+				return done();
+			});
+		});
+
+		it('should succeed when a user verifies secret and should propegate to DB', function(){
+			// User2
+			var token = speakeasy.hotp({
+				secret: secrets[1],
+				encoding: 'base32',
+				counter: 0
+			});
+
+			server
+			.post('/api/auth/hotp/verify')
+			.send(token)
+			.set('Authorization', 'Bearer ' + authTokens[1])
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.message, 'OK');
+
+				return knex('users')
+				.select()
+				.where('username', users[1].username)
+				.then(function(rows){
+					assert.equal(rows[0].two_factor_secret,  secrets[1]);
+				});
+				
+			});
+
+		});
+
+		it('when a user has a secret in the db, it is replaced when verifying', function(){
+			// User3
+			var token = speakeasy.hotp({
+				secret: secrets[2],
+				encoding: 'base32',
+				counter: 0
+			});
+
+			server
+			.post('/api/auth/hotp/verify')
+			.send(token)
+			.set('Authorization', 'Bearer ' + authTokens[2])
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.message, 'OK');
+
+				return knex('users')
+				.select()
+				.where('username', users[2].username)
+				.then(function(rows){
+					assert.notEqual(rows[0].two_factor_secret, users[2].two_factor_secret);
+					assert.equal(rows[0].two_factor_secret,  secrets[2]);
+				});
+				
+			});
+		});
 
 	});
-
 
 });

@@ -20,7 +20,6 @@ const ValidationRestError = require(__base + 'errors/ValidationRestError.js');
 
 module.exports = function(req, res, next) {
 	if (!req.headers.authorization) {
-		console.log("No header was found");
 		return next(new restify.errors.UnauthorizedError('No Authorization header was found'));
 	}
 	// Extract token from the request headers
