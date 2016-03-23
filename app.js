@@ -104,6 +104,8 @@ knex.schema.createTableIfNotExists('users', function(table){
 	table.string('iv').notNullable();
 	table.string('pk_salt').notNullable();
 	table.string("publickey", 1189).notNullable();
+	table.string('two_factor_secret').nullable();
+	table.boolean('two_factor_enabled').defaultTo(false);
 })
 .then(function(){
 	console.log("Database was empty. Creating default Admin account -- this will take some time.");

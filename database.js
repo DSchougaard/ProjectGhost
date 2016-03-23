@@ -20,7 +20,6 @@ if( process.env.NODE_ENV === 'test' ){
 var knex = undefined;
 
 if( config.database === 'sqlite' || config.database === 'sqlite3' ){
-	console.log("LLALALA");
 	knex = require('knex')({
 		client: 'sqlite3',
 		connection: opts.connection,

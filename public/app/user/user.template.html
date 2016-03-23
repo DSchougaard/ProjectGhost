@@ -81,8 +81,8 @@
 
 				<!-- Buttons -->
 				<div ng-show="vm.enabled">
-					<md-button type="submit" class="md-primary md-raised" ng-disabled="!vm.enabled">Update</md-button>
-					<md-button ng-click="vm.cancel()" class="md-primary md-raised" ng-disabled="!vm.enabled">Cancel</md-button>
+					<md-button type="submit" class="md-primary md-raised" ng-disabled="!vm.enabled" ng-bind="vm.config.text.submit"></md-button>
+					<md-button ng-click="vm.cancel()" class="md-primary md-raised" ng-disabled="!vm.enabled"> Cancel </md-button>
 				</div>
 				<!-- Loading -->
 
