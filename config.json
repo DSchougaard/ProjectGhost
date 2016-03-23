@@ -12,5 +12,5 @@
 	},
 	"port"			: 8080,
 	"ssl_key"		: "crypto/ssl/ghost.key",
-	"ssl_cert" 		: "crypto/ssl/ghost.crt"
+	"ssl_cert" 		: "crypto/ssl/ghost.cert"
 }

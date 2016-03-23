@@ -35,8 +35,8 @@ const privateKey 		= fs.readFileSync(__base + '/crypto/jwt/ghost-jwt.key');
 const publicKey 		= fs.readFileSync(__base + '/crypto/jwt/ghost-jwt.crt');
 
 
-describe.only('API /auth', function(){
-	describe('AuthToken', function(){
+describe('API /auth', function(){
+	describe('AuthToken without 2FA', function(){
 		it('returns an auth token for a user that exists', function(done){
 			server
 			.post('/api/auth/login')
@@ -131,6 +131,151 @@ describe.only('API /auth', function(){
 				done();
 			});
 		});
+	});
+
+	describe('AuthToken with 2FA', function(){
+		var users = [
+			{
+				username 	: 'Routes#Auth#User01',
+				isAdmin 	: true,
+				salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+				password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+				privatekey 	: 'cGFzc3dvcmQ=',
+				iv 			: 'cGFzc3dvcmQ=',
+				pk_salt 	: 'cGFzc3dvcmQ=',
+				publickey 	: 'cGFzc3dvcmQ=',
+
+			},
+			{
+				username 	: 'Routes#Auth#User02',
+				isAdmin 	: true,
+				salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+				password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+				privatekey 	: 'cGFzc3dvcmQ=',
+				iv 			: 'cGFzc3dvcmQ=',
+				pk_salt 	: 'cGFzc3dvcmQ=',
+				publickey 	: 'cGFzc3dvcmQ=',
+				two_factor_enabled: true,
+				two_factor_secret:  speakeasy.generateSecret().base32
+			}
+		];
+
+
+		var authTokens  = [undefined, undefined, undefined];
+
+		before(function(){
+			return knex('users').insert(users[0])
+			.then(function(ids){
+				users[0].id = ids[0];
+			});
+		});
+		before(function(){
+			return knex('users').insert(users[1])
+			.then(function(ids){
+				users[1].id = ids[0];
+			});
+		});		
+
+
+		it('returns an error, when a user without 2fa enabled, passes token', function(done){
+			var secret = speakeasy.generateSecret();
+			var token = speakeasy.totp({
+				secret: secret.base32,
+				encoding: 'base32'
+			});
+
+			//users[0]
+			server
+			.post('/api/auth/login')
+			.field('username', users[0].username)
+			.field('password', 'password')
+			.field('twoFactorToken', token)
+			.expect(400)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.message, 'User has not enabled two-factor authentication');
+				return done();
+			});
+		});
+
+		it('returns an error, when a user with 2fa enabled does not pass a token', function(done){
+			//users[1]
+			server
+			.post('/api/auth/login')
+			.field('username', users[1].username)
+			.field('password', 'password')
+			.expect(403)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.message, 'Missing two factor token');
+				return done();
+			});
+		});
+
+		it('returns an error when a user with 2fa enabled passes a wrong token', function(done){
+			var token = speakeasy.totp({
+				secret: users[1].two_factor_secret,
+				encoding: 'base32',
+				time: 0
+			});
+
+			//users[1]
+			server
+			.post('/api/auth/login')
+			.field('username', users[1].username)
+			.field('password', 'password')
+			.field('twoFactorToken', token)
+			.expect(401)
+			.end(function(err, res){
+				if(err) return done(err);
+
+				assert.equal(res.body.message, 'Invalid token');
+				return done();
+			});
+		});
+
+		it('successfully logs in a user with 2fa enabled, when valid token is passed', function(done){
+
+			var token = speakeasy.totp({
+				secret: users[1].two_factor_secret,
+				encoding: 'base32'
+			});
+
+			//users[1]
+			server
+			.post('/api/auth/login')
+			.field('username', users[1].username)
+			.field('password', 'password')
+			.field('twoFactorToken', token)
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+			
+				var token = res.body.token;
+
+				jwt.verify(token, publicKey, function(err, decoded){
+					if(err) done(err);
+
+					(decoded).should.have.property('uid', users[1].id);
+					(decoded).should.have.property('iat');
+					(decoded).should.have.property('exp');
+
+					return done();
+				});
+
+			});		
+		});
+
+		after(function(){
+			return knex('users')
+			.where('username', users[0].username)
+			.orWhere('username', users[1].username)
+			.del()
+			.then();
+		})
+
 	});
 	
 	describe('Access to restricted areas', function(){
@@ -393,10 +538,17 @@ describe.only('API /auth', function(){
 			});
 		});
 		before(function(done){
+
+			var token = speakeasy.totp({
+				secret: users[2].two_factor_secret,
+				encoding: 'base32',
+			});
+
 			server
 			.post('/api/auth/login')
 			.field('username', users[2].username)
 			.field('password', 'password')
+			.field('twoFactorToken', token)
 			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -440,10 +592,10 @@ describe.only('API /auth', function(){
 
 		it('should return an error when no new secret is present in cache', function(done){
 			// User1
-			var token = speakeasy.hotp({
-				secret: secrets[0],
-				encoding: 'base32',
-				counter: 123
+			var secret = speakeasy.generateSecret();
+			var token = speakeasy.totp({
+				secret: secret.base32,
+				encoding: 'base32'
 			});
 
 			server
@@ -463,12 +615,11 @@ describe.only('API /auth', function(){
 
 		it('it should fail when a user tries to verify with invalid token', function(done){
 			// User2
-			var token = speakeasy.hotp({
+			var token = speakeasy.totp({
 				secret: secrets[1],
 				encoding: 'base32',
-				counter: 123
+				time: 0 // specified in seconds
 			});
-
 			server
 			.post('/api/auth/hotp/verify')
 			.send(token)
@@ -485,10 +636,9 @@ describe.only('API /auth', function(){
 
 		it('should succeed when a user verifies secret and should propegate to DB', function(){
 			// User2
-			var token = speakeasy.hotp({
+			var token = speakeasy.totp({
 				secret: secrets[1],
 				encoding: 'base32',
-				counter: 0
 			});
 
 			server
@@ -497,7 +647,7 @@ describe.only('API /auth', function(){
 			.set('Authorization', 'Bearer ' + authTokens[1])
 			.expect(200)
 			.end(function(err, res){
-				if(err) return done(err);
+				if(err) return err;
 
 				assert.equal(res.body.message, 'OK');
 
@@ -514,10 +664,9 @@ describe.only('API /auth', function(){
 
 		it('when a user has a secret in the db, it is replaced when verifying', function(){
 			// User3
-			var token = speakeasy.hotp({
-				secret: secrets[2],
+			var token = speakeasy.totp({
+				secret: users[2].two_factor_secret,
 				encoding: 'base32',
-				counter: 0
 			});
 
 			server
@@ -526,7 +675,7 @@ describe.only('API /auth', function(){
 			.set('Authorization', 'Bearer ' + authTokens[2])
 			.expect(200)
 			.end(function(err, res){
-				if(err) return done(err);
+				if(err) return err;
 
 				assert.equal(res.body.message, 'OK');
 

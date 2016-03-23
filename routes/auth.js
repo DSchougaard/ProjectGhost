@@ -48,7 +48,7 @@ module.exports = function(server, knex, log){
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing password"));
 		}
 
-		knex.select('id', 'username', 'password', 'salt', 'isAdmin').from('users').where({'username':req.body.username})
+		knex('users').select('id', 'username', 'password', 'salt', 'isAdmin', 'two_factor_enabled', 'two_factor_secret').where({'username':req.body.username})
 		.then(function(rows){
 			if( rows.length == 0 ){
 				// No user was found with that username.
@@ -62,14 +62,17 @@ module.exports = function(server, knex, log){
 
 			// User has chosen to enable two factor, but no secret exists in db
 			if( rows[0].two_factor_enabled && (rows[0].two_factor_secret === undefined || rows[0].two_factor_secret === null) ){
-				console.log('a');
 				return next( new restify.errors.InternalServerError('Misconfiguration of Two Factor authentication. Please generate new secret.'));
 			}
 
 			// User has chosen to enable two factor, but no token was passed in URL.
 			if( rows[0].two_factor_enabled && !req.body.twoFactorToken ){
-				console.log('b');
 				return next(new restify.errors.ForbiddenError('Missing two factor token') );
+			}
+
+			// User has not enabled 2FA but passs token anyway
+			if( !rows[0].two_factor_enabled && req.body.twoFactorToken ){
+				return next( new restify.errors.BadRequestError('User has not enabled two-factor authentication') );
 			}
 
 			bcrypt.hash(req.body.password, rows[0].salt, function(err, hash){
@@ -89,16 +92,16 @@ module.exports = function(server, knex, log){
 					var valid = speakeasy.totp.verify({	secret: rows[0].two_factor_secret,
 	                                   					encoding: 'base32',
 	                                    				token: req.body.twoFactorToken });
-					if( !valid ){
-						console.log(b);
-						return next( new restify.errors.BadRequestError('Invalid Two-Factor Authentication token') );
-					}
-				}else{
-					log.info({ method: 'POST', path: '/api/auth/login', payload: req.body.username, message: 'Login successful'});
 
-					// Login Succeeded
-					res.send(200, {token: authHelpers.createJWT(rows[0]) });
+					if( !valid ){
+						return next( new restify.errors.UnauthorizedError('Invalid token') );
+					}
 				}
+
+				log.info({ method: 'POST', path: '/api/auth/login', payload: req.body.username, message: 'Login successful'});
+
+				// Login Succeeded
+				res.send(200, {token: authHelpers.createJWT(rows[0]) });
 
 			});
 		});
