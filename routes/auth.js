@@ -112,7 +112,7 @@ module.exports = function(server, knex, log){
 		return next();
 	});
 
-	server.post('/api/auth/hotp/generate', authentication, function(req, res, next){
+	server.post('/api/auth/totp/generate', authentication, function(req, res, next){
 		var secret = speakeasy.generateSecret();
 
 		// Cache Value for First Auth attempt.
@@ -122,7 +122,7 @@ module.exports = function(server, knex, log){
 		return next();
 	});
 
-	server.post('/api/auth/hotp/verify', authentication, function(req, res, next){
+	server.post('/api/auth/totp/verify', authentication, function(req, res, next){
 
 		var userToken = req.body;	
 

@@ -367,10 +367,10 @@ describe('API /auth', function(){
 	});
 
 
-	describe('POST /hotp/generate', function(){
+	describe('POST /totp/generate', function(){
 
 		var user = {
-			username 	: 'Routes#Auth/hotp/generate#User',
+			username 	: 'Routes#Auth/totp/generate#User',
 			isAdmin 	: true,
 			salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
 			password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
@@ -404,7 +404,7 @@ describe('API /auth', function(){
 
 		it('should return an error when the user is not authenticated', function(done){
 			server
-			.post('/api/auth/hotp/generate')
+			.post('/api/auth/totp/generate')
 			.expect(401)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -418,7 +418,7 @@ describe('API /auth', function(){
 
 		it('should generate a new 2fa url for an authenticated user', function(done){
 			server
-			.post('/api/auth/hotp/generate')
+			.post('/api/auth/totp/generate')
 			.set('Authorization', 'Bearer ' + authToken)
 			.expect(200)
 			.end(function(err, res){
@@ -453,10 +453,10 @@ describe('API /auth', function(){
 	});
 
 
-	describe('POST /hotp/verify', function(){
+	describe('POST /totp/verify', function(){
 		var users = [
 			{
-				username 	: 'Routes#Auth/hotp/verifyspeak#User01',
+				username 	: 'Routes#Auth/totp/verifyspeak#User01',
 				isAdmin 	: true,
 				salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
 				password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
@@ -467,7 +467,7 @@ describe('API /auth', function(){
 
 			},
 			{
-				username 	: 'Routes#Auth/hotp/verifyspeak#User02',
+				username 	: 'Routes#Auth/totp/verifyspeak#User02',
 				isAdmin 	: true,
 				salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
 				password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
@@ -477,7 +477,7 @@ describe('API /auth', function(){
 				publickey 	: 'cGFzc3dvcmQ=',
 			},		
 			{
-				username 	: 'Routes#Auth/hotp/verifyspeak#User03',
+				username 	: 'Routes#Auth/totp/verifyspeak#User03',
 				isAdmin 	: true,
 				salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
 				password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
@@ -530,7 +530,6 @@ describe('API /auth', function(){
 			.post('/api/auth/login')
 			.field('username', users[1].username)
 			.field('password', 'password')
-			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
 				authTokens[1] = res.body.token;
@@ -549,7 +548,6 @@ describe('API /auth', function(){
 			.field('username', users[2].username)
 			.field('password', 'password')
 			.field('twoFactorToken', token)
-			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
 				authTokens[2] = res.body.token;
@@ -561,9 +559,8 @@ describe('API /auth', function(){
 
 		before(function(done){
 			server
-			.post('/api/auth/hotp/generate')
+			.post('/api/auth/totp/generate')
 			.set('Authorization', 'Bearer ' + authTokens[1])
-			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
 
@@ -575,9 +572,8 @@ describe('API /auth', function(){
 
 		before(function(done){
 			server
-			.post('/api/auth/hotp/generate')
+			.post('/api/auth/totp/generate')
 			.set('Authorization', 'Bearer ' + authTokens[2])
-			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
 
@@ -599,7 +595,7 @@ describe('API /auth', function(){
 			});
 
 			server
-			.post('/api/auth/hotp/verify')
+			.post('/api/auth/totp/verify')
 			.send(token)
 			.set('Authorization', 'Bearer ' + authTokens[0])
 			.expect(404)
@@ -621,7 +617,7 @@ describe('API /auth', function(){
 				time: 0 // specified in seconds
 			});
 			server
-			.post('/api/auth/hotp/verify')
+			.post('/api/auth/totp/verify')
 			.send(token)
 			.set('Authorization', 'Bearer ' + authTokens[1])
 			.expect(400)
@@ -642,7 +638,7 @@ describe('API /auth', function(){
 			});
 
 			server
-			.post('/api/auth/hotp/verify')
+			.post('/api/auth/totp/verify')
 			.send(token)
 			.set('Authorization', 'Bearer ' + authTokens[1])
 			.expect(200)
@@ -670,7 +666,7 @@ describe('API /auth', function(){
 			});
 
 			server
-			.post('/api/auth/hotp/verify')
+			.post('/api/auth/totp/verify')
 			.send(token)
 			.set('Authorization', 'Bearer ' + authTokens[2])
 			.expect(200)
