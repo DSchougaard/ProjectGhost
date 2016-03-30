@@ -8,7 +8,7 @@
     "angular-ui-router": "^0.2.18",
     "underscore": "^1.8.3",
     "forge": "^0.6.38",
-    "angular-material": "^1.0.5",
+    "angular-material": "^1.1.0",
     "angular-messages": "^1.5.0",
     "angular-material-data-table": "^0.9.11",
     "mdDataTable": "^1.4.2",
@@ -16,7 +16,7 @@
   },
   "private": true,
   "resolutions": {
-    "angular-material": "^1.0.5",
-    "angular": "^1.5.0"
+    "angular": "^1.5.0",
+    "angular-material": "^1.1.0"
   }
 }
