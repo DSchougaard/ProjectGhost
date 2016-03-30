@@ -1,5 +1,5 @@
 <md-content id="addUser" flex="60" flex-offset="20" layout="column" layout-align="start center" layout-padding >
-	<section class="md-whiteframe-z1" layout-fill>
+	<section class="md-whiteframe-z1"  height="100%" width="100" layout-fill flex="noshrink"	>
 
 			<md-toolbar >
 				<div class="md-toolbar-tools">
@@ -31,13 +31,9 @@
 
 				<!-- Two Factor Controls -->
 				<div ng-if="vm.config.edit">
-				<md-switch class="md-primary" ng-model="vm.auth.twoFactorEnabled" aria-label="Switch Two Factor" ng-change="vm.onChange()">
+				<md-switch class="md-primary" ng-model="vm.user.two_factor_enabled" aria-label="Switch Two Factor" ng-change="vm.onChange()">
 					Enable Two-Factor Authorization
 				</md-switch>
-
-				<div ng-show="vm.auth.twoFactorEnabled">
-					
-				</div>
 				</div>
 
 

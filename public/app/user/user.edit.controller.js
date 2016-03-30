@@ -4,7 +4,7 @@
 		.module('ghost')
 		.controller('UserController', UserController);
 		
-	function UserController($q, $scope, $http, $auth, $state, EncryptionService, UserService) {
+	function UserController($q, $scope, $http, $auth, $state, EncryptionService, UserService, $mdDialog) {
 		var self 				= this;
 		
 		// Config
@@ -42,20 +42,108 @@
 
 		function onChange(){	
 			if( self.auth.twoFactorEnabled ){
-				
+				$http({
+					method: 'POST',
+					url: '/api/auth/totp/generate'
+				})
+				.then(function(res){
+					self.auth.url = res.data;
+				})
+				.catch(function(e){
+					self.auth.twoFactorEnabled = false;
+				});
 			}
 		}
 
 		function cancel(){
-						
+			//get2FAToken();				
+			$mdDialog.show({
+				controller: 'TwoFactorController',
+				controllerAs: 'vm',
+				templateUrl: 'app/two-factor/two-factor.template.html',
+				parent: angular.element(document.body),
+				clickOutsideToClose:true,
+				fullscreen: true
+			})
+			.then(function(answer) {
+			}, function() {
+			});
+
 		}
 
 		self.errors = [];
 
+		function get2FAToken(){
+
+			var confirm = $mdDialog.prompt()
+				.title('Please enter the verification code')
+				.placeholder('Code')
+				.ariaLabel('verification code')
+				.ok('OK!')
+				.cancel('No thanks.');
+			
+			$mdDialog.show(confirm).then(function(result) {
+
+				console.log("%j", result);
+
+				$http({
+					method: 'POST',
+					url: '/api/auth/totp/verify',
+					data: result
+				})
+				.then(function(res){
+					console.log(res.data);
+				})
+				.catch(function(err){
+					console.dir(err);
+				})
+
+			}, function() {
+				$scope.status = 'You didn\'t name your dog.';
+			});
+
+		}
+
+		function generateAuthPayload(){
+			if( self.old.two_factor_enabled ){
+				var token = $mdDialog.prompt()
+				.title('Please enter two factor authentication token')
+				.textContent('Bowser is a common name.')
+				.placeholder('Token')
+				.ariaLabel('Token')
+				.ok('Okay!')
+				.cancel('No thanks!');
+
+				return $mdDialog.show(token)
+				.then(function(result){
+					console.log(result);
+					return $q.resolve( {username: self.old.username, password: self.user.password, twoFactorToken: result });
+				}, function(cancel){
+					return $q.reject(cancel);
+				});
+			}else{
+				return $q.resolve({username: self.old.username, password: self.user.password});
+			}
+
+		}
+
 		function submit(){
+
+			var token = $mdDialog.prompt()
+			.title('Please enter two factor authentication token')
+			.textContent('Bowser is a common name.')
+			.placeholder('Token')
+			.ariaLabel('Token')
+			.ok('Okay!')
+			.cancel('No thanks!');
+
+
 			// Authenticate to verify user's password
-			console.log(self.user.password)
-			$http.post('/api/auth/login', {username: self.old.username, password: self.user.password })
+			generateAuthPayload()
+			.then(function(payload){
+				console.log("Payload = %j", payload);
+				return $http.post('/api/auth/login', payload)
+			})
 			.then(function(res){
 
 				var payload = {};
@@ -66,9 +154,13 @@
 					payload.username = self.user.username;
 				}
 
-				if( self.new.password !== '' && self.new.passwordRepeat !== '' ){
+				if( self.new.password !== undefined && self.new.passwordRepeat !== undefined ){
 					// We need to change the authorization password
 					payload.password = self.new.password;
+				}
+
+				if( self.old.two_factor_enabled && !self.user.two_factor_enabled ){
+					payload.two_factor_enabled = false;
 				}
 
 				if( self.encryption.decryptionPassword !== '' ){
@@ -77,7 +169,6 @@
 
 				if( self.encryption.generateNewEncryptionKey ){
 					// We need to create new RSA keypair
-
 				}
 
 				$q(function(resolve, reject){
@@ -91,12 +182,31 @@
 					if( encr !== undefined ){
 						_.extend(payload, encr);
 					}
+					
+					if( self.user.two_factor_enabled && !self.old.two_factor_enabled){
+						return 	$mdDialog.show({
+									controller: 'TwoFactorController',
+									controllerAs: 'vm',
+									templateUrl: 'app/two-factor/two-factor.template.html',
+									parent: angular.element(document.body),
+									clickOutsideToClose:true,
+									fullscreen: true
+								});
+					}else {
+						return $q.resolve(false);
+					}
 
-					return $http({
+				})
+				.then(function(){
+
+					if( _.pairs(payload).length > 0 ){
+						return $http({
 							method: 'PUT',
 							url: '/api/users/' + $auth.getPayload().uid,
 							data: payload
-						});
+						});	
+					}
+					
 				}).then(function(res){
 					console.log("Success!");
 					UserService.fetch(true)
@@ -115,8 +225,20 @@
 
 		$http.get('/api/users/me')
 		.then(function(res){
+			console.log("%j", res.data);
 			self.user 			= _.omit(res.data, 'password');
 			self.old 	 		= _.clone(res.data);
+
+			if( self.user.two_factor_enabled ){
+				// Two Factor Auth is enabled
+			}
+
+
+
+
+
+
+
 		}, function(err){
 
 		});
@@ -124,30 +246,5 @@
 
 
 	};
-
-})();
-
-(function(){
-	angular
-	.module('ghost')
-	.directive('equals', function(){
-		return {
-        require: "ngModel",
-        scope: {
-            otherModelValue: "=equals"
-        },
-        link: function(scope, element, attributes, ngModel) {
-             
-            ngModel.$validators.equals = function(modelValue) {
-                return modelValue == scope.otherModelValue;
-            };
- 
-            scope.$watch("otherModelValue", function() {
-                ngModel.$validate();
-            });
-        }
-    };
-
-	});
 
 })();
