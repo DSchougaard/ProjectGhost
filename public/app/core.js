@@ -30,14 +30,29 @@
 	    	}
 	    })
 
-	    .state('test', {
-	    	url: '/test',
+	    .state('invite', {
+	    	url: '/invite',
 	    	views:{
 	    		content:{
-					templateUrl 	: 'app/test/test.template.html',
-					controller 		: 'TestController',
+					templateUrl 	: 'app/invite/invite.template.html',
+					controller 		: 'InviteController',
 					controllerAs 	: 'vm'
-	    		}
+	    		},
+				'toolbar':{
+			        templateUrl: 'app/toolbar/toolbar.template.html',
+       				controller: 'ToolBarController',
+	        		controllerAs: 'vm',
+				}
+	    	}
+	    })
+	    .state('invite/accept', {
+	    	url: '/invite/accept/:inviteLink',
+			views:{
+				content:{
+					templateUrl 	: 'app/invite/invite.template.html',
+					controller 		: 'InviteController',
+					controllerAs 	: 'vm'
+				}
 	    	}
 	    })		
 	    // ABOUT PAGE AND MULTIPLE NAMED VIEWS =================================

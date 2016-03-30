@@ -23,6 +23,7 @@
 		self.userMenu.push('Preferences');
 		if( AuthorizationService.isAuthorized('user.list') ){
 			self.userMenu.push('Users');
+			self.userMenu.push('Invite User');
 		}
 		self.userMenu.push('Log off');
 
@@ -122,7 +123,6 @@
 			});
 		}
 
-
 		function selectMenu(item){
 			switch(item){ 
 				case 'Preferences':
@@ -135,6 +135,9 @@
 					break;
 				case 'Users':
 					$state.transitionTo('user-list');
+					break;
+				case 'Invite User':
+					$state.transitionTo('invite');
 					break;
 				default:
 					console.log('Invalid selection');

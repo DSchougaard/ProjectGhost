@@ -14,6 +14,9 @@ const passwords			= require(__base + 'routes/passwords.js');
 const categories  		= require(__base + 'routes/categories.js');
 const invites 			= require(__base + 'routes/invite.js');
 
+// Middlewares
+const serveStatic 		= require(__base + 'middlewares/serveStatic.js')
+
 
 //Helpers
 const authHelpers 		= require(__base + 'helpers/authHelpers.js');
@@ -175,8 +178,8 @@ knex.schema.createTableIfNotExists('invites', function(table){
 	table.uuid('link').unique().notNullable();
 	table.dateTime('expires').notNullable();
 	table.boolean('used').defaultTo(false);
-}).then();
-
+}).catch(function(error){
+});
 
 //knex.schema.createTableIfNotExists('invites', function(table){
 //	table.increments('id').primary();
@@ -267,15 +270,31 @@ var test = fs.readFileSync(__base + 'public/index.html');
 
 // Fucking dirty hack, which will bite me in the ass. But Restify aparently ignores default file in serveStatic.
 
-server.get(/^\/[a-zA-Z0-9]*$/, function(req, res, next){
-	res.end(test);
-});
+//server.get(/^\/[a-zA-Z0-9]*$/, function(req, res, next){
+//	res.end(test);
+//});
+
+console.log(__base +'public'+'/index.html')
 
 // Finally catch all routes for static content.
-server.get(/.*/, restify.serveStatic({
+
+function testF(req, res, next){
+	//console.dir(req);
+	return next();
+}
+
+
+server.get(/.*/, serveStatic({
   	directory: __base + 'public',
-    default: '/views/index.html'
+    default: 'index.html'
 }));
+
+//server.get(/.*/, function(req, res, next){
+//	console.log("Caught")
+//})
+
+
+
 
 if( process.env.NODE_ENV === 'test' ){
 	module.exports = server;
