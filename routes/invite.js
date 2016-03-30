@@ -10,7 +10,6 @@ const authorization  			= require(__base + 'middlewares/authorization.js');
 const testauthorization 		= require(__base + 'middlewares/test.authorization.js');
 
 const resolve 					= require(__base + 'middlewares/resolve.js');
-const argument 					= require(__base + 'middlewares/argument.js');
 
 // Errors
 const UserDoesNotExistError 	= require(__base + 'errors/UserDoesNotExistError.js');
