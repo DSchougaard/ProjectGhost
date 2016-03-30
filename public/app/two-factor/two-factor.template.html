@@ -1,0 +1,53 @@
+<md-dialog aria-label="Mango (Fruit)">
+	
+	<form novalidate name="tokenForm" ng-submit="vm.submit()">
+		<md-toolbar>
+			<div class="md-toolbar-tools">
+				<h2>Scan the QR code and enter token</h2>
+				<span flex></span>
+				<md-button class="md-icon-button" ng-click="cancel()">
+					<md-icon md-svg-icon="close-white" aria-label="Close dialog"></md-icon>
+				</md-button>
+			</div>
+		</md-toolbar>
+
+		<form>
+
+	    <md-dialog-content layout="column" layout-align="start center">
+
+			<qrcode layout-margin version="10" error-correction-level="M" size="200" data="{{vm.url}}"></qrcode>
+
+			<md-input-container  md-is-error="vm.tokenErrors.invalid || vm.tokenErrors.required || vm.tokenErrors.length">
+				<label>Token</label>
+				<input md-autofocus required ng-model="vm.token" name="token">
+				
+				<div role="alert" ng-messages="vm.tokenErrors" >
+					<div ng-message="invalid">Invalid token</div>
+					<div ng-message="length">A token is exactly 6 digits long</div>
+					<div ng-message="required">Required</div>
+				</div>
+				<!--
+				<div role="alert" ng-messages="vm.test" >
+					<div ng-message="annoying">Annoying</div>
+					<div ng-message="test">Test</div>
+				</div> -->
+
+			</md-input-container>
+
+		</md-dialog-content>
+		<!--
+class="error"
+
+		-->
+
+		<md-dialog-actions layout="row">
+			<md-button ng-click="vm.cancel()">
+				Cancel
+			</md-button>
+			<span flex></span>
+			<md-button class="md-primary md-raised" type="submit" >
+				Submit
+			</md-button>
+		</md-dialog-actions>
+	</form>
+</md-dialog>
