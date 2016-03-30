@@ -146,8 +146,7 @@ module.exports = function(server, knex, log){
 	                                       token: userToken });
 		
 		if( verified ){
-
-			req.resolved.user.update({twoFactorEnabled: true, twoFactorSecret: base32secret})
+			req.resolved.user.update({two_factor_enabled: true, two_factor_secret: base32secret})
 			.then(function(user){
 				// Clear secret from cache
 				tempSecrets[req.resolved.user.id] = undefined;
@@ -160,13 +159,14 @@ module.exports = function(server, knex, log){
 				return next( new ValidationRestError('Validation error', err.errors));
 			})
 			.catch(SqlError, function(err){
-				res.send(500, 'Internal database error');
 				log.error({method: 'POST', path: '/api/password', payload: password, error: err});
-				return next();
+				return next( new restify.errors.InternalServerError(err) );
 			});
 			
+		}else{
+			return next( new restify.errors.BadRequestError('Invalid token') );	
 		}
 
-		return next( new restify.errors.BadRequestError('Invalid token') );
+
 	});
 }
