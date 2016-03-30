@@ -86,6 +86,7 @@ module.exports = class User{
 				return new Promise.reject( new SqlError('Catastrophic database error') );	
 			}
 			data.id = id[0];
+
 			return new Promise.resolve( new User(data) );
 		}, function(err){
 			// SQLite Username Exists error
@@ -150,6 +151,8 @@ module.exports = class User{
 				if( !validate.valid ){
 					return new Promise.reject( new ValidationError(validate.errors) );
 				}
+				
+				rows[0].two_factor_enabled = rows[0].two_factor_enabled === 1 ? true : false;
 
 				return new Promise.resolve(new User(rows[0]));
 			}, SQLErrorHandler);
