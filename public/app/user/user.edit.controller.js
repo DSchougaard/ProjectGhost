@@ -107,12 +107,12 @@
 		function generateAuthPayload(){
 			if( self.old.two_factor_enabled ){
 				var token = $mdDialog.prompt()
-				.title('Please enter two factor authentication token')
-				.textContent('Bowser is a common name.')
-				.placeholder('Token')
-				.ariaLabel('Token')
-				.ok('Okay!')
-				.cancel('No thanks!');
+				.title('Please enter the verification code')
+				.placeholder('Code')
+				.ariaLabel('verification code')
+				.ok('OK!')
+				.cancel('No thanks.');
+
 
 				return $mdDialog.show(token)
 				.then(function(result){
