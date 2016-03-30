@@ -170,6 +170,14 @@ knex.schema.createTableIfNotExists('passwords', function(table){
 .catch(function(error){
 });
 
+knex.schema.createTableIfNotExists('invites', function(table){
+	table.increments('id').primary();
+	table.uuid('link').unique().notNullable();
+	table.dateTime('expires').notNullable();
+	table.boolean('used').defaultTo(false);
+}).then();
+
+
 //knex.schema.createTableIfNotExists('invites', function(table){
 //	table.increments('id').primary();
 //	table.uuid('link').unique().notNullable();

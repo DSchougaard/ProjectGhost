@@ -1,6 +1,6 @@
 {
   "name": "project-ghost",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Implementation of Ghost system, for master thesis 2016.",
   "main": "app.js",
   "scripts": {
