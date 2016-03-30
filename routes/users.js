@@ -53,7 +53,7 @@ module.exports = function(server, log){
 		log.info({ method: 'GET', path: '/api/users/me/' });
 		
 		//res.send(200, _.pick(req.resolved.user, ['privatekey', 'iv']));
-		res.send(200, req.resolved.user)
+		res.send(200, _.omit(req.resolved.user, ['password', 'salt', 'two_factor_secret']));
 		return next();
 	});
 
