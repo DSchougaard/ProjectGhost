@@ -86,12 +86,6 @@ server.use(restify.queryParser());
 //    console.log('uncaughtException', err.stack);
 //});
 
-// Database through Knex
-/*var knex = require('knex')({
-	client: opts.database,
-	connection: opts.connection
-});*/
-
 var knex = require(__base + 'database.js');
 
 /*
@@ -181,77 +175,6 @@ knex.schema.createTableIfNotExists('invites', function(table){
 }).catch(function(error){
 });
 
-//knex.schema.createTableIfNotExists('invites', function(table){
-//	table.increments('id').primary();
-//	table.uuid('link').unique().notNullable();
-//	table.dateTime('expires').notNullable();
-//	table.boolean('used').defaultTo(false);
-//}).then();
-
-
-/*
-	Passwords Table
-	---------------------------
-	int: 	ID
-	int: 	ownerID
-	string: title
-	blob: 	username
-	string: password
-	string: note
-*/
-
-/*
-	Shared Passwords Table
-	---------------------------
-	int: 	ID
-	int: 	orignalPasswordID
-	string: title
-	blob: 	username
-	string: password
-	string: note
-
-*/
-
-var tempSecret = undefined;
-
-server.post('/api/test', function(req, res, next){
-		var speakeasy 	= require("speakeasy");
-
-	var userToken = req.body;	
-	console.log("asdasda");
-	var base32secret = 'NRAGQNDNFZITAVJ7MNTUQP2GPEVDUNTXGBKX2LD3HIZDG5CIMQ3Q';
-	console.log("asdasda");
-
-	var verified = speakeasy.totp.verify({ secret: base32secret,
-                                       encoding: 'base32',
-                                       token: userToken });
-	console.log("asdasda");
-	console.log("User verified?! " + verified);
-	res.send(verified);
-
-})
-
-server.get('/api/test', function(req, res, next){
-	var speakeasy 	= require("speakeasy");
-	var qr 			= require('qr-image');
-
-
-
-	var secret = speakeasy.generateSecret();
-	tempSecret = secret.base32;
-	//var url 	= speakeasy.otpauthUrl({secret: secret.ascii, label: 'Ghost', algorithm: 'sha512'})
-	console.log(secret.base32);
-
-
-
-
-	console.log(secret.otpauth_url);
-	var qr_png = qr.imageSync( secret.otpauth_url );
-	console.dir(qr_png);
-  	
-	res.send(secret.otpauth_url);
-});
-
 
 // Routes
 server.get('/api/ping', function(req, res, next){
@@ -266,34 +189,12 @@ passwords(server, knex, log);
 categories(server, log);
 invites(server, log);
 
-var test = fs.readFileSync(__base + 'public/index.html');
-
-// Fucking dirty hack, which will bite me in the ass. But Restify aparently ignores default file in serveStatic.
-
-//server.get(/^\/[a-zA-Z0-9]*$/, function(req, res, next){
-//	res.end(test);
-//});
-
-console.log(__base +'public'+'/index.html')
 
 // Finally catch all routes for static content.
-
-function testF(req, res, next){
-	//console.dir(req);
-	return next();
-}
-
-
 server.get(/.*/, serveStatic({
   	directory: __base + 'public',
     default: 'index.html'
 }));
-
-//server.get(/.*/, function(req, res, next){
-//	console.log("Caught")
-//})
-
-
 
 
 if( process.env.NODE_ENV === 'test' ){
@@ -301,4 +202,5 @@ if( process.env.NODE_ENV === 'test' ){
 }else{
 	server.listen(opts.port);
 }
-		console.log(new Date());
+
+console.log(new Date());
