@@ -34,15 +34,32 @@ module.exports = function(server, log){
 		});
 	});
 
-	server.post('/api/invites/:inviteId/accept', function(req, res, next){
+	server.get('/api/invites/:inviteId', resolve, function(req, res, next){
+		if( (req.resolved.params.invite).status().expired ){
+			return next( new restify.errors.GoneError( 'Invite is expired' ) );
+		}
+		
+		if( (req.resolved.params.invite).status().used ){
+			return next( new restify.errors.GoneError( 'Invite already used' ) );
+		}
 
-		Invite.find(req.params.inviteId)
-		.then(function(invite){
-			return invite.use(req.body);
-		})
+		res.send(200, 'OK');
+		return next();
+
+
+		
+
+	});
+
+	server.post('/api/invites/:inviteId/accept', resolve, function(req, res, next){
+
+		//Invite.find(req.params.inviteId)
+		//.then(function(invite){
+		//	return invite.use(req.body);
+		//})
 
 		//console.dir(req.params.resolved.invite);
-		//(req.params.resolved.invite).use(req.body)
+		(req.resolved.params.invite).use(req.body)
 		.then(function(user){
 			res.send(200, {message: 'OK', id: user.id});
 			return next();

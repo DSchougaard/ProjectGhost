@@ -96,6 +96,20 @@ module.exports = class Invite{
 		});
 	}
 
+	status(){
+		var self = this;
+		
+		var payload = {
+			used: false,
+			expired: false
+		}
+
+		payload.used = ( self.used === true || self.used === 1 ) ? true : false;
+		payload.expired = moment().isAfter( moment.unix(self.expires) );
+
+		return payload;
+	}
+
 	use(user){
 		var self = this;
 
