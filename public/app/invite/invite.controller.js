@@ -27,7 +27,8 @@
 				url: '/api/invites'
 			})
 			.then(function(res){
-				self.link = res.data;
+
+				self.link = document.location + '/' + res.data;
 			})
 			.catch(function(err){
 				console.log(err);
