@@ -190,12 +190,24 @@ categories(server, log);
 invites(server, log);
 
 
+// Since Javascript won't allow me to do negative lookahead in regex, all remaining (non-matched) calls to the
+// /api will get an error equivalent to Restify's own internal message.
+server.get('/api/.*', error);
+server.head('/api/.*', error);
+server.post('/api/.*', error);
+server.put('/api/.*', error);
+server.del('/api/.*', error);
+server.patch('/api/.*', error);
+function error(req, res, next){
+	return next( new restify.errors.ResourceNotFoundError(req.url) );
+}
+
+
 // Finally catch all routes for static content.
 server.get(/.*/, serveStatic({
   	directory: __base + 'public',
     default: 'index.html'
 }));
-
 
 if( process.env.NODE_ENV === 'test' ){
 	module.exports = server;
