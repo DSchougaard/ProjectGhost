@@ -3,7 +3,7 @@
 	.module('ghost')
 	.controller('InviteAcceptController', InviteAcceptController);
 
-	function InviteAcceptController($q, $stateParams, $http, $mdDialog, EncryptionService){
+	function InviteAcceptController($q, $stateParams, $state, $http, $mdDialog, EncryptionService){
 		var self = this;
 
 		// Config
