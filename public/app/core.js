@@ -4,10 +4,18 @@
 
 	ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider, $mdIconProvider){
 	    
-	    $urlRouterProvider.otherwise('/login');
+	    $urlRouterProvider.otherwise('/error');
 	   
 	    // HOME STATES AND NESTED VIEWS ========================================
 		$stateProvider
+		.state('error', {
+			url: '/error',
+			views:{
+				'content':{
+					templateUrl: 'app/error/error.template.html'
+				}
+			}
+		})
 	    .state('home', {
 	    	url:'/',
 			authenticate: true,
@@ -46,11 +54,24 @@
 	    	}
 	    })
 	    .state('invite/accept', {
-	    	url: '/invite/accept/:inviteLink',
+	    	url: '/invite/:inviteLink',
+	    	resolve: {
+	    		valid: function($http, $stateParams, $state){
+	    			return $http({
+	    				method: 'GET',
+	    				url: '/api/invites/'+$stateParams.inviteLink
+	    			})
+	    			.then(function(res){
+	    				return true;
+	    			}, function(err){
+	    				$state.go('error')
+	    			})
+	    		}
+	    	},
 			views:{
 				content:{
-					templateUrl 	: 'app/invite/invite.template.html',
-					controller 		: 'InviteController',
+					templateUrl 	: 'app/user/user.template.html',
+					controller 		: 'InviteAcceptController',
 					controllerAs 	: 'vm'
 				}
 	    	}
