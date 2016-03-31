@@ -16,7 +16,8 @@
 		self.back = back;
 
 		function back(){
-			$state.transitionTo('home');
+			//$state.transitionTo('home');
+			window.history.back();
 		}
  
 
