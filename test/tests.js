@@ -20,6 +20,7 @@ describe('Models', function(){
 	require(__base + 'test/models/password.js');
 	require(__base + 'test/models/category.js');
 	require(__base + 'test/models/invite.js');
+	require(__base + 'test/models/sharedPassword.js');
 });
 
 describe('Middlewares', function(){
