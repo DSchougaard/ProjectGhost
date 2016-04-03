@@ -6,6 +6,7 @@ const schemagic = require('schemagic');
 
 // Models
 var User 						= require(__base + 'models/user.js');
+var Password 					= require(__base + 'models/password.js');
 
 // Errors
 const PasswordDoesNotExistError = require(__base + 'errors/PasswordDoesNotExistError.js');
@@ -160,36 +161,21 @@ module.exports = class SharedPassword{
 			Password
 		*/
 
-		return knex
-		.select()
-		.from('shared_passwords')
-		.where('id', input.origin_password)
-		.then(function(password){
-			if( password.length === 0 ){
-				return new Promise.reject( new PasswordDoesNotExistError(input.origin_password) );
+		return knex('shared_passwords')
+		.insert(data)
+		.then(function(ids){
+			data.id = ids[0];
+        	return new Promise.resolve( new SharedPassword(input) );
+		}, function(err){
+			if( err.errno === 5 && err.code === 'SQLITE_BUSY'){
+				return new Promise.reject( new SqlError('database temporarily unavailable') );
+			}else if( err.errno !== 19 && err.code !== 'SQLITE_CONSTRAINT'  ){
+				return new Promise.reject( err );
 			}
 
-			if( password.length > 1 ){
-				return new Promise.reject( new SqlError('Multiple passwords found for same ID. Catastrophic error.') );
-			}
+			return Promise.all([ User.find(data.origin_owner), User.find(data.owner), Password.find(data.origin_password) ]);
+		});
 
-			if( password[0].owner !== input.origin_owner ){
-				return new Promise.reject( new ConflictError('Owner of target password does not match') )
-			}
-
-			data.username  			= password[0].username;
-			data.url  				= password[0].url;
-			data.note  				= password[0].note;
-			data.title  			= password[0].title;
-
-			return knex('shared_passwords')
-			.insert(data)
-			.then(function(ids){
-				data.id = ids[0];
-            	return new Promise.resolve( new SharedPassword(input) );
-			}, SQLErrorHandler);
-
-		}, SQLErrorHandler);
 	}
 
 	static sourceDel(password, knex){
