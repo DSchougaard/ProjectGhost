@@ -870,5 +870,504 @@ describe.only('SharedPassword', function(){
 			.then();
 		});
 	});
+	
+	describe('#sourceDel', function(){
+	
+		var users = [
+			{
+				username: 'SharedPassword-FindSharedToMe-User01',
+				isAdmin: false,
+				salt: 'cGFzc3dvcmQ=',
+				password: 'cGFzc3dvcmQ=',
+				privatekey: 'cGFzc3dvcmQ=',
+				iv: 'cGFzc3dvcmQ=',
+				pk_salt: 'cGFzc3dvcmQ=',
+				publickey: 'cGFzc3dvcmQ='
+			},
+			{
+				username: 'SharedPassword-FindSharedToMe-User02',
+				isAdmin: false,
+				salt: 'cGFzc3dvcmQ=',
+				password: 'cGFzc3dvcmQ=',
+				privatekey: 'cGFzc3dvcmQ=',
+				iv: 'cGFzc3dvcmQ=',
+				pk_salt: 'cGFzc3dvcmQ=',
+				publickey: 'cGFzc3dvcmQ='
+			}
+		];
+
+		before(function(){
+			return knex
+			.insert(users[0])
+			.into('users')
+			.then(function(id){
+				users[0].id = id[0];
+
+				passwords[users[0].username][0].owner = id[0];
+				passwords[users[0].username][1].owner = id[0];
+				passwords[users[0].username][2].owner = id[0];
+
+			});
+		})
+
+		before(function(){
+			return knex
+			.insert(users[1])
+			.into('users')
+			.then(function(id){
+				users[1].id = id[0];
+
+				passwords[users[1].username][0].owner = id[0];
+				passwords[users[1].username][1].owner = id[0];
+				passwords[users[1].username][2].owner = id[0];
+
+			});
+		})
+
+		var passwords = {};
+		passwords[users[0].username] = [
+			{
+				parent 		: null,
+				owner 		: null,
+				title 		: 'SharedPassword-Create-Title001',
+				username 	: 'SharedPassword-Create-User001',
+				password 	: 'cGFzc3dvcmQ=',
+				note 		: 'This is clearly a note!',
+				url 		: null
+			},
+			{
+				parent 		: null,
+				owner 		: null,
+				title 		: 'SharedPassword-Create-Title002',
+				username 	: 'SharedPassword-Create-User002',
+				password 	: 'cGFzc3dvcmQ=',
+				note 		: 'This is clearly a note!',
+				url 		: null
+			},
+			{
+				parent 		: null,
+				owner 		: null,
+				title 		: 'SharedPassword-Create-Title003',
+				username 	: 'SharedPassword-Create-User003',
+				password 	: 'cGFzc3dvcmQ=',
+				note 		: 'This is clearly a note!',
+				url 		: null
+			}
+		];
+
+		passwords[users[1].username] = [
+			{
+				parent 		: null,
+				owner 		: null,
+				title 		: 'SharedPassword-Create-Title011',
+				username 	: 'SharedPassword-Create-User011',
+				password 	: 'cGFzc3dvcmQ=',
+				note 		: 'This is clearly a note!',
+				url 		: null
+			},
+			{
+				parent 		: null,
+				owner 		: null,
+				title 		: 'SharedPassword-Create-Title012',
+				username 	: 'SharedPassword-Create-User012',
+				password 	: 'cGFzc3dvcmQ=',
+				note 		: 'This is clearly a note!',
+				url 		: null
+			},
+			{
+				parent 		: null,
+				owner 		: null,
+				title 		: 'SharedPassword-Create-Title013',
+				username 	: 'SharedPassword-Create-User013',
+				password 	: 'cGFzc3dvcmQ=',
+				note 		: 'This is clearly a note!',
+				url 		: null
+			}
+		];
+
+		// User[0] passwords
+		before(function(){
+			var password = passwords[users[0].username][0];
+			return knex
+			.insert(password)
+			.into('passwords')
+			.then(function(ids){
+				password.id = ids[0];
+			});
+		});
+		before(function(){
+			var password = passwords[users[0].username][1];
+			return knex
+			.insert(password)
+			.into('passwords')
+			.then(function(ids){
+				password.id = ids[0];
+			});
+		});
+		before(function(){
+			var password = passwords[users[0].username][2];
+			return knex
+			.insert(password)
+			.into('passwords')
+			.then(function(ids){
+				password.id = ids[0];
+			});
+		});
+
+		// User[1] passwords
+		before(function(){
+			var password = passwords[users[1].username][0];
+			return knex
+			.insert(password)
+			.into('passwords')
+			.then(function(ids){
+				password.id = ids[0];
+			});
+		});
+		before(function(){
+			var password = passwords[users[1].username][1];
+			return knex
+			.insert(password)
+			.into('passwords')
+			.then(function(ids){
+				password.id = ids[0];
+			});
+		});
+		before(function(){
+			var password = passwords[users[1].username][2];
+			return knex
+			.insert(password)
+			.into('passwords')
+			.then(function(ids){
+				password.id = ids[0];
+			});
+		});
+
+		before(function(){
+			return knex
+			.insert({
+				owner: users[1].id,
+				origin_owner: users[0].id,
+				parent: null,
+				origin_password: passwords[users[0].username][0].id,
+				password: 'c29tZW90aGVycGFzc3dvcmQ='
+			})
+			.into('shared_passwords')
+			.then( );
+		});
+		before(function(){
+			return knex
+			.insert({
+				owner: users[1].id,
+				origin_owner: users[0].id,
+				parent: null,
+				origin_password: passwords[users[0].username][2].id,
+				password: 'c29tZW90aGVycGFzc3dvcmQ='
+			})
+			.into('shared_passwords')
+			.then( );
+		});
+
+		it('deletes nothing, when the source has no shared passwords', function(){
+			var current = undefined;
+
+			return knex('shared_passwords')
+			.select()
+			.then(function(rows){
+				current = rows;
+				return SharedPassword.sourceDel(passwords[users[0].username][1]);
+			})
+			.then(function(no){
+				assert.equal(no, 0);
+				return knex('shared_passwords').select();
+			})
+			.then(function(rows2){
+				assert.deepEqual(rows2, current);
+			});
+		});	
+
+		it('deletes shared passwords, dependent on source', function(){
+			var current = undefined;
+
+			return knex('shared_passwords')
+			.select()
+			.then(function(rows){
+				current = rows;
+				return SharedPassword.sourceDel(passwords[users[0].username][0]);
+			})
+			.then(function(no){
+				assert.equal(no, 1);
+				return knex('shared_passwords').select();
+			})
+			.then(function(rows2){
+				assert.equal(rows2.length, current.length-1);
+				assert.notDeepEqual(rows2, current);
+			});
+		});
+
+		after(function(){
+			return knex
+			.del()
+			.from('shared_passwords')
+			.where('origin_owner', users[0].id)
+			.orWhere('origin_owner', users[1].id)
+			.then();
+		});
+
+		after(function(){
+			return knex
+			.del()
+			.from('passwords')
+			.where('owner', users[0].id)
+			.orWhere('owner', users[1].id)
+			.then();
+		});
+
+		after(function(){
+			return knex
+			.del()
+			.from('users')
+			.where('id', users[0].id)
+			.orWhere('id', users[1].id)
+			.then();
+		});
+	});
+
+	describe('#del', function(){
+		
+		var users = [
+			{
+				username: 'SharedPassword-FindSharedToMe-User01',
+				isAdmin: false,
+				salt: 'cGFzc3dvcmQ=',
+				password: 'cGFzc3dvcmQ=',
+				privatekey: 'cGFzc3dvcmQ=',
+				iv: 'cGFzc3dvcmQ=',
+				pk_salt: 'cGFzc3dvcmQ=',
+				publickey: 'cGFzc3dvcmQ='
+			},
+			{
+				username: 'SharedPassword-FindSharedToMe-User02',
+				isAdmin: false,
+				salt: 'cGFzc3dvcmQ=',
+				password: 'cGFzc3dvcmQ=',
+				privatekey: 'cGFzc3dvcmQ=',
+				iv: 'cGFzc3dvcmQ=',
+				pk_salt: 'cGFzc3dvcmQ=',
+				publickey: 'cGFzc3dvcmQ='
+			}
+		];
+		before(function(){
+			return knex
+			.insert(users[0])
+			.into('users')
+			.then(function(id){
+				users[0].id = id[0];
+
+				passwords[users[0].username][0].owner = id[0];
+				passwords[users[0].username][1].owner = id[0];
+				passwords[users[0].username][2].owner = id[0];
+
+			});
+		});
+
+		before(function(){
+			return knex
+			.insert(users[1])
+			.into('users')
+			.then(function(id){
+				users[1].id = id[0];
+
+				passwords[users[1].username][0].owner = id[0];
+				passwords[users[1].username][1].owner = id[0];
+				passwords[users[1].username][2].owner = id[0];
+
+			});
+		});
+
+
+		var passwords = {};
+		passwords[users[0].username] = [
+			{
+				parent 		: null,
+				owner 		: null,
+				title 		: 'SharedPassword-FindSharedFromMe-Title001',
+				username 	: 'SharedPassword-FindSharedFromMe-User001',
+				password 	: 'cGFzc3dvcmQ=',
+				note 		: 'This is clearly a note!',
+				url 		: null
+			},
+			{
+				parent 		: null,
+				owner 		: null,
+				title 		: 'SharedPassword-FindSharedFromMe-Title002',
+				username 	: 'SharedPassword-FindSharedFromMe-User002',
+				password 	: 'cGFzc3dvcmQ=',
+				note 		: 'This is clearly a note!',
+				url 		: null
+			},
+			{
+				parent 		: null,
+				owner 		: null,
+				title 		: 'SharedPassword-FindSharedFromMe-Title003',
+				username 	: 'SharedPassword-FindSharedFromMe-User003',
+				password 	: 'cGFzc3dvcmQ=',
+				note 		: 'This is clearly a note!',
+				url 		: null
+			}
+		];
+
+		passwords[users[1].username] = [
+			{
+				parent 		: null,
+				owner 		: null,
+				title 		: 'SharedPassword-FindSharedFromMe-Title011',
+				username 	: 'SharedPassword-FindSharedFromMe-User011',
+				password 	: 'cGFzc3dvcmQ=',
+				note 		: 'This is clearly a note!',
+				url 		: null
+			},
+			{
+				parent 		: null,
+				owner 		: null,
+				title 		: 'SharedPassword-FindSharedFromMe-Title012',
+				username 	: 'SharedPassword-FindSharedFromMe-User012',
+				password 	: 'cGFzc3dvcmQ=',
+				note 		: 'This is clearly a note!',
+				url 		: null
+			},
+			{
+				parent 		: null,
+				owner 		: null,
+				title 		: 'SharedPassword-FindSharedFromMe-Title013',
+				username 	: 'SharedPassword-FindSharedFromMe-User013',
+				password 	: 'cGFzc3dvcmQ=',
+				note 		: 'This is clearly a note!',
+				url 		: null
+			}
+		];
+
+		// User[0] passwords
+		before(function(){
+			var password = passwords[users[0].username][0];
+			return knex
+			.insert(password)
+			.into('passwords')
+			.then(function(ids){
+				password.id = ids[0];
+			});
+		});
+		before(function(){
+			var password = passwords[users[0].username][1];
+			return knex
+			.insert(password)
+			.into('passwords')
+			.then(function(ids){
+				password.id = ids[0];
+			});
+		});
+		before(function(){
+			var password = passwords[users[0].username][2];
+			return knex
+			.insert(password)
+			.into('passwords')
+			.then(function(ids){
+				password.id = ids[0];
+			});
+		});
+
+		// User[1] passwords
+		before(function(){
+			var password = passwords[users[1].username][0];
+			return knex
+			.insert(password)
+			.into('passwords')
+			.then(function(ids){
+				password.id = ids[0];
+			});
+		});
+		before(function(){
+			var password = passwords[users[1].username][1];
+			return knex
+			.insert(password)
+			.into('passwords')
+			.then(function(ids){
+				password.id = ids[0];
+			});
+		});
+		before(function(){
+			var password = passwords[users[1].username][2];
+			return knex
+			.insert(password)
+			.into('passwords')
+			.then(function(ids){
+				password.id = ids[0];
+			});
+		});
+
+		var sharedPasswords = [
+		]
+
+
+		// Create shares from User[0] -> User[1]
+		before(function(){
+			return knex
+			.insert({
+				owner: users[1].id,
+				origin_owner: users[0].id,
+				parent: null,
+				origin_password: passwords[users[0].username][0].id,
+				password: 'c29tZW90aGVycGFzc3dvcmQ='
+			})
+			.into('shared_passwords')
+			.then( );
+		});
+		before(function(){
+			return knex
+			.insert({
+				owner: users[1].id,
+				origin_owner: users[0].id,
+				parent: null,
+				origin_password: passwords[users[0].username][2].id,
+				password: 'c29tZW90aGVycGFzc3dvcmQ='
+			})
+			.into('shared_passwords')
+			.then( );
+		});
+
+		describe('Fails due to json invalidity', function(){
+		});
+
+		it('fails when trying to delete non-existant shared password', function(){
+			var valid = {
+				id: 1337,
+				owner: users[0].id,
+				origin_owner: users[1].id,
+				password: 'c29tZW90aGVycGFzc3dvcmQ=',
+				origin_password: passwords[users[1].username][0].id,
+				parent: null
+			}
+
+			var shared = new SharedPassword(valid);
+
+			return shared.del()
+			.then(function(s){
+            	assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
+			})
+			.catch(PasswordDoesNotExistError, function(err){
+				assert.equal(err.message, 'Password ID 1337 was not found');
+			});
+		});
+
+		it('succeeds in deleting a password', function(){
+
+		});
+
+
+	});
+
+	describe('#update', function(){
+
+	});
 
 });

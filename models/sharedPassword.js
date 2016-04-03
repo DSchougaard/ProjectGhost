@@ -41,14 +41,14 @@ module.exports = class SharedPassword{
 		this.id 				= input.id;
 		this.owner				= input.owner;
 		this.parent 			= input.parent;
-		this.title 				= input.title;
-		this.username 			= input.username;
+		//this.title 				= input.title;
+		//this.username 			= input.username;
 		this.password 			= input.password;
-		this.url 				= input.url;
-		this.note 				= input.note;
+		//this.url 				= input.url;
+		//this.note 				= input.note;
 
-		this.origin_owner 		= input.origin_owner,
-		this.origin_password 	= input.origin_password
+		this.origin_owner 		= input.origin_owner;
+		this.origin_password 	= input.origin_password;
 	}
 
 	static findSharedFromMe(user, knex){
@@ -175,7 +175,6 @@ module.exports = class SharedPassword{
 
 			return Promise.all([ User.find(data.origin_owner), User.find(data.owner), Password.find(data.origin_password) ]);
 		});
-
 	}
 
 	static sourceDel(password, knex){
@@ -183,7 +182,7 @@ module.exports = class SharedPassword{
 		var knex = ( knex === undefined ? knexGlobal : knex );
 
 		var self = this;
-		var validate = schemagic.password.validate(self);
+		var validate = schemagic.password.validate(password);
 
 		if( !validate.valid ){
 			return new Promise.reject( new ValidationError(validate.errors) );
@@ -204,6 +203,7 @@ module.exports = class SharedPassword{
 		var knex = ( knex === undefined ? knexGlobal : knex );
 
 		var self = this;
+		//console.log("%j", self)
 		var validate = schemagic.sharedPassword.validate(self);
 
 		if( !validate.valid ){
