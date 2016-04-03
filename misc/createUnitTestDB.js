@@ -62,10 +62,10 @@ knex.schema.createTableIfNotExists('invites', function(table){
 
 knex.schema.createTableIfNotExists('shared_passwords', function(table){
 	table.increments('id').primary();
-	table.integer('owner').unsigned().references('id').inTable('users');
-	table.integer('origin_owner').unsigned().references('id').inTable('users');
-	table.integer('parent').unsigned().references('id').inTable('categories');
-	table.integer('origin_password').unsigned().references('id').inTable('passwords');
+	table.integer('owner').unsigned().references('id').inTable('users').notNullable();
+	table.integer('origin_owner').unsigned().references('id').inTable('users').notNullable();
+	table.integer('parent').unsigned().references('id').inTable('categories').nullable();
+	table.integer('origin_password').unsigned().references('id').inTable('passwords').notNullable();
 	table.string('password').notNullable();
 }).then();
 
