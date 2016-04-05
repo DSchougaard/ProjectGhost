@@ -227,13 +227,17 @@ module.exports = class SharedPassword{
 		}, SQLErrorHandler);
 	}
 
-	update(knex){
+	update(input, knex){
 		// Optinal DB connection overload for transactions
 		var knex = ( knex === undefined ? knexGlobal : knex );
 		
 		var self = this;
-		var validate = schemagic.sharedPasswordUpdate.validate(self);
-
+		var validate = schemagic.sharedPassword.validate(self);
+		if( !validate.valid ){
+			return new Promise.reject( new ValidationError(validate.errors) );
+		}
+		
+		validate = schemagic.sharedPasswordUpdate.validate(input);
 		if( !validate.valid ){
 			return new Promise.reject( new ValidationError(validate.errors) );
 		}

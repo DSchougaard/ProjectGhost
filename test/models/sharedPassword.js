@@ -1671,11 +1671,34 @@ describe.only('SharedPassword', function(){
 			.then(function(rows){
 				assert.equal(rows.length, 1);
 			});
-
 		});
 
 
+		after(function(){
+			return knex
+			.del()
+			.from('shared_passwords')
+			.where('origin_owner', users[0].id)
+			.then();
+		});
 
+		after(function(){
+			return knex
+			.del()
+			.from('passwords')
+			.where('owner', users[0].id)
+			.orWhere('owner', users[1].id)
+			.then();
+		});
+
+		after(function(){
+			return knex
+			.del()
+			.from('users')
+			.where('id', users[0].id)
+			.orWhere('id', users[1].id)
+			.then();
+		});
 
 	});
 
@@ -1712,6 +1735,9 @@ describe.only('SharedPassword', function(){
 
 				passwords[users[0].username][0].owner = id[0];
 				passwords[users[0].username][1].owner = id[0];
+
+				sharedPasswords[0].origin_owner = id[0];
+				sharedPasswords[1].origin_owner = id[0];
 			});
 		});
 		before(function(){
@@ -1720,7 +1746,11 @@ describe.only('SharedPassword', function(){
 			.into('users')
 			.then(function(id){
 				users[1].id = id[0];
+				
+				sharedPasswords[0].owner = id[0];
+				sharedPasswords[1].owner = id[0];
 
+				category.owner = id[0];
 			});
 		});
 
@@ -1754,6 +1784,7 @@ describe.only('SharedPassword', function(){
 			.into('passwords')
 			.then(function(ids){
 				password.id = ids[0];
+				sharedPasswords[0].origin_password = ids[0];
 			});
 		});
 		before(function(){
@@ -1763,37 +1794,232 @@ describe.only('SharedPassword', function(){
 			.into('passwords')
 			.then(function(ids){
 				password.id = ids[0];
+				sharedPasswords[1].origin_password = ids[0];
 			});
 		});
 
+		var sharedPasswords = [
+			{
+				owner: null,
+				origin_owner: null,
+				parent: null,
+				origin_password: null,
+				password: 'c29tZW90aGVycGFzc3dvcmQ='
+			},
+			{
+				owner: null,
+				origin_owner: null,
+				parent: null,
+				origin_password: null,
+				password: 'c29tZW90aGVycGFzc3dvcmQ='
+
+			}
+		];
+
 		before(function(){
 			return knex
-			.insert({
-				owner: users[1].id,
-				origin_owner: users[0].id,
-				parent: null,
-				origin_password: passwords[users[0].username][0].id,
-				password: 'c29tZW90aGVycGFzc3dvcmQ='
-			})
+			.insert(sharedPasswords[0])
 			.into('shared_passwords')
-			.then( );
+			.then(function(ids){
+				sharedPasswords[0].id = ids[0];
+			});
 		});
 		before(function(){
 			return knex
-			.insert({
-				owner: users[1].id,
-				origin_owner: users[0].id,
-				parent: null,
-				origin_password: passwords[users[0].username][1].id,
-				password: 'c29tZW90aGVycGFzc3dvcmQ='
-			})
+			.insert(sharedPasswords[1])
 			.into('shared_passwords')
-			.then( );
+			.then(function(ids){
+				sharedPasswords[1].id = ids[0];
+			});
 		});
 
-		it('tests', function(){
+		var category = {
+			title: 'SharedPassword-Update-Category01',
+			owner: 1,
+			parent: null
+		};
 
+		before(function(){
+			return knex
+			.insert(category)
+			.into('categories')
+			.then(function(ids){
+				category.id = ids[0];
+			});
 		})
+
+		describe('Fails due to json invalidity', function(){
+
+			describe('Wrong Types', function(){
+				
+				it('returns an error when password is of wrong type', function(){
+					
+					return User.find(users[1].id)
+					.then(SharedPassword.findAllSharedToMe)
+					.then(function(passwords){
+						assert.equal(passwords.length, 2);
+
+						return ( new SharedPassword(passwords[0]) ).update({password: true});
+					})
+					.then(function(shared){
+						assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data.password is the wrong type.');
+					});
+
+				});
+
+				it('returns an error when parent is of wrong type', function(){
+					
+					return User.find(users[1].id)
+					.then(SharedPassword.findAllSharedToMe)
+					.then(function(passwords){
+						assert.equal(passwords.length, 2);
+
+						return ( new SharedPassword(passwords[0]) ).update({parent: true});
+					})
+					.then(function(shared){
+						assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data.parent is the wrong type.');
+					});
+
+				});
+			});
+
+			describe('Pattern Mismatch', function(){
+				it('returns an error when password is not base64 encoded', function(){
+					return User.find(users[1].id)
+					.then(SharedPassword.findAllSharedToMe)
+					.then(function(passwords){
+						assert.equal(passwords.length, 2);
+
+						return ( new SharedPassword(passwords[0]) ).update({password: 'aa'});
+					})
+					.then(function(shared){
+						assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data.password pattern mismatch.');
+					});
+				});
+			});
+
+			describe('Restricted Fields', function(){
+
+				it('fails when trying to update owner', function(){
+					return User.find(users[1].id)
+					.then(SharedPassword.findAllSharedToMe)
+					.then(function(passwords){
+						assert.equal(passwords.length, 2);
+
+						return ( new SharedPassword(passwords[0]) ).update({owner: 42});
+					})
+					.then(function(shared){
+						assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data has additional properties.');
+					});
+				});
+
+				it('fails when trying to update origin_owner', function(){
+					return User.find(users[1].id)
+					.then(SharedPassword.findAllSharedToMe)
+					.then(function(passwords){
+						assert.equal(passwords.length, 2);
+
+						return ( new SharedPassword(passwords[0]) ).update({origin_owner: 42});
+					})
+					.then(function(shared){
+						assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data has additional properties.');
+					});
+				});
+
+				it('fails when trying to update origin_password', function(){
+					return User.find(users[1].id)
+					.then(SharedPassword.findAllSharedToMe)
+					.then(function(passwords){
+						assert.equal(passwords.length, 2);
+
+						return ( new SharedPassword(passwords[0]) ).update({origin_password: 42});
+					})
+					.then(function(shared){
+						assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data has additional properties.');
+					});
+				});
+
+				it('fails when trying to update id', function(){
+					return User.find(users[1].id)
+					.then(SharedPassword.findAllSharedToMe)
+					.then(function(passwords){
+						assert.equal(passwords.length, 2);
+
+						return ( new SharedPassword(passwords[0]) ).update({id: 42});
+					})
+					.then(function(shared){
+						assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data has additional properties.');
+					});
+				});
+			});
+
+		});
+
+		it('successfully updates encrypted password', function(){
+
+			return User.find(users[1].id)
+			.then(SharedPassword.findAllSharedToMe)
+			.then(function(passwords){
+				assert.equal(passwords.length, 2);
+
+				return ( new SharedPassword(passwords[0]) ).update({password: 'TGFsYUxhbmQ='});
+			})
+			.then(function(shared){
+				assert.equal(shared.password, 			'TGFsYUxhbmQ=')
+
+				assert.equal(shared.owner,		 		sharedPasswords[1].owner);
+				assert.equal(shared.origin_owner,		sharedPasswords[1].origin_owner);
+				assert.equal(shared.origin_passwordre, 	sharedPasswords[1].origin_passwordre);
+			})	
+
+		});
+
+		it('successfully updates category', function(){
+			
+			return User.find(users[1].id)
+			.then(SharedPassword.findAllSharedToMe)
+			.then(function(passwords){
+				assert.equal(passwords.length, 2);
+
+				return ( new SharedPassword( passwords[1]) ).update({parent: category.id});
+			})
+			.then(function(shared){
+				assert.equal(shared.parent, 			category.id)
+
+				assert.equal(shared.owner, 				sharedPasswords[1].owner);
+				assert.equal(shared.origin_owner, 		sharedPasswords[1].origin_owner);
+				assert.equal(shared.origin_passwordre, 	sharedPasswords[1].origin_passwordre);
+			})	
+
+		});
 
 	});
 
