@@ -173,7 +173,24 @@ module.exports = class Password{
 		}, function(err){
 			console.log(JSON.stringify(err));
 		});
-	}
+	};
+
+	sharedWith(){
+		var self = this;
+		var validate = schemagic.password.validate(self);
+
+		if( !validate.valid ){
+			return new Promise.reject( new ValidationError(validate.errors) );
+		}
+		console.log(self.id);
+		return knex('shared_passwords')
+		.join('users', 'shared_passwords.owner', '=', 'users.id')
+		.where('shared_passwords.origin_password', self.id)
+		.select('users.id', 'users.username')
+		.then(function(rows){
+			return new Promise.resolve(rows);
+		});
+	};
 };
 
 

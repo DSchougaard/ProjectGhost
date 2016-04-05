@@ -175,6 +175,16 @@ knex.schema.createTableIfNotExists('invites', function(table){
 }).catch(function(error){
 });
 
+knex.schema.createTableIfNotExists('shared_passwords', function(table){
+	table.increments('id').primary();
+	table.integer('owner').unsigned().references('id').inTable('users').notNullable();
+	table.integer('origin_owner').unsigned().references('id').inTable('users').notNullable();
+	table.integer('parent').unsigned().references('id').inTable('categories').nullable();
+	table.integer('origin_password').unsigned().references('id').inTable('passwords').notNullable();
+	table.string('password').notNullable();
+}).catch(function(error){
+});
+
 
 // Routes
 server.get('/api/ping', function(req, res, next){
