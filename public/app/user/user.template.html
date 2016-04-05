@@ -31,7 +31,7 @@
 				<!-- Repeat password, for add and invite/accept -->
 				<md-input-container class="md-block" ng-if="vm.config.add">
 					<label ng-bind="vm.config.text.repeatPssword"></label>
-					<input type="password" required ng-model="vm.user.repeatPssword" name="repeatPassword" ng-disabled="!vm.enabled" equals="vm.user.password">
+					<input type="password" required ng-model="vm.repeat.password" name="repeatPassword" ng-disabled="!vm.enabled" equals="vm.user.password">
 
 					<div ng-messages="userForm.repeatPassword.$error" multiple>
 						<div ng-message="required">It is required to input your password, to perform any changes.</div>

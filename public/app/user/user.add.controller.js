@@ -21,6 +21,7 @@
 		// Literals
 		self.user 				= {};
 		self.new 				= {};
+		self.repeat 			= {};
 		self.enabled 			= true;
 
 		// Exposed Interface

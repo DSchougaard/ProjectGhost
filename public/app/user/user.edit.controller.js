@@ -2,16 +2,16 @@
 
 	angular
 		.module('ghost')
-		.controller('UserController', UserController);
+		.controller('UserEditController', UserEditController);
 		
-	function UserController($q, $scope, $http, $auth, $state, EncryptionService, UserService, $mdDialog) {
+	function UserEditController($q, $scope, $http, $auth, $state, EncryptionService, UserService, $mdDialog) {
 		var self 				= this;
 		
 		// Config
 		self.config = {
 			text:{
 				title: 'Edit Your Profile',
-				submit: 'Create',
+				submit: 'Save',
 				password: 'Current Password'
 			},
 			edit: true,

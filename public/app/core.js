@@ -131,7 +131,7 @@
 	    	views: {
 	    		'content': {
 	    			templateUrl: 'app/user/user.template.html',
-	    			controller: 'UserController',
+	    			controller: 'UserEditController',
 	    			controllerAs: 'vm'
 	    		},
 	    		'toolbar': {
