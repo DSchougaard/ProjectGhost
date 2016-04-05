@@ -167,10 +167,12 @@ module.exports = function(server, knex, log){
 		Password Sharing Routes
 	*/
 
-	server.post('/api/users/:userId/passwords/:passwordId/share', authentication, resolve, authorization, function(req, res, next){
-		var data = res.body;
-		data.origin_password 	= res.resolved.params.password.id;
-		data.origin_owner 		= res.resolved.params.user.id;
+	server.post('/api/users/:userId/passwords/:passwordId/shares', authentication, resolve, authorization, function(req, res, next){
+		var data 				= req.body;
+		data.origin_password 	= req.resolved.params.password.id;
+		data.origin_owner 		= req.resolved.params.user.id;
+
+		console.log("%j", data);
 
 		SharedPassword.create(data)
 		.then(function(shared){
@@ -190,8 +192,31 @@ module.exports = function(server, knex, log){
 		});
 	});
 
+	server.get('/api/users/:userId/passwords/:passwordId/shares', authentication, resolve, authorization, function(req, res, next){
+
+		req.resolved.params.password.sharedWith()
+		.then(function(users){
+			console.log("%j", users);
+			res.send(200, users);
+			return next();
+		})
+		.catch(ValidationError, function(err){
+			return next( new ValidationRestError('Validation error', err.errors));
+		})
+		.catch(UserDoesNotExistError, PasswordDoesNotExistError, function(err){
+			return next( new restify.errors.NotFoundError(err.message) );
+		})
+		.catch(SqlError, function(err){
+			return next( new restify.errors.InternalServerError(err.message) );
+		})
+		.catch(function(err){
+			console.log(err);
+		})
+
+	});
+
 	server.put('/api/users/:userId/passwords/shares/:shareId', authentication, resolve, authorization, function(req, res, next){
-		res.resolved.params.share.update(res.body)
+		req.resolved.params.share.update(req.body)
 		.then(function(res){
 			res.send(200, res);
 			return next();
@@ -210,7 +235,7 @@ module.exports = function(server, knex, log){
 	})
 
 	server.get('/api/users/:userId/passwords/shares', authentication, resolve, authorization, function(req, res, next){
-		SharedPassword.findAllSharedToMe(res.resolved.params.user)
+		SharedPassword.findAllSharedToMe(req.resolved.params.user)
 		.then(function(shares){
 			res.send(200, shares);
 			return next();
@@ -229,7 +254,7 @@ module.exports = function(server, knex, log){
 	})
 
 	server.get('/api/users/:userId/passwords/shared', authentication, resolve, authorization, function(req, res, next){
-		SharedPassword.findSharedFromMe(res.resolved.params.user)
+		SharedPassword.findSharedFromMe(req.resolved.params.user)
 		.then(function(shared){
 			res.send(200, shared);
 			return next();
@@ -248,7 +273,7 @@ module.exports = function(server, knex, log){
 	});
 
 	server.del('/api/users/:userId/passwords/shares/:shareId', authentication, resolve, authorization, function(req, res, next){
-		res.resolved.params.share.del()
+		req.resolved.params.share.del()
 		.then(function(r){
 			res.send(200, r);
 			return next();
@@ -264,6 +289,5 @@ module.exports = function(server, knex, log){
 			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
 			return next();
 		});
-
 	});
 }
