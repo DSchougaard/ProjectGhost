@@ -25,6 +25,7 @@
 		self.submit 		= submit;
 		self.title 			= "";
 		self.decryptEnabled = true;
+		self.users 			= [];
 		
 		// Field for the Tree-Menu to properly select the parent, when editting.
 		self.selection 		= {};
@@ -33,6 +34,24 @@
 		// Interface
 		self.treeSelect 	= treeSelect;
 		self.display 		= display;
+
+		$http({
+			method: 'GET',
+			url: '/api/users'
+		})
+		.then(function(users){
+			console.log("%j", users)
+			self.users = users;
+		})
+		.catch(function(err){
+			console.error(err);
+		})	
+
+		self.querySearch = querySearch;
+		function querySearch(criteria) {
+			cachedQuery = cachedQuery || criteria;
+			return cachedQuery ? self.users.filter(createFilterFor(cachedQuery)) : [];
+		}
 
 		// Fetch category data
 		CategoryService.structure()

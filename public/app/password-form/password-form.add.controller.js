@@ -18,6 +18,8 @@
 		self.password = {};
 		self.title = "";
 		self.categories = [];
+		self.users 		= [];
+		self.usernames 	= [];
 
 		// Field for the Tree-Menu to properly select the parent, when editting.
 		self.selection = {};
@@ -39,6 +41,44 @@
 			self.categories.push(rootCat);
 		})
 
+
+		$http({
+			method: 'GET',
+			url: '/api/users'
+		})
+		.then(function(res){
+			console.log("%j", res.data)
+			self.users = res.data;
+			self.usernames = _.pluck(self.users, 'username');
+			console.log("Usernames %j", self.usernames)
+		})
+		.catch(function(err){
+			console.error(err);
+		})	
+    self.searchText = null;
+    self.selectedItem = null;
+self.selectedUsers = [];
+		self.querySearch = querySearch;
+		function querySearch (query) {
+			var results = query ? self.usernames.filter(createFilterFor(query)) : [];
+			return results;
+		}
+
+		function createFilterFor(query) {
+			var lowercaseQuery = angular.lowercase(query);
+			return function filterFn(vegetable) {
+				return (angular.lowercase(vegetable).indexOf(lowercaseQuery) === 0);
+			};
+		}
+		self.transformChip = transformChip;
+		function transformChip(chip) {
+		// If it is an object, it's already a known chip
+		if (angular.isObject(chip)) {
+			return chip;
+		}
+		// Otherwise, create a new one
+		return { name: chip, type: 'new' }
+		}
 
 		// We're creating a new password
 		self.selection.id = null;

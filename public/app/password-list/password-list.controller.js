@@ -76,7 +76,7 @@
 		}
 
 		function edit(index){
-			$state.go('edit', {password: self.entries[index]});
+			$state.go('edit', { password: _.findWhere(self.entries, {id: index}) } );
 		}
 
 		// List controls
