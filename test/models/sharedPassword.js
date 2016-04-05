@@ -871,9 +871,6 @@ describe.only('SharedPassword', function(){
 			});
 		});
 
-
-
-
 		describe('Fails due to non-existant references', function(){
 			
 			it('fails to create shared password of non-existant password', function(){
@@ -954,6 +951,23 @@ describe.only('SharedPassword', function(){
 
 			});
 		});
+
+		it('should fail when trying to share the same password twice, with the same user', function(){
+
+			var shared = {
+				owner: users[1].id, 
+				origin_owner: users[0].id, 
+				password: 'c29tZW90aGVycGFzc3dvcmQ=',
+				origin_password: passwords[users[0].username][1].id
+			}
+
+
+			return SharedPassword.create(shared)
+			.then(SharedPassword.create(shared))
+			.then(function(shared){
+	            assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+			});
+		})
 
 
 		after(function(){
