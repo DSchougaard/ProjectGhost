@@ -263,7 +263,6 @@ module.exports = class SharedPassword{
 			return new Promise.resolve(self);
 		
 		}, SQLErrorHandler);
-
 	}
 
 }

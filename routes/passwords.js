@@ -7,6 +7,7 @@ const constants 		= require(__base + 'helpers/constants.json');
 
 const Password 			= require(__base + 'models/password.js');
 const User 				= require(__base + 'models/user.js');
+const SharedPassword 	= require(__base + 'models/sharedPassword.js');
 
 // Errors
 const PasswordDoesNotExistError = require(__base + 'errors/PasswordDoesNotExistError.js');
@@ -22,6 +23,9 @@ const resolve 			= require(__base + 'middlewares/resolve.js');
 
 module.exports = function(server, knex, log){
 
+	/*
+		Own Password Routes
+	*/
 	server.get('/api/users/:userId/passwords', authentication, resolve, authorization, function(req, res, next){
 		log.info({ method: 'GET', path: '/api/passwords', payload: req.user });
 		log.debug({ request: req });
@@ -100,7 +104,6 @@ module.exports = function(server, knex, log){
 			return next();
 		});
 	});
-
 	
 	server.del('/api/users/:userId/passwords/:passwordId', authentication, resolve, authorization, function(req, res, next){
 		log.info({ method: 'DEL', path: '/api/passwords', payload: req.params.passwordId });
@@ -127,7 +130,6 @@ module.exports = function(server, knex, log){
 			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
 			return next();
 		});
-
 	});
 
 	server.put('/api/users/:userId/passwords/:passwordId', authentication, resolve, authorization, function(req, res, next){
@@ -161,4 +163,107 @@ module.exports = function(server, knex, log){
 		});
 	});
 
+	/*
+		Password Sharing Routes
+	*/
+
+	server.post('/api/users/:userId/passwords/:passwordId/share', authentication, resolve, authorization, function(req, res, next){
+		var data = res.body;
+		data.origin_password 	= res.resolved.params.password.id;
+		data.origin_owner 		= res.resolved.params.user.id;
+
+		SharedPassword.create(data)
+		.then(function(shared){
+			res.send(200, shared);
+			return next();
+		})
+		.catch(ValidationError, function(err){
+			return next( new ValidationRestError('Validation error', err.errors));
+		})
+		.catch(UserDoesNotExistError, PasswordDoesNotExistError, function(err){
+			return next( new restify.errors.NotFoundError(err.message) );
+		})
+		.catch(SqlError, function(err){
+			res.send(500, 'Internal database error');
+			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
+			return next();
+		});
+	});
+
+	server.put('/api/users/:userId/passwords/shares/:shareId', authentication, resolve, authorization, function(req, res, next){
+		res.resolved.params.share.update(res.body)
+		.then(function(res){
+			res.send(200, res);
+			return next();
+		})
+		.catch(ValidationError, function(err){
+			return next( new ValidationRestError('Validation error', err.errors));
+		})
+		.catch(UserDoesNotExistError, PasswordDoesNotExistError, function(err){
+			return next( new restify.errors.NotFoundError(err.message) );
+		})
+		.catch(SqlError, function(err){
+			res.send(500, 'Internal database error');
+			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
+			return next();
+		});
+	})
+
+	server.get('/api/users/:userId/passwords/shares', authentication, resolve, authorization, function(req, res, next){
+		SharedPassword.findAllSharedToMe(res.resolved.params.user)
+		.then(function(shares){
+			res.send(200, shares);
+			return next();
+		})
+		.catch(ValidationError, function(err){
+			return next( new ValidationRestError('Validation error', err.errors));
+		})
+		.catch(UserDoesNotExistError, PasswordDoesNotExistError, function(err){
+			return next( new restify.errors.NotFoundError(err.message) );
+		})
+		.catch(SqlError, function(err){
+			res.send(500, 'Internal database error');
+			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
+			return next();
+		});
+	})
+
+	server.get('/api/users/:userId/passwords/shared', authentication, resolve, authorization, function(req, res, next){
+		SharedPassword.findSharedFromMe(res.resolved.params.user)
+		.then(function(shared){
+			res.send(200, shared);
+			return next();
+		})
+		.catch(ValidationError, function(err){
+			return next( new ValidationRestError('Validation error', err.errors));
+		})
+		.catch(UserDoesNotExistError, PasswordDoesNotExistError, function(err){
+			return next( new restify.errors.NotFoundError(err.message) );
+		})
+		.catch(SqlError, function(err){
+			res.send(500, 'Internal database error');
+			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
+			return next();
+		});
+	});
+
+	server.del('/api/users/:userId/passwords/shares/:shareId', authentication, resolve, authorization, function(req, res, next){
+		res.resolved.params.share.del()
+		.then(function(r){
+			res.send(200, r);
+			return next();
+		})
+		.catch(ValidationError, function(err){
+			return next( new ValidationRestError('Validation error', err.errors));
+		})
+		.catch(UserDoesNotExistError, PasswordDoesNotExistError, function(err){
+			return next( new restify.errors.NotFoundError(err.message) );
+		})
+		.catch(SqlError, function(err){
+			res.send(500, 'Internal database error');
+			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
+			return next();
+		});
+
+	});
 }
