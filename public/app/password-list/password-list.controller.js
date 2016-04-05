@@ -51,8 +51,6 @@
 			/*self.entries = _.filter(PasswordService.passwords, function(password){
 				return args.id === password.parent;
 			});*/
-			console.log("%j", args);
-
 			self.selectedCategory = args.title;
 			self.filter = {parent: args.id};
 		})
@@ -90,17 +88,33 @@
 
 			if(index !== self.selectedIndex){
 				self.selectedIndex = index;
+
+				var password = _.findWhere(self.entries, {id: index});
+
+					$http({
+						method: 'GET',
+						url: 'api/users/'+$auth.getPayload().uid+'/passwords/'+password.id+'/shares'
+					})
+					.then(function(users){
+						password.shared = users.data;
+					})
+					.catch(function(err){
+						console.error(err);
+					})
+			
 			}else {
 				self.selectedIndex = undefined;
 			}
 		}
 
 		function show(index){
-			PasswordService.decrypt( self.entries[index] );
+			var password = _.findWhere(self.entries, {id: index});
+			PasswordService.decrypt(password);
 		}
 
 		function hide(index){
-			self.entries[index].decryptedPassword = undefined;
+			var password = _.findWhere(self.entries, {id: index});
+			passowrd.decryptedPassword = undefined;
 		}
 
 		function search(){

@@ -78,11 +78,11 @@
 			});
 		}
 
-		function show(index){
-			return EncryptionService.decrypt(this.passwords[index])
-			.then(function(password){
+		function show(password){
+			return EncryptionService.decrypt(this.passwords[password])
+			.then(function(decryptedPassword){
 
-				self.passwords[index].decryptedPassword = password;
+				password.decryptedPassword = decryptedPassword;
 
 			});
 		};
@@ -95,8 +95,8 @@
 			});
 		}
 
-		function hide(index){
-			self.passwords[index].decryptedPassword = undefined;
+		function hide(password){
+			password.decryptedPassword = undefined;
 		};
 
 		function create(password){};
