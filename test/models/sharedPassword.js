@@ -761,6 +761,119 @@ describe.only('SharedPassword', function(){
 			});
 		});
 
+		describe('Fails due to json invalidity', function(){
+			
+			var valid = {
+				owner: users[1].id,
+				origin_owner: users[0].id,
+				parent: null,
+				origin_password: passwords[users[0].username][1].id,
+				password: 'c29tZW90aGVycGFzc3dvcmQ='
+			}
+
+			describe('Wrong Type', function(){
+
+
+				it('throws an error when the model has invalid password', function(){
+					var invalid = {
+						owner: users[1].id,
+						origin_owner: users[0].id,
+						origin_password: passwords[users[0].username][1].id,
+						password: true	
+					}				
+
+					return SharedPassword.create(invalid)
+					.then(function(){
+	            		assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data.password is the wrong type.');
+					});
+				});
+
+				it('throws an error when the model has invalid owner', function(){
+					var invalid = {
+						owner: true,
+						origin_owner: users[0].id,
+						origin_password: passwords[users[0].username][1].id,
+						password: 'c29tZW90aGVycGFzc3dvcmQ='
+					}				
+
+					return SharedPassword.create(invalid)
+					.then(function(){
+	            		assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data.owner is the wrong type.');
+					});
+				});
+		
+				it('throws an error when the model has invalid origin_owner', function(){
+					var invalid = {
+						owner: users[1].id,
+						origin_owner: true,
+						origin_password: passwords[users[0].username][1].id,
+						password: 'c29tZW90aGVycGFzc3dvcmQ='
+					}				
+
+					return SharedPassword.create(invalid)
+					.then(function(){
+	            		assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data.origin_owner is the wrong type.');
+					});
+				});
+
+				it('throws an error when the model has invalid origin_password', function(){
+					var invalid = {
+						owner: users[1].id,
+						origin_owner: users[0].id,
+						origin_password: true,
+						password: 'c29tZW90aGVycGFzc3dvcmQ='
+					}				
+
+					return SharedPassword.create(invalid)
+					.then(function(){
+	            		assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data.origin_password is the wrong type.');
+					});
+				});
+
+			})
+
+			describe('Pattern Mismatch', function(){
+			
+				it('throws an error when the model has invalid password', function(){
+					var invalid = {
+						owner: users[1].id,
+						origin_owner: users[0].id,
+						origin_password: passwords[users[0].username][1].id,
+						password: 'aa'
+					}				
+
+					return SharedPassword.create(invalid)
+					.then(function(){
+	            		assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data.password pattern mismatch.');
+					});
+				});
+
+			});
+		});
+
+
+
+
 		describe('Fails due to non-existant references', function(){
 			
 			it('fails to create shared password of non-existant password', function(){
@@ -1305,10 +1418,6 @@ describe.only('SharedPassword', function(){
 			});
 		});
 
-		var sharedPasswords = [
-		]
-
-
 		// Create shares from User[0] -> User[1]
 		before(function(){
 			return knex
@@ -1336,6 +1445,190 @@ describe.only('SharedPassword', function(){
 		});
 
 		describe('Fails due to json invalidity', function(){
+			
+			var valid = {
+				owner: users[1].id,
+				origin_owner: users[0].id,
+				parent: null,
+				origin_password: passwords[users[0].username][1].id,
+				password: 'c29tZW90aGVycGFzc3dvcmQ='
+			}
+
+			describe('Wrong Type', function(){
+
+				it('throws an error when the model has invalid id', function(){
+					var invalid = {
+						id: true,
+						owner: users[1].id,
+						origin_owner: users[0].id,
+						parent: null,
+						origin_password: passwords[users[0].username][1].id,
+						password: 'c29tZW90aGVycGFzc3dvcmQ='
+					}				
+
+					var shared = new SharedPassword(invalid);
+					return shared.del()
+					.then(function(){
+	            		assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data.id is the wrong type.');
+					});
+				});
+
+				it('throws an error when the model has invalid password', function(){
+					var invalid = {
+						id: 42,
+						owner: users[1].id,
+						origin_owner: users[0].id,
+						parent: null,
+						origin_password: passwords[users[0].username][1].id,
+						password: true	
+					}				
+
+					var shared = new SharedPassword(invalid);
+					return shared.del()
+					.then(function(){
+	            		assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data.password is the wrong type.');
+					});
+				});
+
+				it('throws an error when the model has invalid parent', function(){
+					var invalid = {
+						id: 42,
+						owner: users[1].id,
+						origin_owner: users[0].id,
+						parent: true,
+						origin_password: passwords[users[0].username][1].id,
+						password: 'c29tZW90aGVycGFzc3dvcmQ='
+					}				
+
+					var shared = new SharedPassword(invalid);
+					return shared.del()
+					.then(function(){
+	            		assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data.parent is the wrong type.');
+					});
+				});
+
+				it('throws an error when the model has invalid owner', function(){
+					var invalid = {
+						id: 42,
+						owner: true,
+						origin_owner: users[0].id,
+						parent: null,
+						origin_password: passwords[users[0].username][1].id,
+						password: 'c29tZW90aGVycGFzc3dvcmQ='
+					}				
+
+					var shared = new SharedPassword(invalid);
+					return shared.del()
+					.then(function(){
+	            		assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data.owner is the wrong type.');
+					});
+				});
+		
+				it('throws an error when the model has invalid origin_owner', function(){
+					var invalid = {
+						id: 42,
+						owner: users[1].id,
+						origin_owner: true,
+						parent: null,
+						origin_password: passwords[users[0].username][1].id,
+						password: 'c29tZW90aGVycGFzc3dvcmQ='
+					}				
+
+					var shared = new SharedPassword(invalid);
+					return shared.del()
+					.then(function(){
+	            		assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data.origin_owner is the wrong type.');
+					});
+				});
+
+				it('throws an error when the model has invalid origin_password', function(){
+					var invalid = {
+						id: 42,
+						owner: users[1].id,
+						origin_owner: users[0].id,
+						parent: null,
+						origin_password: true,
+						password: 'c29tZW90aGVycGFzc3dvcmQ='
+					}				
+
+					var shared = new SharedPassword(invalid);
+					return shared.del()
+					.then(function(){
+	            		assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data.origin_password is the wrong type.');
+					});
+				});
+
+			})
+
+			describe('Pattern Mismatch', function(){
+			
+				it('throws an error when the model has invalid password', function(){
+					var invalid = {
+						id: 42,
+						owner: users[1].id,
+						origin_owner: users[0].id,
+						parent: null,
+						origin_password: passwords[users[0].username][1].id,
+						password: 'aa'
+					}				
+
+					var shared = new SharedPassword(invalid);
+					return shared.del()
+					.then(function(){
+	            		assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data.password pattern mismatch.');
+					});
+				});
+
+				it.skip('throws an error when the model has invalid id', function(){
+					var invalid = {
+						id: 'asdasd',
+						owner: users[1].id,
+						origin_owner: users[0].id,
+						parent: null,
+						origin_password: passwords[users[0].username][1].id,
+						password: 'c29tZW90aGVycGFzc3dvcmQ='
+					}				
+
+					var shared = new SharedPassword(invalid);
+					return shared.del()
+					.then(function(){
+	            		assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
+					})
+					.catch(ValidationError, function(err){
+						assert.equal(err.num, 1);
+						assert.equal(err.message, '1 error: data.id pattern mismatch.');
+					});
+				});
+
+			});
 		});
 
 		it('fails when trying to delete non-existant shared password', function(){
@@ -1360,13 +1653,147 @@ describe.only('SharedPassword', function(){
 		});
 
 		it('succeeds in deleting a password', function(){
+	
+			return User.find(users[1].id)
+			.then(SharedPassword.findAllSharedToMe)
+			.then(function(passwords){
+				assert.equal(passwords.length, 2);
+
+				return ( new SharedPassword(passwords[0]) ).del();
+			})
+			.then(function(r){
+				assert.equal(r, true);
+
+				return knex('shared_passwords')
+				.select()
+				.where('owner', users[1].id);
+			})
+			.then(function(rows){
+				assert.equal(rows.length, 1);
+			});
 
 		});
+
+
 
 
 	});
 
 	describe('#update', function(){
+		
+		var users = [
+			{
+				username: 'SharedPassword-Update-User01',
+				isAdmin: false,
+				salt: 'cGFzc3dvcmQ=',
+				password: 'cGFzc3dvcmQ=',
+				privatekey: 'cGFzc3dvcmQ=',
+				iv: 'cGFzc3dvcmQ=',
+				pk_salt: 'cGFzc3dvcmQ=',
+				publickey: 'cGFzc3dvcmQ='
+			},
+			{
+				username: 'SharedPassword-Update-User02',
+				isAdmin: false,
+				salt: 'cGFzc3dvcmQ=',
+				password: 'cGFzc3dvcmQ=',
+				privatekey: 'cGFzc3dvcmQ=',
+				iv: 'cGFzc3dvcmQ=',
+				pk_salt: 'cGFzc3dvcmQ=',
+				publickey: 'cGFzc3dvcmQ='
+			}
+		];
+		before(function(){
+			return knex
+			.insert(users[0])
+			.into('users')
+			.then(function(id){
+				users[0].id = id[0];
+
+				passwords[users[0].username][0].owner = id[0];
+				passwords[users[0].username][1].owner = id[0];
+			});
+		});
+		before(function(){
+			return knex
+			.insert(users[1])
+			.into('users')
+			.then(function(id){
+				users[1].id = id[0];
+
+			});
+		});
+
+		var passwords = {};
+		passwords[users[0].username] = [
+			{
+				parent 		: null,
+				owner 		: null,
+				title 		: 'SharedPassword-Update-Title001',
+				username 	: 'SharedPassword-Update-User001',
+				password 	: 'cGFzc3dvcmQ=',
+				note 		: 'This is clearly a note!',
+				url 		: null
+			},
+			{
+				parent 		: null,
+				owner 		: null,
+				title 		: 'SharedPassword-Update-Title002',
+				username 	: 'SharedPassword-Update-User002',
+				password 	: 'cGFzc3dvcmQ=',
+				note 		: 'This is clearly a note!',
+				url 		: null
+			}
+		];
+
+		// User[0] passwords
+		before(function(){
+			var password = passwords[users[0].username][0];
+			return knex
+			.insert(password)
+			.into('passwords')
+			.then(function(ids){
+				password.id = ids[0];
+			});
+		});
+		before(function(){
+			var password = passwords[users[0].username][1];
+			return knex
+			.insert(password)
+			.into('passwords')
+			.then(function(ids){
+				password.id = ids[0];
+			});
+		});
+
+		before(function(){
+			return knex
+			.insert({
+				owner: users[1].id,
+				origin_owner: users[0].id,
+				parent: null,
+				origin_password: passwords[users[0].username][0].id,
+				password: 'c29tZW90aGVycGFzc3dvcmQ='
+			})
+			.into('shared_passwords')
+			.then( );
+		});
+		before(function(){
+			return knex
+			.insert({
+				owner: users[1].id,
+				origin_owner: users[0].id,
+				parent: null,
+				origin_password: passwords[users[0].username][1].id,
+				password: 'c29tZW90aGVycGFzc3dvcmQ='
+			})
+			.into('shared_passwords')
+			.then( );
+		});
+
+		it('tests', function(){
+
+		})
 
 	});
 
