@@ -72,7 +72,6 @@
 			.then(function(res){
 
 				self.sharedPasswords = _.map(res.data, function(pwrd){ 
-					pwrd.shared = true;
 
 					if( pwrd.parent === null ){
 						pwrd.parent = -1;
@@ -157,15 +156,26 @@
 		}
 
 		function update(password){
-			console.log("Update: %j", password)
+			var url = undefined;
+			var filter = [];
+			if(password.origin_owner){
+				url = '/api/users/' + $auth.getPayload().uid + '/passwords/shares/' + password.id
+				filter = ['parent', 'password'];
+			}else{
+				url = '/api/users/' + $auth.getPayload().uid + '/passwords/' + password.id
+				filter = ['title', 'username', 'password', 'url', 'note', 'parent'];
+			}
+
 			var payload = {
 				method: 'PUT',
-				url: '/api/users/' + $auth.getPayload().uid + '/passwords/' + password.id,
-				data: _.pick(password, ['title', 'username', 'password', 'url', 'note', 'parent'])
+				url: url,
+				data: _.pick(password, filter)
 			}
-			console.log("Payload = %j", payload)
+			console.log("Payload: %j", payload)
 			return $http(payload);
 		}
+
+
 
 		function sharePassword(password, users){
 			console.log("%j", password);
