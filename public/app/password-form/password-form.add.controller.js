@@ -4,7 +4,7 @@
 		.module('ghost')
 		.controller('addController', AddController);
 		
-	function AddController(CategoryService, $http, $auth, $state, $stateParams, EncryptionService) {
+	function AddController(CategoryService, $http, $auth, $state, $stateParams, EncryptionService, PasswordService) {
 		var self = this;
 
 		// Text Strings
@@ -18,6 +18,7 @@
 		self.password = {};
 		self.title = "";
 		self.categories = [];
+		self.sharedWith = [];
 		self.users 		= [];
 		self.usernames 	= [];
 
@@ -55,29 +56,37 @@
 		.catch(function(err){
 			console.error(err);
 		})	
-    self.searchText = null;
-    self.selectedItem = null;
-self.selectedUsers = [];
-		self.querySearch = querySearch;
-		function querySearch (query) {
-			var results = query ? self.usernames.filter(createFilterFor(query)) : [];
-			return results;
-		}
 
-		function createFilterFor(query) {
-			var lowercaseQuery = angular.lowercase(query);
-			return function filterFn(vegetable) {
-				return (angular.lowercase(vegetable).indexOf(lowercaseQuery) === 0);
-			};
-		}
-		self.transformChip = transformChip;
-		function transformChip(chip) {
-		// If it is an object, it's already a known chip
-		if (angular.isObject(chip)) {
-			return chip;
-		}
-		// Otherwise, create a new one
-		return { name: chip, type: 'new' }
+		{
+			/*
+				Begin Shamelessly stolen from https://material.angularjs.org/latest/demo/chips
+			*/
+			self.searchText = null;
+			self.selectedItem = null;
+			self.selectedUsers = [];
+			self.querySearch = querySearch;
+			function querySearch (query) {
+				var results = query ? self.users.filter(createFilterFor(query)) : [];
+				return results;
+			}
+			function createFilterFor(query) {
+				var lowercaseQuery = angular.lowercase(query);
+				return function filterFn(user) {
+					return (angular.lowercase(user.username).indexOf(lowercaseQuery) === 0);
+				};
+			}
+			self.transformChip = transformChip;
+			function transformChip(chip) {
+				// If it is an object, it's already a known chip
+				if (angular.isObject(chip)) {
+					return chip;
+				}
+				// Otherwise, create a new one
+				return { name: chip, type: 'new' }
+			}
+			/*
+				End Shamelessly stolen from https://material.angularjs.org/latest/demo/chips
+			*/
 		}
 
 		// We're creating a new password
@@ -101,15 +110,20 @@ self.selectedUsers = [];
 				});
 			})
 			.then(function(res){
-				$state.transitionTo('home');
+
+				if( self.sharedWith.length === 0 ){
+					return $state.transitionTo('home');
+				}
+				self.password.id = res.data.id;
+				return PasswordService.sharePassword(self.password, self.sharedWith);	
+			})
+			.then(function(res){
+				return $state.transitionTo('home');
 			})
 			.catch(function(err){
 				console.log("AddControler Error: %j", err);
 
 				// Handle validation errors
-				if( err.data.error === "validation" ){
-					
-				}
 				
 			});
 		}
