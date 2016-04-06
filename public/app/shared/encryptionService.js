@@ -16,7 +16,7 @@
 		self.generateKeyPair 		= generateKeyPair;
 		self.createEncryptionKey  	= createEncryptionKey;
 		self.encryptPrivateKey 		= encryptPrivateKey;
-
+		self.encryptPassword		= encryptPassword;
 
 
 		self.getEncryptionKey 		= getEncryptionKey;
@@ -264,6 +264,17 @@
 				return forge.util.encode64(encrypted);
 			});
 		};
+
+		function encryptPassword(password, key){
+			var binaryPublicKey = forge.util.decode64(key);
+			var publicKey 		= forge.pki.publicKeyFromPem(binaryPublicKey);
+			
+			var encrypted 		= publicKey.encrypt(password, 'RSA-OAEP', {
+				md: forge.md.sha256.create()
+			});
+
+			return forge.util.encode64(encrypted);
+		}
 	}
 
 })();
