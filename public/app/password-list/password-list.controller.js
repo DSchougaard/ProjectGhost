@@ -91,6 +91,8 @@
 
 				var password = _.findWhere(self.entries, {id: index});
 
+				// Get the users to whom the password is shared
+				if( !password.origin_owner ){
 					$http({
 						method: 'GET',
 						url: 'api/users/'+$auth.getPayload().uid+'/passwords/'+password.id+'/shares'
@@ -101,8 +103,10 @@
 					.catch(function(err){
 						console.error(err);
 					})
+				}
+
 			
-			}else {
+			}else{
 				self.selectedIndex = undefined;
 			}
 		}
