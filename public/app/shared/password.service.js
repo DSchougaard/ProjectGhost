@@ -16,6 +16,7 @@
 
 		// Exposed Interface
 		self.fetch  	= fetch;
+		self.update 	= update;
 		self.sharePassword = sharePassword;
 
 		// --- Category Password Controls
@@ -69,7 +70,7 @@
 				});
 			})
 			.then(function(res){
-				console.log(res)
+
 				self.sharedPasswords = _.map(res.data, function(pwrd){ 
 					pwrd.shared = true;
 
@@ -83,7 +84,6 @@
 
 				self.passwords = self.passwords.concat(self.sharedPasswords);
 
-				console.dir(self.sharedPasswords)
 				$rootScope.$broadcast('passwords', 'fetched');				
 			})
 			.catch(function(err){
@@ -157,15 +157,18 @@
 		}
 
 		function update(password){
-			return $http({
-				metod: 'PUT',
+			console.log("Update: %j", password)
+			var payload = {
+				method: 'PUT',
 				url: '/api/users/' + $auth.getPayload().uid + '/passwords/' + password.id,
-				data: _.omit(password, 'id')
-			});
+				data: _.pick(password, ['title', 'username', 'password', 'url', 'note', 'parent'])
+			}
+			console.log("Payload = %j", payload)
+			return $http(payload);
 		}
 
 		function sharePassword(password, users){
-				console.log("%j", password);
+			console.log("%j", password);
 
 			var httpRequests = [];
 			// Queue up all http requests to share
@@ -220,10 +223,10 @@
 				}
 
 				return;
-
 			});
-
 		};
+
+
 
 	};
 })();
