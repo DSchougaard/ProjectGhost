@@ -230,7 +230,7 @@ module.exports = class SharedPassword{
 	update(input, knex){
 		// Optinal DB connection overload for transactions
 		var knex = ( knex === undefined ? knexGlobal : knex );
-		
+
 		var self = this;
 		var validate = schemagic.sharedPassword.validate(self);
 		if( !validate.valid ){
@@ -244,9 +244,10 @@ module.exports = class SharedPassword{
 
 		return knex
 		.update(input)
-		.from('passwords')
+		.from('shared_passwords')
 		.where('id', self.id)
 		.then(function(num){
+
 			if( num.length === 0 ){
 				return new Promise.reject( new SqlError('Password ID was not found') );
 			}
