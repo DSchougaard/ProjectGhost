@@ -26,7 +26,7 @@ const SqlError 						= require(__base + 'errors/SqlError.js');
 // Database injection
 var knex 							= require(__base + 'database.js');
 
-describe.only('SharedPassword', function(){
+describe('SharedPassword', function(){
 
 	describe('#findSharedFromMe', function(){
 		var users = [
