@@ -46,8 +46,15 @@
 					children: structure,
 				};
 
+				var sharedPasswords = {
+					title: 'Shared Passwords',
+					id: -1,
+					children: []
+				}
+
 				self.categories = [];
 				self.categories.push(personalPasswords);
+				self.categories.push(sharedPasswords);
 				self.select = self.cachedSelection ? self.cachedSelection : self.categories[0];
 				treeSelect(self.select);
 			}) 
