@@ -14,20 +14,19 @@
 			cancel: 'Cancel'
 		}
 
-
-		self.password = {};
-		self.title = "";
+		// Literals
+		self.password 	= {};
 		self.categories = [];
 		self.sharedWith = [];
 		self.users 		= [];
-		self.usernames 	= [];
 
 		// Field for the Tree-Menu to properly select the parent, when editting.
-		self.selection = {};
+		self.selection 	= {};
 
 		// Interface
 		self.treeSelect = treeSelect;
-		self.submit = submit;
+		self.submit 	= submit;
+		self.querySearch = querySearch;
 
 		// Fetch category data
 		CategoryService.structure()
@@ -50,44 +49,30 @@
 		.then(function(res){
 			console.log("%j", res.data)
 			self.users = res.data;
-			self.usernames = _.pluck(self.users, 'username');
-			console.log("Usernames %j", self.usernames)
 		})
 		.catch(function(err){
 			console.error(err);
 		})	
 
-		{
-			/*
-				Begin Shamelessly stolen from https://material.angularjs.org/latest/demo/chips
-			*/
-			self.searchText = null;
-			self.selectedItem = null;
-			self.selectedUsers = [];
-			self.querySearch = querySearch;
-			function querySearch (query) {
-				var results = query ? self.users.filter(createFilterFor(query)) : [];
-				return results;
-			}
-			function createFilterFor(query) {
-				var lowercaseQuery = angular.lowercase(query);
-				return function filterFn(user) {
-					return (angular.lowercase(user.username).indexOf(lowercaseQuery) === 0);
-				};
-			}
-			self.transformChip = transformChip;
-			function transformChip(chip) {
-				// If it is an object, it's already a known chip
-				if (angular.isObject(chip)) {
-					return chip;
-				}
-				// Otherwise, create a new one
-				return { name: chip, type: 'new' }
-			}
-			/*
-				End Shamelessly stolen from https://material.angularjs.org/latest/demo/chips
-			*/
+
+
+
+		/*
+			Begin Shamelessly stolen from https://material.angularjs.org/latest/demo/chips
+		*/
+		function querySearch(query) {
+			var results 	= query ? self.users.filter(createFilterFor(query)) : [];
+			return results;
 		}
+		function createFilterFor(query) {
+			var lowercaseQuery = angular.lowercase(query);
+			return function filterFn(user) {
+				return (angular.lowercase(user.username).indexOf(lowercaseQuery) === 0);
+			};
+		}
+		/*
+			End Shamelessly stolen from https://material.angularjs.org/latest/demo/chips
+		*/
 
 		// We're creating a new password
 		self.selection.id = null;
