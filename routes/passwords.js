@@ -23,9 +23,7 @@ const resolve 			= require(__base + 'middlewares/resolve.js');
 
 module.exports = function(server, knex, log){
 
-
-
-	server.get('/api/users/:userId/passwords/shares',authentication, resolve, authorization, function(req, res, next){
+	server.get('/api/users/:userId/passwords/shares', authentication, resolve, authorization, function(req, res, next){
 		SharedPassword.findAllSharedToMe(req.resolved.params.user)
 		.then(function(shares){
 			res.send(200, shares);
@@ -126,7 +124,6 @@ module.exports = function(server, knex, log){
 		});
 	});
 
-
 	server.del('/api/users/:userId/passwords/:passwordId', authentication, resolve, authorization, function(req, res, next){
 		log.info({ method: 'DEL', path: '/api/passwords', payload: req.params.passwordId });
 
@@ -194,8 +191,6 @@ module.exports = function(server, knex, log){
 		data.origin_password 	= req.resolved.params.password.id;
 		data.origin_owner 		= req.resolved.params.user.id;
 
-		console.log("%j", data);
-
 		SharedPassword.create(data)
 		.then(function(shared){
 			res.send(200, shared);
@@ -218,7 +213,6 @@ module.exports = function(server, knex, log){
 
 		req.resolved.params.password.sharedWith()
 		.then(function(users){
-			console.log("%j", users);
 			res.send(200, users);
 			return next();
 		})
@@ -239,8 +233,8 @@ module.exports = function(server, knex, log){
 
 	server.put('/api/users/:userId/passwords/shares/:shareId', authentication, resolve, authorization, function(req, res, next){
 		req.resolved.params.share.update(req.body)
-		.then(function(res){
-			res.send(200, res);
+		.then(function(updated){
+			res.send(200, updated);
 			return next();
 		})
 		.catch(ValidationError, function(err){

@@ -182,7 +182,7 @@ module.exports = class Password{
 		if( !validate.valid ){
 			return new Promise.reject( new ValidationError(validate.errors) );
 		}
-		console.log(self.id);
+
 		return knex('shared_passwords')
 		.join('users', 'shared_passwords.owner', '=', 'users.id')
 		.where('shared_passwords.origin_password', self.id)

@@ -17,6 +17,8 @@ var User 						= require(__base + 'models/user.js')
 var Password 					= require(__base + 'models/password.js')
 var Category 					= require(__base + 'models/category.js')
 var Invite  					= require(__base + 'models/invite.js')
+var SharedPassword 				= require(__base + 'models/sharedPassword.js')
+
 
 module.exports = function(req, res, next){
 
@@ -28,7 +30,8 @@ module.exports = function(req, res, next){
 		user: User,
 		password: Password,
 		category: Category,
-		invite: Invite
+		invite: Invite,
+		share: SharedPassword
 	};
 
 	// Create empty arrays for storage of identifiers and promises
