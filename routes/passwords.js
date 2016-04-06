@@ -23,6 +23,27 @@ const resolve 			= require(__base + 'middlewares/resolve.js');
 
 module.exports = function(server, knex, log){
 
+
+
+	server.get('/api/users/:userId/passwords/shares',authentication, resolve, authorization, function(req, res, next){
+		SharedPassword.findAllSharedToMe(req.resolved.params.user)
+		.then(function(shares){
+			res.send(200, shares);
+			return next();
+		})
+		.catch(ValidationError, function(err){
+			return next( new ValidationRestError('Validation error', err.errors));
+		})
+		.catch(UserDoesNotExistError, PasswordDoesNotExistError, function(err){
+			return next( new restify.errors.NotFoundError(err.message) );
+		})
+		.catch(SqlError, function(err){
+			res.send(500, 'Internal database error');
+			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
+			return next();
+		});
+	});
+
 	/*
 		Own Password Routes
 	*/
@@ -104,7 +125,8 @@ module.exports = function(server, knex, log){
 			return next();
 		});
 	});
-	
+
+
 	server.del('/api/users/:userId/passwords/:passwordId', authentication, resolve, authorization, function(req, res, next){
 		log.info({ method: 'DEL', path: '/api/passwords', payload: req.params.passwordId });
 
@@ -212,8 +234,8 @@ module.exports = function(server, knex, log){
 		.catch(function(err){
 			console.log(err);
 		})
-
 	});
+
 
 	server.put('/api/users/:userId/passwords/shares/:shareId', authentication, resolve, authorization, function(req, res, next){
 		req.resolved.params.share.update(req.body)
@@ -232,26 +254,8 @@ module.exports = function(server, knex, log){
 			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
 			return next();
 		});
-	})
+	});
 
-	server.get('/api/users/:userId/passwords/shares', authentication, resolve, authorization, function(req, res, next){
-		SharedPassword.findAllSharedToMe(req.resolved.params.user)
-		.then(function(shares){
-			res.send(200, shares);
-			return next();
-		})
-		.catch(ValidationError, function(err){
-			return next( new ValidationRestError('Validation error', err.errors));
-		})
-		.catch(UserDoesNotExistError, PasswordDoesNotExistError, function(err){
-			return next( new restify.errors.NotFoundError(err.message) );
-		})
-		.catch(SqlError, function(err){
-			res.send(500, 'Internal database error');
-			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
-			return next();
-		});
-	})
 
 	server.get('/api/users/:userId/passwords/shared', authentication, resolve, authorization, function(req, res, next){
 		SharedPassword.findSharedFromMe(req.resolved.params.user)
