@@ -67,6 +67,7 @@ knex.schema.createTableIfNotExists('shared_passwords', function(table){
 	table.integer('parent').unsigned().references('id').inTable('categories').nullable();
 	table.integer('origin_password').unsigned().references('id').inTable('passwords').notNullable();
 	table.string('password').notNullable();
+	table.primary(['owner', 'origin_password']);
 }).then();
 
 
