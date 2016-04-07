@@ -116,9 +116,7 @@ module.exports = class Password{
             input.id = id[0];
             return new Promise.resolve( new Password(input) );
             
-        }, function(err){
-        	return new Promise.reject(err);
-        }, SQLErrorHandler);
+        },SQLErrorHandler);
     };
 	
 	update(input){
@@ -186,8 +184,9 @@ module.exports = class Password{
 		return knex('shared_passwords')
 		.join('users', 'shared_passwords.owner', '=', 'users.id')
 		.where('shared_passwords.origin_password', self.id)
-		.select('users.id', 'users.username')
+		.select('shared_passwords.id as shared_password', 'users.id', 'users.username')
 		.then(function(rows){
+			console.log("%j", rows);
 			return new Promise.resolve(rows);
 		});
 	};
