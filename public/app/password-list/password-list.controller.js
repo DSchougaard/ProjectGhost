@@ -118,7 +118,7 @@
 
 		function hide(index){
 			var password = _.findWhere(self.entries, {id: index});
-			passowrd.decryptedPassword = undefined;
+			password.decryptedPassword = undefined;
 		}
 
 		function search(){

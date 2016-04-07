@@ -18,6 +18,7 @@
 		self.fetch  	= fetch;
 		self.update 	= update;
 		self.sharePassword = sharePassword;
+		self.unsharePassword = unsharePassword;
 
 		// --- Category Password Controls
 		self.select 	= select;
@@ -180,62 +181,96 @@
 		function sharePassword(password, users){
 			console.log("%j", password);
 
-			var httpRequests = [];
-			// Queue up all http requests to share
-			for( var i = 0 ; i < users.length ; i++ ){
-				console.log("Ùser %j", users[i])
-				var encr = EncryptionService.encryptPassword(password.password, users[i].publickey);
-				httpRequests.push(
-					$http({
-						method: 'POST',
-						url: '/api/users/'+$auth.getPayload().uid+'/passwords/'+password.id+'/shares',
-						data: { owner: users[i].id, password: encr }
-					})
-				);
-			}
+			return self.decrypt(password)
+			.then(function(password){
 
-			// Execute the Requests
-			return $q.allSettled(httpRequests)
-			.then(function(responses){
-
-				var results = [];
-
-				/*
-					{
-						shared: [User2, User1]
-						failed:[
-							{User1, cause}
-						]
-					}
-				*/
-				for( var i = 0 ; i < responses.length ; i++ ){
-
-					if( responses[i].state === 'rejected' ){
-						if( responses[i].reason.data.message === 'Validation error'){
-							for( var j = 0 ; j < responses[j].reason.data.errors.length ; j++ ){
-								$mdToast.show($mdToast.simple()
-									.textContent('Validation error! '+ responses[j].reason.data.errors[j].field + ' ' + responses[i].reason.data.errors[j].error )
-									.position("top right")
-									.hideDelay(3000)
-								);
-							}
-						}else{
-							$mdToast.show(
-								$mdToast.simple()
-									.textContent('Error sharing with user ' + users[i].username + ': ' + responses[i].reason.data.message )
-									.position("top right")
-									.hideDelay(3000)
-							);
-	
-						}
-
-					}
+				var httpRequests = [];
+				// Queue up all http requests to share
+				for( var i = 0 ; i < users.length ; i++ ){
+					console.log("Ùser %j", users[i])
+					var encr = EncryptionService.encryptPassword(password.decryptedPassword, users[i].publickey);
+					httpRequests.push(
+						$http({
+							method: 'POST',
+							url: '/api/users/'+$auth.getPayload().uid+'/passwords/'+password.id+'/shares',
+							data: { owner: users[i].id, password: encr }
+						})
+					);
 				}
 
-				return;
+				// Execute the Requests
+				return $q.allSettled(httpRequests)
+				.then(function(responses){
+
+					var results = [];
+
+					/*
+						{
+							shared: [User2, User1]
+							failed:[
+								{User1, cause}
+							]
+						}
+					*/
+					for( var i = 0 ; i < responses.length ; i++ ){
+
+						if( responses[i].state === 'rejected' ){
+							if( responses[i].reason.data.message === 'Validation error'){
+								for( var j = 0 ; j < responses[j].reason.data.errors.length ; j++ ){
+									$mdToast.show($mdToast.simple()
+										.textContent('Validation error! '+ responses[i].reason.data.errors[j].field + ' ' + responses[i].reason.data.errors[j].error )
+										.position("top right")
+										.hideDelay(3000)
+									);
+								}
+							}else{
+								$mdToast.show(
+									$mdToast.simple()
+										.textContent('Error sharing with user ' + users[i].username + ': ' + responses[i].reason.data.message )
+										.position("top right")
+										.hideDelay(3000)
+								);
+		
+							}
+
+						}
+					}
+
+					return;
+				});
+
 			});
 		};
 
+		function unsharePassword(password, users){
+			var httpRequests = [];
+
+			for( var i = 0 ; i < users.length ; i++ ){
+				httpRequests.push($http({
+					method: 'DELETE',
+					url: '/api/users/'+$auth.getPayload().uid+'/passwords/shares/'+users[i].shared_password
+				}));
+			}
+
+			return $q.allSettled(httpRequests)
+			.then(function(responses){
+				for( var j = 0 ; j < responses.length ; j++ ){
+					if( responses[j].state === 'rejected' ){
+
+						console.error("%j", responses[j].reason);
+						
+						$mdToast.show(
+							$mdToast.simple()
+								.textContent('Error! ' + responses[j].reason.data.message )
+								.position("top right")
+								.hideDelay(3000)
+						);
+					}
+					return;
+				}
+			});
+
+		}
 
 
 	};
