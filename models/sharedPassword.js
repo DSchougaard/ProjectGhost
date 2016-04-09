@@ -17,6 +17,7 @@ const ValidationRestError 		= require(__base + 'errors/ValidationRestError.js');
 const CategoryDoesNotExistError = require(__base + 'errors/CategoryDoesNotExistError.js');
 const ConflictError 			= require(__base + 'errors/ConflictError.js');
 const UnauthorizedError 		= require(__base + 'errors/UnauthorizedError.js');
+const AlreadyExistError			= require(__base + 'errors/Internal/AlreadyExistError.js');
 
 // Database Inject
 var knexGlobal 					= require(__base + 'database.js');
@@ -144,7 +145,7 @@ module.exports = class SharedPassword{
 		}, SQLErrorHandler);
 	}
 
-	static create(input, knex){
+	static _create(input, knex){
 		// Optinal DB connection overload for transactions
 		var knex = ( knex === undefined ? knexGlobal : knex );
 
@@ -175,6 +176,61 @@ module.exports = class SharedPassword{
 
 			return Promise.all([ User.find(data.origin_owner), User.find(data.owner), Password.find(data.origin_password) ]);
 		});
+	}
+
+	static create(input, knex){
+		// Optinal DB connection overload for transactions
+		var knex = ( knex === undefined ? knexGlobal : knex );
+
+		var validate = schemagic.sharedPasswordInput.validate(input);
+		if( !validate.valid ){
+			return new Promise.reject( new ValidationError(validate.errors) );
+		}
+
+		var data = {};
+		_.extend(data, input);
+		/*
+			Can contain:
+			Parent
+			Password
+		*/
+
+		return knex.transaction(function(trx){
+
+			return trx
+			.select()
+			.from('shared_passwords')
+			.where({
+				owner: input.owner,
+				origin_owner: input.origin_owner,
+				origin_password: input.origin_password
+			})
+			.then(function(rows){
+				if( rows.length !== 0 ){
+					return new Promise.reject( new AlreadyExistError('Shared password') );
+				}
+
+				return trx
+				.insert(input)
+				.into('shared_passwords')
+				.then(function(ids){
+					data.id = ids[0];
+	        		return new Promise.resolve( new SharedPassword(input) );
+				});
+
+			});
+		})
+		.catch(function(err){
+			if( err.errno === 5 && err.code === 'SQLITE_BUSY'){
+				return new Promise.reject( new SqlError('database temporarily unavailable') );
+			}else if( err.errno !== 19 && err.code !== 'SQLITE_CONSTRAINT'  ){
+				return new Promise.reject( err );
+			}
+
+			return Promise.all([ User.find(data.origin_owner), User.find(data.owner), Password.find(data.origin_password) ]);
+		});
+
+
 	}
 
 	static sourceDel(password, knex){

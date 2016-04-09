@@ -22,6 +22,9 @@ const PasswordDoesNotExistError 	= require(__base + 'errors/PasswordDoesNotExist
 const ValidationError 				= require(__base + 'errors/ValidationError.js');
 const UserDoesNotExistError 		= require(__base + 'errors/UserDoesNotExistError.js');
 const SqlError 						= require(__base + 'errors/SqlError.js');
+const ConflictError 				= require(__base + 'errors/ConflictError.js');
+const AlreadyExistError 			= require(__base + 'errors/Internal/AlreadyExistError.js');
+
 
 // Database injection
 var knex 							= require(__base + 'database.js');
@@ -925,7 +928,7 @@ describe('SharedPassword', function(){
 			});
 		});
 
-		it('success fully creates a shared password', function(){
+		it('successfully creates a shared password', function(){
 
 			var shared = {
 				owner: users[1].id, 
@@ -963,10 +966,23 @@ describe('SharedPassword', function(){
 
 
 			return SharedPassword.create(shared)
-			.then(SharedPassword.create(shared))
-			.then(function(shared){
-	            assert.fail(undefined,undefined, 'Method succeeded, when it should have  failed');
-			});
+			.then(function(){
+			})
+			.catch(function(e){
+		        assert.fail(undefined,undefined, 'Method failed, when it should have succeeded');
+			})
+			.finally(function(){
+				return SharedPassword.create(shared)
+				.then(function(shared){
+					console.dir(shared);
+		            assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
+				})
+				.catch(AlreadyExistError, function(err){
+					console.dir(err)
+					assert.equal(err.message, 'Shared password already exists')
+				});
+			})
+
 		})
 
 
@@ -2013,7 +2029,6 @@ describe('SharedPassword', function(){
 				assert.equal(shared.origin_owner,		sharedPasswords[1].origin_owner);
 				assert.equal(shared.origin_passwordre, 	sharedPasswords[1].origin_passwordre);
 			})	
-
 		});
 
 		it('successfully updates category', function(){
@@ -2032,7 +2047,44 @@ describe('SharedPassword', function(){
 				assert.equal(shared.origin_owner, 		sharedPasswords[1].origin_owner);
 				assert.equal(shared.origin_passwordre, 	sharedPasswords[1].origin_passwordre);
 			})	
+		});
 
+
+
+		after(function(){
+			return knex
+			.del()
+			.from('shared_passwords')
+			.where('origin_owner', users[0].id)
+			.orWhere('origin_owner', users[1].id)
+			.then();
+		});
+
+		after(function(){
+			return knex
+			.del()
+			.from('passwords')
+			.where('owner', users[0].id)
+			.orWhere('owner', users[1].id)
+			.then();
+		});
+
+		after(function(){
+			return knex
+			.del()
+			.from('categories')
+			.where('owner', users[0].id)
+			.orWhere('owner', users[1].id)
+			.then();
+		})
+
+		after(function(){
+			return knex
+			.del()
+			.from('users')
+			.where('id', users[0].id)
+			.orWhere('id', users[1].id)
+			.then();
 		});
 
 	});
