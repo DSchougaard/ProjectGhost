@@ -21,6 +21,7 @@ describe('Models', function(){
 	require(__base + 'test/models/category.js');
 	require(__base + 'test/models/invite.js');
 	require(__base + 'test/models/sharedPassword.js');
+	require(__base + 'test/models/audit.js');
 });
 
 describe('Middlewares', function(){

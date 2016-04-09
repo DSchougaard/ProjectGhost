@@ -70,6 +70,16 @@ knex.schema.createTableIfNotExists('shared_passwords', function(table){
 }).then();
 
 
+knex.schema.createTableIfNotExists('audit', function(table){
+	table.increments('id').primary();
+	table.integer('userId').unsigned().references('id').inTable('users').notNullable();
+	table.string('targetType').unsigned().notNullable();
+	table.integer('targetId').unsigned();
+	table.integer('action').unsigned().notNullable();
+	table.dateTime('time').notNullable();
+	table.string('host').notNullable();
+}).then();
+
 
 knex('users').insert(data.userData)
 .then(function(r){
