@@ -202,6 +202,9 @@ module.exports = function(server, knex, log){
 		.catch(UserDoesNotExistError, PasswordDoesNotExistError, function(err){
 			return next( new restify.errors.NotFoundError(err.message) );
 		})
+		.catch(AlreadyExistError, function(err){
+			return next( new restify.errors.BadRequestError('Password is already shared to that user') );
+		})
 		.catch(SqlError, function(err){
 			res.send(500, 'Internal database error');
 			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
