@@ -57,13 +57,18 @@ module.exports = class Audit{
 			time: moment().unix(),
 		}
 
-		payload.targetType = obj instanceof User 			? 'USER' : '';
-		payload.targetType = obj instanceof Password 		? 'PASSWORD' : '';
-		payload.targetType = obj instanceof Category 		? 'CATEGORY' : '';
-		payload.targetType = obj instanceof Invite 			? 'INVITE' : '';
-		payload.targetType = obj instanceof SharedPassword 	? 'SHAREDPASSWORD' : '';
+		if( typeof obj === 'object'  ){
+			payload.targetType = obj instanceof User 			? 'USER' : '';
+			payload.targetType = obj instanceof Password 		? 'PASSWORD' : '';
+			payload.targetType = obj instanceof Category 		? 'CATEGORY' : '';
+			payload.targetType = obj instanceof Invite 			? 'INVITE' : '';
+			payload.targetType = obj instanceof SharedPassword 	? 'SHAREDPASSWORD' : '';
+		}else{
+			payload.targetType = obj;
+		}
 
-		return knex('audit')
+
+		knex('audit')
 		.insert(payload)
 		.then()
 		.catch(function(e){

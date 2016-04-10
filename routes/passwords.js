@@ -1,6 +1,7 @@
 const restify 			= require('restify');
 const knex 				= require('knex');
 const _ 				= require('underscore');
+const get_ip			= require('ipware')().get_ip;
 
 const authHelpers 		= require(__base + 'helpers/authHelpers.js');
 const constants 		= require(__base + 'helpers/constants.json');
@@ -8,6 +9,7 @@ const constants 		= require(__base + 'helpers/constants.json');
 const Password 			= require(__base + 'models/password.js');
 const User 				= require(__base + 'models/user.js');
 const SharedPassword 	= require(__base + 'models/sharedPassword.js');
+const Audit				= require(__base + 'models/audit.js');
 
 // Errors
 const PasswordDoesNotExistError = require(__base + 'errors/PasswordDoesNotExistError.js');
@@ -27,6 +29,7 @@ module.exports = function(server, knex, log){
 		SharedPassword.findAllSharedToMe(req.resolved.params.user)
 		.then(function(shares){
 			res.send(200, shares);
+			Audit.report(req.resolved.user, get_ip(req).clientIp, 'Shared Password Collection', 'READ');
 			return next();
 		})
 		.catch(ValidationError, function(err){
@@ -52,6 +55,7 @@ module.exports = function(server, knex, log){
 		Password.findAll(req.resolved.user)
 		.then(function(passwords){
 			res.send(200, passwords);
+			Audit.report(req.resolved.user, get_ip(req).clientIp, 'Password Collection', 'READ');
 			return next();
 		})
 		.catch(UserDoesNotExistError, function(err){
@@ -74,6 +78,7 @@ module.exports = function(server, knex, log){
 
 	server.get('/api/users/:userId/passwords/:passwordId', authentication, resolve, authorization, function(req, res, next){
 		res.send(200, req.resolved.params.password);
+		Audit.report(req.resolved.user, get_ip(req).clientIp, req.resolved.params.password, 'READ');
 		return next();
 	});
 
@@ -103,6 +108,7 @@ module.exports = function(server, knex, log){
 		.then(function(password){
 			log.info({ method: 'POST', path: '/api/password', user: req.user, message: 'Password added' });
 			res.send(201, {message: 'OK', id: password.id});
+			Audit.report(req.resolved.user, get_ip(req).clientIp, password, 'CREATE');
 			return next();
 		})
 		.catch(UserDoesNotExistError, function(err){
@@ -130,6 +136,7 @@ module.exports = function(server, knex, log){
 		(req.resolved.params.password).del()
 		.then(function(password){
 			res.send(200, 'OK');
+			Audit.report(req.resolved.user, get_ip(req).clientIp, req.resolved.params.password, 'DELETE');
 			return next();
 		})
 		.catch(ValidationError, function(err){
@@ -158,6 +165,7 @@ module.exports = function(server, knex, log){
 		.then(function(success){
 			if( success ){
 				res.send(200, 'OK');
+				Audit.report(req.resolved.user, get_ip(req).clientIp, success, 'UPDATE');
 			}else{
 				// Not expected...
 				res.send(500, 'Error updating user');
@@ -194,6 +202,7 @@ module.exports = function(server, knex, log){
 		SharedPassword.create(data)
 		.then(function(shared){
 			res.send(200, shared);
+			Audit.report(req.resolved.user, get_ip(req).clientIp, shared, 'CREATE');
 			return next();
 		})
 		.catch(ValidationError, function(err){
@@ -217,6 +226,7 @@ module.exports = function(server, knex, log){
 		req.resolved.params.password.sharedWith()
 		.then(function(users){
 			res.send(200, users);
+			Audit.report(req.resolved.user, get_ip(req).clientIp, req.resolved.params.password, 'READ');
 			return next();
 		})
 		.catch(ValidationError, function(err){
@@ -238,6 +248,7 @@ module.exports = function(server, knex, log){
 		req.resolved.params.share.update(req.body)
 		.then(function(updated){
 			res.send(200, updated);
+			Audit.report(req.resolved.user, get_ip(req).clientIp, updated, 'UPDATE');
 			return next();
 		})
 		.catch(ValidationError, function(err){
@@ -258,6 +269,7 @@ module.exports = function(server, knex, log){
 		SharedPassword.findSharedFromMe(req.resolved.params.user)
 		.then(function(shared){
 			res.send(200, shared);
+			Audit.report(req.resolved.user, get_ip(req).clientIp, shared, 'READ');
 			return next();
 		})
 		.catch(ValidationError, function(err){
@@ -277,6 +289,7 @@ module.exports = function(server, knex, log){
 		req.resolved.params.share.del()
 		.then(function(r){
 			res.send(200, r);
+			Audit.report(req.resolved.user, get_ip(req).clientIp, req.resolved.params.share, 'DELETE');
 			return next();
 		})
 		.catch(ValidationError, function(err){

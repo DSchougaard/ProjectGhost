@@ -25,7 +25,7 @@ const AlreadyExistError 			= require(__base + 'errors/Internal/AlreadyExistError
 // Database injection
 var knex 							= require(__base + 'database.js');
 
-describe.only('Audit', function(){
+describe('Audit', function(){
 
 	describe('#report', function(){
 
