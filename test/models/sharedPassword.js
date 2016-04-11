@@ -1729,7 +1729,6 @@ describe('SharedPassword', function(){
 			.orWhere('id', users[1].id)
 			.then();
 		});
-
 	});
 
 	describe('#update', function(){
@@ -2086,7 +2085,6 @@ describe('SharedPassword', function(){
 			.orWhere('id', users[1].id)
 			.then();
 		});
-
 	});
 
 });

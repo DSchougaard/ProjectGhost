@@ -30,6 +30,8 @@ module.exports = function(server, log){
 		Invite.create()
 		.then(function(invite){
 			res.send(200, invite.link);
+			Audit.report(req.resolved.user, get_ip(req).clientIp, 'Invite', invite.id, 'CREATE');
+
 			return next();
 		});
 	});
@@ -62,6 +64,10 @@ module.exports = function(server, log){
 		(req.resolved.params.invite).use(req.body)
 		.then(function(user){
 			res.send(200, {message: 'OK', id: user.id});
+
+			Audit.report(user, get_ip(req).clientIp, 'Invite', req.resolved.params.invite.id, 'DELETE');
+			Audit.report(user, get_ip(req).clientIp, 'User', user.id, 'CREATE');
+
 			return next();
 		})
 		.catch(AlreadyExistError, function(err){
