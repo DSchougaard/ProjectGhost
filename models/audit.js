@@ -48,7 +48,7 @@ class Action{
 
 module.exports = class Audit{
 
-	static report(user, host, obj, action){
+	static report(user, host, targetType, targetId, action){
 
 		var validate = schemagic.user.validate(user);
 		if( !validate.valid ){
@@ -58,20 +58,10 @@ module.exports = class Audit{
 		var payload = {
 			userId: user.id,
 			host: host,
+			targetType: targetType.toLowerCase(),
+			targetId: targetId,
 			action: (new Action(action)).id(),
 			time: moment().unix(),
-		}
-
-		if( typeof obj === 'object'  ){
-			payload.targetType = obj instanceof User 			? 'USER' : '';
-			payload.targetType = obj instanceof Password 		? 'PASSWORD' : '';
-			payload.targetType = obj instanceof Category 		? 'CATEGORY' : '';
-			payload.targetType = obj instanceof Invite 			? 'INVITE' : '';
-			payload.targetType = obj instanceof SharedPassword 	? 'SHAREDPASSWORD' : '';
-
-			payload.targetId   = obj.id;
-		}else{
-			payload.targetType = obj;
 		}
 
 

@@ -73,7 +73,7 @@ describe.only('Audit', function(){
 		it('creates a report in the DB', function(){
 			return Promise.all([User.find(user.id), Password.find(password.id)])
 			.spread(function(user, password){
-				return Audit.report(user, 'localhost', password, 'READ')
+				return Audit.report(user, 'localhost', 'password', password.id, 'READ')
 			})
 			.then(function(audit){
 				return knex('audit')
@@ -82,6 +82,12 @@ describe.only('Audit', function(){
 			})
 			.then(function(rows){
 				assert.equal(rows.length, 1);
+
+				assert.equal(rows[0].userId, user.id);
+				assert.equal(rows[0].targetType, 'password');
+				assert.equal(rows[0].action, 1);
+				assert.equal(rows[0].host, 'localhost');
+
 			})
 			
 		})
@@ -92,7 +98,7 @@ describe.only('Audit', function(){
 				isAdmin: false,
 			});
 
-			return Audit.report(user, 'localhost', 'Password Collecton', 'READ')
+			return Audit.report(user, 'localhost', 'Password Collecton', undefined, 'READ')
 			.then(function(){
                 assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
 			})
@@ -101,8 +107,6 @@ describe.only('Audit', function(){
 				assert.equal(err.message, '8 errors: data.id is required. data.salt is required. data.password is required. data.publickey is required. data.privatekey is required. data.iv is required. data.pk_salt is required. data.two_factor_enabled is required.');
 			})
 		});
-
-
 
 	});
 
@@ -173,9 +177,9 @@ describe.only('Audit', function(){
 			.spread(function(user, password){
 
 				var promises = [];
-				promises.push( Audit.report(user, 'localhost', password, 'UPDATE') );
-				promises.push( Audit.report(user, 'localhost', password, 'READ') );
-				promises.push( Audit.report(user, 'localhost', password, 'DELETE') );
+				promises.push( Audit.report(user, 'localhost', 'password', password.id, 'UPDATE') );
+				promises.push( Audit.report(user, 'localhost', 'password', password.id, 'READ') );
+				promises.push( Audit.report(user, 'localhost', 'password', password.id, 'DELETE') );
 
 				return Promise.all(promises);
 			})
@@ -196,16 +200,22 @@ describe.only('Audit', function(){
 				assert.equal(audit[0].userId, users[0].id);
 				assert.equal(audit[0].host, 'localhost');
 				assert.equal(audit[0].action, 'UPDATE');
+				assert.equal(audit[0].targetType, 'password');
+				assert.equal(audit[0].targetId, password.id);
 
 				// Index 0
 				assert.equal(audit[1].userId, users[0].id);
 				assert.equal(audit[1].host, 'localhost');
 				assert.equal(audit[1].action, 'READ');
-
+				assert.equal(audit[0].targetType, 'password');
+				assert.equal(audit[0].targetId, password.id);
+				
 				// Index 0
 				assert.equal(audit[2].userId, users[0].id);
 				assert.equal(audit[2].host, 'localhost');
 				assert.equal(audit[2].action, 'DELETE');
+				assert.equal(audit[0].targetType, 'password');
+				assert.equal(audit[0].targetId, password.id);
 			})
 		});
 
