@@ -12,7 +12,7 @@ module.exports = {
 		"isAdmin":{
 			"description": "Denotes if the user is admin",
 			"required": true,
-			"type":"boolean",
+			"type":["boolean",'number'],
 			"example":0
 		},
 		"username":{
