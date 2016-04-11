@@ -5,11 +5,13 @@ const restify 					= require('restify');
 const speakeasy		 			= require("speakeasy");
 const bcrypt 					= require('bcrypt');
 const validator					= require('validator');
-		
+const get_ip					= require('ipware')().get_ip;
+	
 const authHelpers 				= require(__base + '/helpers/authHelpers.js');
 
 // Models
 const User 						= require(__base + '/models/user.js');
+const Audit						= require(__base + 'models/audit.js');
 
 // Middleware
 const authentication 			= require(__base + 'middlewares/authentication.js');
@@ -48,7 +50,7 @@ module.exports = function(server, knex, log){
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing password"));
 		}
 
-		knex('users').select('id', 'username', 'password', 'salt', 'isAdmin', 'two_factor_enabled', 'two_factor_secret').where({'username':req.body.username})
+		knex('users').select().where({'username':req.body.username})
 		.then(function(rows){
 			if( rows.length == 0 ){
 				// No user was found with that username.
@@ -104,9 +106,9 @@ module.exports = function(server, knex, log){
 				res.send(200, {token: authHelpers.createJWT(rows[0]) });
 
 				if( rows[0].two_factor_enabled ){
-					Audit.report(req.resolved.user, get_ip(req).clientIp, 'Authenticated', undefined, '');
+					Audit.report(rows[0], get_ip(req).clientIp, 'Authenticated', undefined, '');
 				}else{
-					Audit.report(req.resolved.user, get_ip(req).clientIp, 'Authenticated with Two Factor Authentication', undefined, '');
+					Audit.report(rows[0], get_ip(req).clientIp, 'Authenticated with Two Factor Authentication', undefined, '');
 				}
 
 			});

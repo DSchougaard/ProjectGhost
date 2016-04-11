@@ -1,11 +1,14 @@
-const restify = require('restify');
-const Promise = require('bluebird');
-const _ 		= require('underscore');
-const schemagic = require('schemagic');
+const restify 			= require('restify');
+const Promise 			= require('bluebird');
+const _ 				= require('underscore');
+const schemagic 		= require('schemagic');
+const get_ip			= require('ipware')().get_ip;
 
+// Models
 const Password 			= require(__base + 'models/password.js');
 const User 				= require(__base + 'models/user.js');
 const Category 			= require(__base + 'models/category.js');
+const Audit				= require(__base + 'models/audit.js');
 
 // Errors
 const PasswordDoesNotExistError = require(__base + 'errors/PasswordDoesNotExistError.js');

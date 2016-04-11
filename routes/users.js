@@ -5,6 +5,8 @@ const crypto 						= require('crypto');
 const bcrypt 						= require('bcrypt');
 const schemagic 					= require('schemagic');
 const _								= require('underscore');
+const get_ip						= require('ipware')().get_ip;
+
 
 const base64 						= require(__base + 'helpers/base64.js');
 const authHelpers					= require(__base + 'helpers/authHelpers.js');
@@ -16,6 +18,8 @@ const authorization  				= require(__base + 'middlewares/authorization.js');
 const resolve 						= require(__base + 'middlewares/resolve.js');
 const authorization2  				= require(__base + 'middlewares/test.authorization.js');
 
+// Models
+const Audit							= require(__base + 'models/audit.js');
 
 // Errors
 const UnauthorizedError 			= require(__base + 'errors/UnauthorizedError.js');
