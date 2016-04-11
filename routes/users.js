@@ -40,6 +40,7 @@ module.exports = function(server, log){
 		User.findAll()
 		.then(function(users){
 			res.send(200, users);
+			Audit.report(req.resolved.user, get_ip(req).clientIp, 'User Collection', undefined, 'READ');
 			return next();
 		})
 		.catch(SqlError, function(err){
@@ -54,6 +55,8 @@ module.exports = function(server, log){
 		
 		//res.send(200, _.pick(req.resolved.user, ['privatekey', 'iv']));
 		res.send(200, _.omit(req.resolved.user, ['password', 'salt', 'two_factor_secret']));
+		Audit.report(req.resolved.user, get_ip(req).clientIp, 'User', req.resolved.user.id, 'READ');
+
 		return next();
 	});
 
@@ -61,6 +64,8 @@ module.exports = function(server, log){
 		log.info({ method: 'GET', path: '/api/user/'+req.params.userId });
 
 		res.send(200, _.pick(req.resolved.user, ['id', 'username', 'publickey']));
+		Audit.report(req.resolved.user, get_ip(req).clientIp, 'User', req.resolved.params.user.id, 'READ');
+
 		return next();
 	});
 
@@ -79,6 +84,8 @@ module.exports = function(server, log){
 		User.create(req.body)
 		.then(function(user){
 			res.send(200, {message: 'OK', id: user.id});
+			Audit.report(req.resolved.user, get_ip(req).clientIp, 'User', req.resolved.params.user.id, 'CREATE');
+
 			return next();
 		})
 		.catch(AlreadyExistError, function(err){
@@ -109,6 +116,8 @@ module.exports = function(server, log){
 		(req.resolved.params.user).update(req.body)
 		.then(function(udpdatedUser){
 			res.send(200, 'OK');
+			Audit.report(req.resolved.user, get_ip(req).clientIp, 'User', req.resolved.params.user.id, 'UPDATE');
+
 			return next();
 		})
 		.catch(UserDoesNotExistError, function(err){
@@ -133,7 +142,9 @@ module.exports = function(server, log){
 		(req.resolved.params.user).del()
 		.then(function(success){
 			if(success){
-				res.send(200, 'OK');	
+				res.send(200, 'OK');
+				Audit.report(req.resolved.user, get_ip(req).clientIp, 'User', req.resolved.params.user.id, 'DELETE');
+	
 			}else{
 				res.send(400, 'error');
 			}
