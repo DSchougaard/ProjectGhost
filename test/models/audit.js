@@ -25,7 +25,7 @@ const AlreadyExistError 			= require(__base + 'errors/Internal/AlreadyExistError
 // Database injection
 var knex 							= require(__base + 'database.js');
 
-describe('Audit', function(){
+describe.only('Audit', function(){
 
 	describe('#report', function(){
 
@@ -43,8 +43,8 @@ describe('Audit', function(){
 		var password = {
 			parent 		: null,
 			owner 		: null,
-			title 		: 'SharedPassword-FindSharedFromMe-Title001',
-			username 	: 'SharedPassword-FindSharedFromMe-User001',
+			title 		: 'Audit#Report-Title001',
+			username 	: 'Audit#Report-User001',
 			password 	: 'cGFzc3dvcmQ=',
 			note 		: 'This is clearly a note!',
 			url 		: null
@@ -86,10 +86,140 @@ describe('Audit', function(){
 			
 		})
 
+		it('should fail when passed an invalid user object', function(){
+			var user = new User({
+				username: 'Audit#Report#User01',
+				isAdmin: false,
+			});
+
+			return Audit.report(user, 'localhost', 'Password Collecton', 'READ')
+			.then(function(){
+                assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
+			})
+			.catch(ValidationError, function(err){
+				assert.equal(err.name, 'ValidationError');
+				assert.equal(err.message, '8 errors: data.id is required. data.salt is required. data.password is required. data.publickey is required. data.privatekey is required. data.iv is required. data.pk_salt is required. data.two_factor_enabled is required.');
+			})
+		});
+
+
+
 	});
 
 
+	describe('#get', function(){
+
+		var users = [
+			{
+				username: 'Audit#Get#User01',
+				isAdmin: false,
+				salt: 'cGFzc3dvcmQ=',
+				password: 'cGFzc3dvcmQ=',
+				privatekey: 'cGFzc3dvcmQ=',
+				iv: 'cGFzc3dvcmQ=',
+				pk_salt: 'cGFzc3dvcmQ=',
+				publickey: 'cGFzc3dvcmQ='
+			},
+			{
+				username: 'Audit#Get#User02',
+				isAdmin: false,
+				salt: 'cGFzc3dvcmQ=',
+				password: 'cGFzc3dvcmQ=',
+				privatekey: 'cGFzc3dvcmQ=',
+				iv: 'cGFzc3dvcmQ=',
+				pk_salt: 'cGFzc3dvcmQ=',
+				publickey: 'cGFzc3dvcmQ='
+			}
+		];
+
+		var password = {
+			parent 		: null,
+			owner 		: null,
+			title 		: 'Audit#Get-Title001',
+			username 	: 'Audit#Get-User001',
+			password 	: 'cGFzc3dvcmQ=',
+			note 		: 'This is clearly a note!',
+			url 		: null
+		}
+
+		before(function(){
+			return knex('users')
+			.insert(users[0])
+			.then(function(ids){
+				users[0].id = ids[0];
+				password.owner = users[0].id;
+			});
+		});
+		before(function(){
+			return knex('users')
+			.insert(users[1])
+			.then(function(ids){
+				users[1].id = ids[0];
+				password.owner = users[1].id;
+			});
+		});
 
 
+		before(function(){
+			return knex('passwords')
+			.insert(password)
+			.then(function(ids){
+				password.id = ids[0];
+			})
+		})
+
+		before(function(){
+			return Promise.all([User.find(users[0].id), Password.find(password.id)])
+			.spread(function(user, password){
+
+				var promises = [];
+				promises.push( Audit.report(user, 'localhost', password, 'UPDATE') );
+				promises.push( Audit.report(user, 'localhost', password, 'READ') );
+				promises.push( Audit.report(user, 'localhost', password, 'DELETE') );
+
+				return Promise.all(promises);
+			})
+			.then();
+		})
+
+
+
+		it('gets the audit list for a user', function(){
+			return User.find(users[0].id)
+			.then(function(user){
+				return Audit.get(user);
+			})
+			.then(function(audit){
+				assert.equal(audit.length, 3);
+
+				// Index 0
+				assert.equal(audit[0].userId, users[0].id);
+				assert.equal(audit[0].host, 'localhost');
+				assert.equal(audit[0].action, 'UPDATE');
+
+				// Index 0
+				assert.equal(audit[1].userId, users[0].id);
+				assert.equal(audit[1].host, 'localhost');
+				assert.equal(audit[1].action, 'READ');
+
+				// Index 0
+				assert.equal(audit[2].userId, users[0].id);
+				assert.equal(audit[2].host, 'localhost');
+				assert.equal(audit[2].action, 'DELETE');
+			})
+		});
+
+		it('returns an empty list when a user has no audit entries', function(){
+			return User.find(users[1].id)
+			.then(function(user){
+				return Audit.get(user);
+			})
+			.then(function(audit){
+				assert.equal(audit.length, 0);
+			})
+
+		});
+
+	});
 
 });
