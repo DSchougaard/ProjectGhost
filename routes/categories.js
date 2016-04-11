@@ -33,6 +33,8 @@ module.exports = function(server, log){
 		Category.create(category)
 		.then(function(category){
 			res.send(200, category.id);
+			Audit.report(req.resolved.user, get_ip(req).clientIp, 'Category', category.id, 'CREATE');
+
 			return next();
 		})
 		.catch(UnauthorizedError, function(err){
@@ -58,6 +60,8 @@ module.exports = function(server, log){
 		(req.resolved.params.category).del()
 		.then(function(rows){
 			res.send(200, 'OK');
+			Audit.report(req.resolved.user, get_ip(req).clientIp, 'Category', req.resolved.params.category.id, 'DELETE');
+
 			return next();
 		})
 		.catch(CategoryDoesNotExistError, function(err){
@@ -83,6 +87,8 @@ module.exports = function(server, log){
 		(req.resolved.params.category).update(req.body)
 		.then(function(){
 			res.send(200, 'OK');
+			Audit.report(req.resolved.user, get_ip(req).clientIp, 'Category', req.resolved.params.category.id, 'DELETE');
+
 			return next();
 		})
 		.catch(ValidationError, function(err){
@@ -103,6 +109,8 @@ module.exports = function(server, log){
 		Category.findAll(req.resolved.user)
 		.then(function(categories){
 			res.send(200, categories);
+			Audit.report(req.resolved.user, get_ip(req).clientIp, 'Category Collection', undefined, 'DELETE');
+			
 			return next();
 		});
 	});

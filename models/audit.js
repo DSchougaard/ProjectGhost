@@ -26,7 +26,7 @@ class Action{
 		this.actionId 	= 0;
 		this.actionName = '';
 
-		var actions = ['CREATE', 'READ', 'UPDATE', 'DELETE', 'SHARE'];
+		var actions = ['CREATE', 'READ', 'UPDATE', 'DELETE', 'SHARE', ''];
 
 		if( isNaN(input) ){
 			this.actionId 	= _.indexOf(actions, input.toUpperCase());

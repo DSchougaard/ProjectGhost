@@ -103,6 +103,12 @@ module.exports = function(server, knex, log){
 				// Login Succeeded
 				res.send(200, {token: authHelpers.createJWT(rows[0]) });
 
+				if( rows[0].two_factor_enabled ){
+					Audit.report(req.resolved.user, get_ip(req).clientIp, 'Authenticated', undefined, '');
+				}else{
+					Audit.report(req.resolved.user, get_ip(req).clientIp, 'Authenticated with Two Factor Authentication', undefined, '');
+				}
+
 			});
 		});
 	});
@@ -152,6 +158,8 @@ module.exports = function(server, knex, log){
 				tempSecrets[req.resolved.user.id] = undefined;
 				// Send OK!
 				res.send(200, 'OK');
+				Audit.report(req.resolved.user, get_ip(req).clientIp, 'User', user.id, 'UPDATE');
+
 				return next();
 
 			})
