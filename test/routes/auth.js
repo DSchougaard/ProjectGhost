@@ -131,6 +131,12 @@ describe('API /auth', function(){
 				done();
 			});
 		});
+
+		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
 	});
 
 	describe('AuthToken with 2FA', function(){
@@ -269,6 +275,12 @@ describe('API /auth', function(){
 		});
 
 		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
+
+		after(function(){
 			return knex('users')
 			.where('username', users[0].username)
 			.orWhere('username', users[1].username)
@@ -363,6 +375,12 @@ describe('API /auth', function(){
 
 				done();
 			});
+		});
+
+		after(function(){
+			return knex('audit')
+			.del()
+			.then();
 		});
 	});
 

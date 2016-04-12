@@ -55,7 +55,6 @@ describe('API /users', function(){
 		});
 	});
 
-
 	describe("GET", function(){
 
 		it.skip("Timeout without https", function(done){
@@ -345,6 +344,12 @@ describe("API /user", function(){
 				done();
 			});
 		});
+
+		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
 	});
 	
 
@@ -498,6 +503,11 @@ describe("API /user", function(){
 			});
 		});
 
+		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
 	});
 
 
@@ -518,7 +528,6 @@ describe("API /user", function(){
 				
 				return done();
 			});
-
 		});
 		
 		it('should fail when passed id is of the wrong type', function(done){
@@ -604,6 +613,11 @@ describe("API /user", function(){
 			});
 		});
 
+		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
 	});
 
 
@@ -673,6 +687,11 @@ describe("API /user", function(){
 				return done();
 			});
 		});
-
+		
+		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
 	});
 });
