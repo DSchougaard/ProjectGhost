@@ -33,7 +33,7 @@ describe.only("API Shared Passwords", function(){
 			.field('password', 'password')
 			.expect(200)
 			.end(function(err, res){
-				if(err) return done(err);
+				if(err) return done(err); 
 				tokens[1] = res.body.token;
 				return done();
 			});
@@ -363,6 +363,7 @@ describe.only("API Shared Passwords", function(){
 		});
 	});
 	*/
+
 	describe('#findSharedToMe', function(){
 		var users = [
 			{
@@ -637,8 +638,6 @@ describe.only("API Shared Passwords", function(){
 
 				return done();
 			});
-
-
 		});
 
 		it('returns an empty list, when the user has not been shared any passwords', function(done){
@@ -650,8 +649,21 @@ describe.only("API Shared Passwords", function(){
 				assert.equal(res.body.length, 0);
 				return done();
 			});
-
 		});
+
+		it('returns an erorr when trying to get another users shared passwords', function(done){
+			server
+			.get('/api/users/'+ users[1].id+'/passwords/shares')
+			.set('Authorization', 'Bearer ' + tokens[0])
+			.expect(403)
+			.end(function(err, res){
+
+				assert.equal(res.body.message, 'Insufficient privileges');
+
+				return done();
+			});
+		});
+
 
 		after(function(){
 			return knex
@@ -693,34 +705,34 @@ describe.only("API Shared Passwords", function(){
 		{
 			var users = [
 				{
-					username: 'Routes#SharedPassword#Create-User01',
-					isAdmin: false,
+					username 	: 'Routes#SharedPassword#Create-User01',
+					isAdmin 	: false,
 					password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
 					salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
-					privatekey: 'cGFzc3dvcmQ=',
-					iv: 'cGFzc3dvcmQ=',
-					pk_salt: 'cGFzc3dvcmQ=',
-					publickey: 'cGFzc3dvcmQ='
+					privatekey 	: 'cGFzc3dvcmQ=',
+					iv 			: 'cGFzc3dvcmQ=',
+					pk_salt		: 'cGFzc3dvcmQ=',
+					publickey 	: 'cGFzc3dvcmQ='
 				},
 				{
-					username: 'Routes#SharedPassword#Create-User02',
-					isAdmin: false,
-				password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
-				salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
-					privatekey: 'cGFzc3dvcmQ=',
-					iv: 'cGFzc3dvcmQ=',
-					pk_salt: 'cGFzc3dvcmQ=',
-					publickey: 'cGFzc3dvcmQ='
+					username 	: 'Routes#SharedPassword#Create-User02',
+					isAdmin 	: false,
+					password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+					salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
+					privatekey 	: 'cGFzc3dvcmQ=',
+					iv 			: 'cGFzc3dvcmQ=',
+					pk_salt		: 'cGFzc3dvcmQ=',
+					publickey 	: 'cGFzc3dvcmQ='
 				},
 				{
-					username: 'Routes#SharedPassword#Create-User03',
-					isAdmin: false,
-				password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
-				salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
-					privatekey: 'cGFzc3dvcmQ=',
-					iv: 'cGFzc3dvcmQ=',
-					pk_salt: 'cGFzc3dvcmQ=',
-					publickey: 'cGFzc3dvcmQ='
+					username 	: 'Routes#SharedPassword#Create-User03',
+					isAdmin 	: false,
+					password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+					salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
+					privatekey 	: 'cGFzc3dvcmQ=',
+					iv 			: 'cGFzc3dvcmQ=',
+					pk_salt 	: 'cGFzc3dvcmQ=',
+					publickey 	: 'cGFzc3dvcmQ='
 				}
 			];
 
@@ -912,23 +924,121 @@ describe.only("API Shared Passwords", function(){
 		}
 
 		describe('Fails due to json invalidity', function(){
-			it.skip('throws an error when the model has invalid password', function(done){});
-			it.skip('throws an error when the model has invalid owner', function(done){});
-			it.skip('throws an error when the model has invalid origin_owner', function(done){});
-			it.skip('throws an error when the model has invalid origin_password', function(done){});
+			it('throws an error when the password is invalid', function(done){
+				var payload = {
+					owner: users[1].id, 
+					password: true,
+				};
+
+				server
+				.post('/api/users/'+ users[0].id+'/passwords/'+passwords[users[0].username][0].id+'/shares')
+				.send(payload)
+				.set('Authorization', 'Bearer ' + tokens[0])
+				.expect(400)
+				.end(function(err, res){
+					if(err) return done(err);
+
+					assert.equal(res.body.message, 'Validation error');
+
+					return done();
+				});
+			});
+
+			it('throws an error when the owner is invalid', function(done){
+				var payload = {
+					owner: true, 
+					password: 'c29tZW90aGVycGFzc3dvcmQ=',
+				};
+
+				server
+				.post('/api/users/'+ users[0].id+'/passwords/'+passwords[users[0].username][0].id+'/shares')
+				.send(payload)
+				.set('Authorization', 'Bearer ' + tokens[0])
+				.expect(400)
+				.end(function(err, res){
+					if(err) return done(err);
+
+					assert.equal(res.body.message, 'Validation error');
+
+					return done();
+				});
+			});
 		});
 
 		describe('Pattern Mismatch', function(){
-			it.skip('throws an error when the model has invalid password', function(done){});
+			it('throws an error when the model has invalid password', function(done){
+				var payload = {
+					owner: users[1].id, 
+					password: 'c29tZW90aGVycGFzc3dvcmQ',
+				};
+
+				server
+				.post('/api/users/'+ users[0].id+'/passwords/'+passwords[users[0].username][0].id+'/shares')
+				.send(payload)
+				.set('Authorization', 'Bearer ' + tokens[0])
+				.expect(400)
+				.end(function(err, res){
+					if(err) return done(err);
+
+					assert.equal(res.body.message, 'Validation error');
+
+					return done();
+				});
+			});
 		});
 
 		describe('Fails due to non-existant references', function(){
-			it.skip('fails to create shared password of non-existant password', function(done){});
-			it.skip('fails to create shared password, when the target user is non-existant', function(done){});
-			it.skip('fails to create shared password, when the source user is non-existant', function(done){});		
+			it('fails to create shared password of non-existant password', function(done){
+				var payload = {
+					owner: users[1].id, 
+					password: 'c29tZW90aGVycGFzc3dvcmQ=',
+				};
+
+				server
+				.post('/api/users/'+ users[0].id+'/passwords/1337/shares')
+				.send(payload)
+				.set('Authorization', 'Bearer ' + tokens[0])
+				.expect(function(res){
+					assert.equal(res.body.message, 'Password was not found');
+				})
+				.expect(404, done);
+			});
+
+			it('fails to create shared password, when the target user is non-existant', function(done){
+				var payload = {
+					owner: 1337, 
+					password: 'c29tZW90aGVycGFzc3dvcmQ=',
+				};
+
+				server
+				.post('/api/users/'+ users[0].id+'/passwords/'+passwords[users[0].username][0].id+'/shares')
+				.send(payload)
+				.set('Authorization', 'Bearer ' + tokens[0])
+				.expect(function(res){
+					assert.equal(res.body.message, 'User ID 1337 was not found');
+				})
+				.expect(404, done);
+			});
+
+			it('fails to create shared password, when the source user is non-existant', function(done){
+				var payload = {
+					owner: users[1].id, 
+					password: 'c29tZW90aGVycGFzc3dvcmQ=',
+				};
+
+				server
+				.post('/api/users/1337/passwords/'+passwords[users[0].username][0].id+'/shares')
+				.send(payload)
+				.set('Authorization', 'Bearer ' + tokens[0])
+				.expect(function(res){
+					assert.equal(res.body.message, 'User was not found');
+				})
+				.expect(404, done);
+			});	
 		});
 
 		it('a user should not be allowed to share another users password to himself', function(done){
+			// User 0 tries to share User 1's password to himself
 			var payload = {
 				owner: users[0].id, 
 				password: 'c29tZW90aGVycGFzc3dvcmQ=',
@@ -938,19 +1048,16 @@ describe.only("API Shared Passwords", function(){
 			.post('/api/users/'+ users[1].id+'/passwords/'+passwords[users[0].username][0].id+'/shares')
 			.send(payload)
 			.set('Authorization', 'Bearer ' + tokens[0])
-			.expect(403)
-			.end(function(err, res){
-				if(err) return done(err);
-
+			.expect(function(res){
 				assert.equal(res.body.message, 'Insufficient privileges');
-
-				return done();
-			});
-		})
+			})
+			.expect(403, done);
+		});
 
 		it('a user should not be allowed to share another users password to a third user', function(done){
+			// User 0 tries to share User 1's password to User 2
 			var payload = {
-				owner: users[0].id, 
+				owner: users[2].id, 
 				password: 'c29tZW90aGVycGFzc3dvcmQ=',
 			};
 
@@ -966,14 +1073,354 @@ describe.only("API Shared Passwords", function(){
 
 				return done();
 			});
-		})
+		});
 
-		it('successfully creates a shared password', function(done){});
+		it('successfully creates a shared password', function(done){
+			// Shares from User 0 to User 1
+			var payload = {
+				owner: users[1].id,
+				password: 'c29tZW90aGVycGFzc3dvcmQ=',
+			}
+
+			server
+			.post('/api/users/'+ users[0].id+'/passwords/'+passwords[users[0].username][0].id+'/shares')
+			.send(payload)
+			.set('Authorization', 'Bearer ' + tokens[0])
+			//.expect(403)
+			.end(function(err, res){
+				if(err) return done(err);
+				
+				assert.equal(res.body.owner, users[1].id);
+				assert.equal(res.body.origin_owner, users[0].id);
+
+				assert.equal(res.body.password, 'c29tZW90aGVycGFzc3dvcmQ=');
+				assert.equal(res.body.origin_password, passwords[users[0].username][0].id);
+
+				return done();
+			});	
+		});
 
 
 	});
 
 	describe('#del', function(){
+
+		{
+
+			var users = [
+				{
+					username: 'Routes#SharedPassword#Delete-User01',
+					isAdmin: false,
+					password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+					salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
+					privatekey: 'cGFzc3dvcmQ=',
+					iv: 'cGFzc3dvcmQ=',
+					pk_salt: 'cGFzc3dvcmQ=',
+					publickey: 'cGFzc3dvcmQ='
+				},
+				{
+					username: 'Routes#SharedPassword#Delete-User02',
+					isAdmin: false,
+					password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+					salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
+					privatekey: 'cGFzc3dvcmQ=',
+					iv: 'cGFzc3dvcmQ=',
+					pk_salt: 'cGFzc3dvcmQ=',
+					publickey: 'cGFzc3dvcmQ='
+				}
+			];
+			before(function(){
+				return knex
+				.insert(users[0])
+				.into('users')
+				.then(function(id){
+					users[0].id = id[0];
+
+					passwords[users[0].username][0].owner = id[0];
+					passwords[users[0].username][1].owner = id[0];
+					passwords[users[0].username][2].owner = id[0];
+
+				});
+			});
+
+			before(function(){
+				return knex
+				.insert(users[1])
+				.into('users')
+				.then(function(id){
+					users[1].id = id[0];
+
+					passwords[users[1].username][0].owner = id[0];
+					passwords[users[1].username][1].owner = id[0];
+					passwords[users[1].username][2].owner = id[0];
+
+				});
+			});
+
+
+			var passwords = {};
+			passwords[users[0].username] = [
+				{
+					parent 		: null,
+					owner 		: null,
+					title 		: 'Routes#SharedPassword#Delete-Title001',
+					username 	: 'Routes#SharedPassword#Delete-User001',
+					password 	: 'cGFzc3dvcmQ=',
+					note 		: 'This is clearly a note!',
+					url 		: null
+				},
+				{
+					parent 		: null,
+					owner 		: null,
+					title 		: 'Routes#SharedPassword#Delete-Title002',
+					username 	: 'Routes#SharedPassword#Delete-User002',
+					password 	: 'cGFzc3dvcmQ=',
+					note 		: 'This is clearly a note!',
+					url 		: null
+				},
+				{
+					parent 		: null,
+					owner 		: null,
+					title 		: 'Routes#SharedPassword#Delete-Title003',
+					username 	: 'Routes#SharedPassword#Delete-User003',
+					password 	: 'cGFzc3dvcmQ=',
+					note 		: 'This is clearly a note!',
+					url 		: null
+				}
+			];
+
+			passwords[users[1].username] = [
+				{
+					parent 		: null,
+					owner 		: null,
+					title 		: 'Routes#SharedPassword#Delete-Title011',
+					username 	: 'Routes#SharedPassword#Delete-User011',
+					password 	: 'cGFzc3dvcmQ=',
+					note 		: 'This is clearly a note!',
+					url 		: null
+				},
+				{
+					parent 		: null,
+					owner 		: null,
+					title 		: 'Routes#SharedPassword#Delete-Title012',
+					username 	: 'Routes#SharedPassword#Delete-User012',
+					password 	: 'cGFzc3dvcmQ=',
+					note 		: 'This is clearly a note!',
+					url 		: null
+				},
+				{
+					parent 		: null,
+					owner 		: null,
+					title 		: 'Routes#SharedPassword#Delete-Title013',
+					username 	: 'Routes#SharedPassword#Delete-User013',
+					password 	: 'cGFzc3dvcmQ=',
+					note 		: 'This is clearly a note!',
+					url 		: null
+				}
+			];
+
+			// User[0] passwords
+			before(function(){
+				var password = passwords[users[0].username][0];
+				return knex
+				.insert(password)
+				.into('passwords')
+				.then(function(ids){
+					password.id = ids[0];
+				});
+			});
+			before(function(){
+				var password = passwords[users[0].username][1];
+				return knex
+				.insert(password)
+				.into('passwords')
+				.then(function(ids){
+					password.id = ids[0];
+				});
+			});
+			before(function(){
+				var password = passwords[users[0].username][2];
+				return knex
+				.insert(password)
+				.into('passwords')
+				.then(function(ids){
+					password.id = ids[0];
+				});
+			});
+
+			// User[1] passwords
+			before(function(){
+				var password = passwords[users[1].username][0];
+				return knex
+				.insert(password)
+				.into('passwords')
+				.then(function(ids){
+					password.id = ids[0];
+				});
+			});
+			before(function(){
+				var password = passwords[users[1].username][1];
+				return knex
+				.insert(password)
+				.into('passwords')
+				.then(function(ids){
+					password.id = ids[0];
+				});
+			});
+			before(function(){
+				var password = passwords[users[1].username][2];
+				return knex
+				.insert(password)
+				.into('passwords')
+				.then(function(ids){
+					password.id = ids[0];
+				});
+			});
+
+			// Create shares from User[0] -> User[1]
+			var sharedPasswords = [undefined, undefined];
+			before(function(){
+				return knex
+				.insert({
+					owner: users[1].id,
+					origin_owner: users[0].id,
+					parent: null,
+					origin_password: passwords[users[0].username][0].id,
+					password: 'c29tZW90aGVycGFzc3dvcmQ='
+				})
+				.into('shared_passwords')
+				.then( function(ids){
+					sharedPasswords[0] = ids[0];
+				} );
+			});
+			before(function(){
+				return knex
+				.insert({
+					owner: users[1].id,
+					origin_owner: users[0].id,
+					parent: null,
+					origin_password: passwords[users[0].username][2].id,
+					password: 'c29tZW90aGVycGFzc3dvcmQ='
+				})
+				.into('shared_passwords')
+				.then( function(ids){
+					sharedPasswords[1] = ids[0];
+				} );
+			});
+
+
+			var tokens = [undefined, undefined];
+			before(function(done){
+				// Obtain auth token -- admin
+				server
+				.post('/api/auth/login')
+				.field('username', users[0].username)
+				.field('password', 'password')
+				.expect(200)
+				.end(function(err, res){
+					if(err) return done(err);
+					tokens[0] = res.body.token;
+					return done();
+				});
+			});
+			before(function(done){
+				// Obtain auth token -- admin
+				server
+				.post('/api/auth/login')
+				.field('username', users[1].username)
+				.field('password', 'password')
+				.expect(200)
+				.end(function(err, res){
+					if(err) return done(err);
+					tokens[1] = res.body.token;
+					return done();
+				});
+			});
+
+		}
+
+		describe('Fails due to parameter invalidity', function(){
+
+			it('throws an error when the id is the wrong type', function(done){
+				// Delete
+				server
+				.del('/api/users/'+ users[1].id+'/passwords/shares/'+true)
+				.set('Authorization', 'Bearer ' + tokens[0])
+				.expect(function(res){
+					assert.equal(res.body.message, 'Validation error');
+					assert.equal(res.body.errors.length, 1)
+
+					assert.equal(res.body.errors[0].field, 'id')
+					assert.equal(res.body.errors[0].error, 'is the wrong type')
+				})
+				.expect(400, done);
+			});
+
+			it('throws an error when the id is the wrong format', function(done){
+				// Delete
+				server
+				.del('/api/users/'+ users[1].id+'/passwords/shares/test')
+				.set('Authorization', 'Bearer ' + tokens[0])
+				.expect(function(res){
+					assert.equal(res.body.message, 'Validation error');
+					assert.equal(res.body.errors.length, 1)
+
+					assert.equal(res.body.errors[0].field, 'id')
+					assert.equal(res.body.errors[0].error, 'is the wrong type')
+				})
+				.expect(400, done);
+
+			});
+
+		});
+
+		it('fails when trying to delete non-existant shared password', function(done){
+			// Delete
+			server
+			.del('/api/users/'+ users[1].id+'/passwords/shares/1337')
+			.set('Authorization', 'Bearer ' + tokens[0])
+			.expect(function(res){
+				assert.equal(res.body.message, 'Password was not found');
+			})
+			.expect(404, done);
+		});
+
+		it('fails when trying to delete another users shared password', function(done){
+			// Delete
+			server
+			.del('/api/users/'+ users[1].id+'/passwords/shares/'+sharedPasswords[1])
+			.set('Authorization', 'Bearer ' + tokens[0])
+			.expect(function(res){
+				assert.equal(res.body.message, 'Insufficient privileges');
+			})
+			.expect(403, done);
+		});
+
+		describe('succeeds in deleting a password', function(){
+			
+			it('succeeds in deleting a password', function(done){
+				// Delete
+				server
+				.del('/api/users/'+ users[1].id+'/passwords/shares/'+sharedPasswords[1])
+				.set('Authorization', 'Bearer ' + tokens[1])
+				.expect(function(res){
+					assert.equal(res.body, 'OK');
+				})
+				.expect(200, done)
+			});
+
+			it('verify in database', function(){
+				return knex('shared_passwords')
+				.select()
+				.where({owner: users[1].id, id: sharedPasswords[1]})
+				.then(function(rows){
+					assert.equal(rows.length, 0);
+				});
+			});
+
+		});
+
+
 
 	});
 

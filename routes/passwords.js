@@ -17,6 +17,7 @@ const ValidationError 		= require(__base + 'errors/ValidationError.js');
 const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js');
 const SqlError 				= require(__base + 'errors/SqlError.js');
 const ValidationRestError 		= require(__base + 'errors/ValidationRestError.js');
+const AlreadyExistError	 		= require(__base + 'errors/Internal/AlreadyExistError.js');
 
 // Middleware
 const authentication 	= require(__base + 'middlewares/authentication.js');
@@ -218,6 +219,9 @@ module.exports = function(server, knex, log){
 			res.send(500, 'Internal database error');
 			log.error({method: 'POST', path: '/api/password', payload: password, error: err});
 			return next();
+		})
+		.catch(function(err){
+			throw err;
 		});
 	});
 
@@ -287,8 +291,8 @@ module.exports = function(server, knex, log){
 
 	server.del('/api/users/:userId/passwords/shares/:shareId', authentication, resolve, authorization, function(req, res, next){
 		req.resolved.params.share.del()
-		.then(function(r){
-			res.send(200, r);
+		.then(function(){
+			res.send(200, 'OK');
 			Audit.report(req.resolved.user, get_ip(req).clientIp, 'shared password', req.resolved.params.share.id, 'DELETE');
 			return next();
 		})

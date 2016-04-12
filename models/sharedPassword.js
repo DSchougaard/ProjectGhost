@@ -17,7 +17,7 @@ const ValidationRestError 		= require(__base + 'errors/ValidationRestError.js');
 const CategoryDoesNotExistError = require(__base + 'errors/CategoryDoesNotExistError.js');
 const ConflictError 			= require(__base + 'errors/ConflictError.js');
 const UnauthorizedError 		= require(__base + 'errors/UnauthorizedError.js');
-const AlreadyExistError			= require(__base + 'errors/Internal/AlreadyExistError.js');
+const AlreadyExistError	 		= require(__base + 'errors/Internal/AlreadyExistError.js');
 
 // Database Inject
 var knexGlobal 					= require(__base + 'database.js');
