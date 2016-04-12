@@ -9,7 +9,7 @@ var restifyInstance 	= require(__base + 'app.js');
 var server 				= request(restifyInstance.server);
 var knex 				= require(__base + 'database.js');
 
-describe("API /user/:userId/audit", function(){
+describe.only("API /user/:userId/audit", function(){
 
 	{
 		var users = [
@@ -107,8 +107,6 @@ describe("API /user/:userId/audit", function(){
 			.insert(auditLog)
 			.then();
 		});
-
-
 	}// End Create Test Data
 
 	it('A user can get his own audit log', function(done){
@@ -204,5 +202,20 @@ describe("API /user/:userId/audit", function(){
 		})
 		.expect(200, done);
 	});
+
+	{
+		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
+
+		after(function(){
+			return knex('users')
+			.del()
+			.where('username', users[0].username)
+			.orWhere('username', users[1].username);
+		});
+	}
 
 });

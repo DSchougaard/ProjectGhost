@@ -16,12 +16,12 @@ describe('Errors', function(){
 });
 
 describe('Models', function(){
+	require(__base + 'test/models/user.js');
 	require(__base + 'test/models/audit.js');
 	require(__base + 'test/models/category.js');
 	require(__base + 'test/models/invite.js');
 	require(__base + 'test/models/password.js');
 	require(__base + 'test/models/sharedPassword.js');
-	require(__base + 'test/models/user.js');
 });
 
 describe('Middlewares', function(){
