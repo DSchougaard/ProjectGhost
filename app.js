@@ -13,6 +13,7 @@ const auth 				= require(__base + 'routes/auth.js');
 const passwords			= require(__base + 'routes/passwords.js');
 const categories  		= require(__base + 'routes/categories.js');
 const invites 			= require(__base + 'routes/invite.js');
+const audit 			= require(__base + 'routes/audit.js');
 
 // Middlewares
 const serveStatic 		= require(__base + 'middlewares/serveStatic.js')
@@ -185,6 +186,16 @@ knex.schema.createTableIfNotExists('shared_passwords', function(table){
 }).catch(function(error){
 });
 
+knex.schema.createTableIfNotExists('audit', function(table){
+	table.increments('id').primary();
+	table.integer('userId').unsigned().references('id').inTable('users').notNullable();
+	table.string('targetType').unsigned().notNullable();
+	table.integer('targetId').unsigned();
+	table.integer('action').unsigned().notNullable();
+	table.dateTime('time').notNullable();
+	table.string('host').notNullable();
+}).catch(function(error){
+});
 
 // Routes
 server.get('/api/ping', function(req, res, next){
@@ -198,7 +209,7 @@ auth(server, knex, log);
 passwords(server, knex, log);
 categories(server, log);
 invites(server, log);
-
+audit(server);
 
 // Since Javascript won't allow me to do negative lookahead in regex, all remaining (non-matched) calls to the
 // /api will get an error equivalent to Restify's own internal message.

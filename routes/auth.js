@@ -106,9 +106,9 @@ module.exports = function(server, knex, log){
 				res.send(200, {token: authHelpers.createJWT(rows[0]) });
 
 				if( rows[0].two_factor_enabled ){
-					Audit.report(rows[0], get_ip(req).clientIp, 'Authenticated', undefined, '');
-				}else{
 					Audit.report(rows[0], get_ip(req).clientIp, 'Authenticated with Two Factor Authentication', undefined, '');
+				}else{
+					Audit.report(rows[0], get_ip(req).clientIp, 'Authenticated', undefined, '');
 				}
 
 			});

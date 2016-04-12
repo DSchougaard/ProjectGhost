@@ -1946,10 +1946,4 @@ describe("API Shared Passwords", function(){
 
 	});
 
-
-
-
-
-
-
 });
