@@ -19,7 +19,6 @@ const AuditError 	= require(__base + 'errors/Internal/AuditError.js');
 // Database injection
 var knex 			= require(__base + 'database.js');
 
-
 class Action{
 	constructor(input){
 
@@ -74,6 +73,12 @@ module.exports = class Audit{
 	}
 
 	static get(user){
+
+		var validate = schemagic.user.validate(user);
+		if( !validate.valid ){
+			return new Promise.reject( new ValidationError(validate.errors) );
+		}
+
 		return knex('audit')
 		.select()
 		.where('userId', user.id)
@@ -86,7 +91,16 @@ module.exports = class Audit{
 
 			return new Promise.resolve(rows);
 
+		})
+		.catch(function(err){
+			if( err.errno === 19 && err.code === 'SQLITE_CONSTRAINT' ){
+				return new Promise.reject( new SqlError('Username already exists') );
+				//throw new SqlError('Username already exists.')
+			}else if( err.errno === 5 && err.code === 'SQLITE_BUSY'){
+				return new Promise.reject( new SqlError('database temporarily unavailable') );
+			}
+
+			return new Promise.reject( err );
 		});
 	}
-
 }

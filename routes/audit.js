@@ -25,7 +25,16 @@ const ValidationRestError 		= require(__base + 'errors/ValidationRestError.js');
 	
 module.exports = function(server){
 
-	server.get('/api/users/:userId/audit', authentication, resolve, authorization, function(){
+	server.get('/api/users/:userId/audit', authentication, resolve, testauthorization({object: 'audit', method:'get'}), function(req, res, next){
+
+		Audit.get(req.resolved.params.user)
+		.then(function(rows){
+			res.send(200, rows);
+			return next();
+		})
+		.catch(SqlError, function(err){
+			return next( new restify.errors.InternalServerError(err) );
+		});
 
 	});
 

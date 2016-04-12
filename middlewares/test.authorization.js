@@ -94,7 +94,30 @@ module.exports = function(permObject){
 	function category(permObject, req, res, next){
 
 	}
+	
+	function audit(permObject, req, res, next){
+		// Supported Methods
+		var methods = ['get'];
+		
+		// Check to see if method is supported in authorization suite
+		if( _.indexOf(methods, permObject.method) === -1 ){
+			return deny(next);
+		}
 
+		// Get
+		if( permObject.method === methods[0] ){
+
+			// If logged in user differs from target user, and logged in user is NOT admin,
+			// deny access
+			if( req.resolved.user.id !== req.resolved.params.user.id && !req.resolved.user.isAdmin ){
+				return deny(next);
+			}
+
+			return next();
+		}
+
+
+	}
 
 
 
@@ -109,6 +132,9 @@ module.exports = function(permObject){
 				break;
 			case 'user':
 				return user(permObject, req, res, next);
+				break;
+			case 'audit':
+				return audit(permObject, req, res, next);
 				break;
 			case 'password':
 				return next();
