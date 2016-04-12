@@ -32,7 +32,7 @@ module.exports = function(server, log){
 		Invite.create()
 		.then(function(invite){
 			res.send(200, invite.link);
-			Audit.report(req.resolved.user, get_ip(req).clientIp, 'Invite', invite.id, 'CREATE');
+			Audit.report(req.resolved.user, req, 'Invite', invite.id, 'CREATE');
 
 			return next();
 		});
@@ -67,8 +67,8 @@ module.exports = function(server, log){
 		.then(function(user){
 			res.send(200, {message: 'OK', id: user.id});
 
-			Audit.report(user, get_ip(req).clientIp, 'Invite', req.resolved.params.invite.id, 'DELETE');
-			Audit.report(user, get_ip(req).clientIp, 'User', user.id, 'CREATE');
+			Audit.report(user, req, 'Invite', req.resolved.params.invite.id, 'DELETE');
+			Audit.report(user, req, 'User', user.id, 'CREATE');
 
 			return next();
 		})

@@ -4,6 +4,7 @@ const Promise 			= require('bluebird');
 const _ 				= require('underscore');
 const schemagic 		= require('schemagic');
 const moment 			= require('moment');
+const IpHeader 			= require('ip-header');
 
 // Models
 const User 				= require(__base + 'models/user.js');
@@ -47,13 +48,13 @@ class Action{
 
 module.exports = class Audit{
 
-	static report(user, host, targetType, targetId, action){
-
+	static report(user, request, targetType, targetId, action){
+		var iph  = new IpHeader(request)
+		var host = iph.src;
 		var validate = schemagic.user.validate(user);
 		if( !validate.valid ){
 			return new Promise.reject( new ValidationError(validate.errors) );
 		}
-
 		var payload = {
 			userId: user.id,
 			host: host,
@@ -63,11 +64,12 @@ module.exports = class Audit{
 			time: moment().unix(),
 		}
 
-
 		knex('audit')
 		.insert(payload)
-		.then()
+		.then(function(r){
+		})
 		.catch(function(e){
+			console.log(e)
 			return new Promise.reject( new AuditError(payload, e) );
 		});	
 	}
