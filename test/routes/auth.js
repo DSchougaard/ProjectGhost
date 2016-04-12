@@ -461,7 +461,11 @@ describe('API /auth', function(){
 				assert.equal(users[0].two_factor_enabled, 0);
 			});
 		});
-
+		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
 		after(function(){
 			return knex('users')
 			.where('username', user.username)
@@ -703,7 +707,11 @@ describe('API /auth', function(){
 				
 			});
 		});
-
+		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
 		after(function(){
 			return knex('users')
 			.where('username',  	users[0].username)

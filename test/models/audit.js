@@ -108,8 +108,27 @@ describe('Audit', function(){
 			})
 		});
 
-	});
+		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
 
+		after(function(){
+			return knex('passwords')
+			.del()
+			.where('owner', user.id)
+			.then();
+		});
+
+		after(function(){
+			return knex('users')
+			.del()
+			.where('id', user.id)
+			.then();
+		})
+
+	});
 
 	describe('#get', function(){
 
@@ -229,6 +248,28 @@ describe('Audit', function(){
 			})
 
 		});
+
+		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
+
+		after(function(){
+			return knex('passwords')
+			.del()
+			.where('owner', users[0].id)
+			.orWhere('owner', users[1].id)
+			.then();
+		});
+
+		after(function(){
+			return knex('users')
+			.del()
+			.where('id', users[0].id)
+			.orWhere('id', users[1].id)
+			.then();
+		})
 
 	});
 

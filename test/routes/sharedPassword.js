@@ -1135,7 +1135,7 @@ describe("API Shared Passwords", function(){
 				.del()
 				.where('id', users[0].id)
 				.orWhere('id', users[1].id)
-				.orWhere('owner', users[2].id)
+				.orWhere('id', users[2].id)
 				.then();
 			});
 		}

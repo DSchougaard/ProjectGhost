@@ -404,6 +404,12 @@ describe("API /password", function(){
 		});
 
 		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
+
+		after(function(){
 			return knex('passwords')
 			.where('id', passwords[0].id)
 			.orWhere('id', passwords[1].id)
@@ -502,7 +508,6 @@ describe("API /password", function(){
 				});
 			});
 
-		
 			it('should fail when given invalid input for password', function(done){
 				var temp = _.omit(validPassword, 'id');
 				temp.password = true;
@@ -582,6 +587,13 @@ describe("API /password", function(){
 					return done();
 				});
 			});
+
+			after(function(){
+				return knex('audit')
+				.del()
+				.then();
+			});	
+
 		});
 	});
 
@@ -763,6 +775,12 @@ describe("API /password", function(){
 		});
 
 		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
+
+		after(function(){
 			return knex('passwords')
 			.where('id', PUT_password.id)
 			.del()
@@ -921,7 +939,12 @@ describe("API /password", function(){
 			});
 		});
 
-
+		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
+		
 		after(function(){
 			return knex('passwords')
 			.where('id', testData[0].id)

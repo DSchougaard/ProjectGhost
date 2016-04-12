@@ -139,6 +139,11 @@ describe("API /invites", function(){
 			});
 		});
 
+		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
 
 		after(function(){
 			return knex('users')
@@ -405,6 +410,11 @@ describe('API /invites/:inviteId/accept', function(){
 			});
 		});
 		
+		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
 
 		after(function(){
 			return knex('users')
@@ -422,11 +432,8 @@ describe('API /invites/:inviteId/accept', function(){
 			.then(function(){
 
 			});
-		})
-
-
-
-
+		});
 
 	});
+
 });

@@ -286,6 +286,12 @@ describe("API /categories", function(){
 		});		
 
 		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
+
+		after(function(){
 			var promises = [];
 			_.mapObject(users, function(val, key){
 				_.each(categories[key], function(cat){
@@ -611,7 +617,13 @@ describe("API /categories", function(){
 				});
 			});	
 		});
-	
+		
+		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
+
 		after(function(){
 			var promises = [];
 			_.mapObject(users, function(val, key){
@@ -1018,6 +1030,12 @@ describe("API /categories", function(){
 		});
 
 		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
+
+		after(function(){
 			var promises = [];
 			_.mapObject(users, function(val, key){
 
@@ -1315,6 +1333,12 @@ describe("API /categories", function(){
 				return done();
 			});	
 		});	
+
+		after(function(){
+			return knex('audit')
+			.del()
+			.then();
+		});
 
 		after(function(){
 			return knex('passwords')
