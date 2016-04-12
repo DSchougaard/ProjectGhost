@@ -9,7 +9,7 @@ var restifyInstance 	= require(__base + 'app.js');
 var server 				= request(restifyInstance.server);
 var knex 				= require(__base + 'database.js');
 
-describe.only("API /user/:userId/audit", function(){
+describe("API /user/:userId/audit", function(){
 
 	{
 		var users = [
