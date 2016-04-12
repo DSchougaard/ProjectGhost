@@ -974,11 +974,9 @@ describe('SharedPassword', function(){
 			.finally(function(){
 				return SharedPassword.create(shared)
 				.then(function(shared){
-					console.dir(shared);
 		            assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
 				})
 				.catch(AlreadyExistError, function(err){
-					console.dir(err)
 					assert.equal(err.message, 'Shared password already exists')
 				});
 			})

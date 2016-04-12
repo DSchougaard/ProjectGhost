@@ -71,9 +71,13 @@ describe('Audit', function(){
 
 
 		it('creates a report in the DB', function(){
+			var request = {};
+			request.headers = {};
+			request.headers.host = '127.0.0.1'
+
 			return Promise.all([User.find(user.id), Password.find(password.id)])
 			.spread(function(user, password){
-				return Audit.report(user, 'localhost', 'password', password.id, 'READ')
+				return Audit.report(user, request, 'password', password.id, 'READ')
 			})
 			.then(function(audit){
 				return knex('audit')
@@ -86,7 +90,7 @@ describe('Audit', function(){
 				assert.equal(rows[0].userId, user.id);
 				assert.equal(rows[0].targetType, 'password');
 				assert.equal(rows[0].action, 1);
-				assert.equal(rows[0].host, 'localhost');
+				assert.equal(rows[0].host, '127.0.0.1');
 
 			})
 			
@@ -98,7 +102,11 @@ describe('Audit', function(){
 				isAdmin: false,
 			});
 
-			return Audit.report(user, 'localhost', 'Password Collecton', undefined, 'READ')
+			var request = {};
+			request.headers = {};
+			request.headers.host = '127.0.0.1'
+
+			return Audit.report(user, request, 'Password Collecton', undefined, 'READ')
 			.then(function(){
                 assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
 			})
@@ -194,11 +202,14 @@ describe('Audit', function(){
 		before(function(){
 			return Promise.all([User.find(users[0].id), Password.find(password.id)])
 			.spread(function(user, password){
+				var request = {};
+				request.headers = {};
+				request.headers.host = '127.0.0.1'
 
 				var promises = [];
-				promises.push( Audit.report(user, 'localhost', 'password', password.id, 'UPDATE') );
-				promises.push( Audit.report(user, 'localhost', 'password', password.id, 'READ') );
-				promises.push( Audit.report(user, 'localhost', 'password', password.id, 'DELETE') );
+				promises.push( Audit.report(user, request, 'password', password.id, 'UPDATE') );
+				promises.push( Audit.report(user, request, 'password', password.id, 'READ') );
+				promises.push( Audit.report(user, request, 'password', password.id, 'DELETE') );
 
 				return Promise.all(promises);
 			})
@@ -217,21 +228,21 @@ describe('Audit', function(){
 
 				// Index 0
 				assert.equal(audit[0].userId, users[0].id);
-				assert.equal(audit[0].host, 'localhost');
+				assert.equal(audit[0].host, '127.0.0.1');
 				assert.equal(audit[0].action, 'UPDATE');
 				assert.equal(audit[0].targetType, 'password');
 				assert.equal(audit[0].targetId, password.id);
 
 				// Index 0
 				assert.equal(audit[1].userId, users[0].id);
-				assert.equal(audit[1].host, 'localhost');
+				assert.equal(audit[1].host, '127.0.0.1');
 				assert.equal(audit[1].action, 'READ');
 				assert.equal(audit[0].targetType, 'password');
 				assert.equal(audit[0].targetId, password.id);
 				
 				// Index 0
 				assert.equal(audit[2].userId, users[0].id);
-				assert.equal(audit[2].host, 'localhost');
+				assert.equal(audit[2].host, '127.0.0.1');
 				assert.equal(audit[2].action, 'DELETE');
 				assert.equal(audit[0].targetType, 'password');
 				assert.equal(audit[0].targetId, password.id);
