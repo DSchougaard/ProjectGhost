@@ -8,7 +8,7 @@ var restifyInstance 	= require(__base + 'app.js');
 var server 				= request(restifyInstance.server);
 var knex 				= require(__base + 'database.js');
 	
-describe.only("API Shared Passwords", function(){
+describe("API Shared Passwords", function(){
 	
 	/*
 			var tokens = [undefined, undefined];
@@ -1101,6 +1101,46 @@ describe.only("API Shared Passwords", function(){
 		});
 
 
+		{
+			after(function(){
+				return knex('audit')
+				.del()
+				.where('userId', users[0].id)
+				.orWhere('userId', users[1].id)
+				.orWhere('userId', users[2].id)
+				.then();
+
+			});
+	
+			after(function(){
+				return knex('shared_passwords')
+				.del()
+				.where('owner', users[0].id)
+				.orWhere('owner', users[1].id)
+				.orWhere('owner', users[2].id)
+				.then();
+			});
+		
+			after(function(){
+				return knex('passwords')
+				.del()
+				.where('owner', users[0].id)
+				.orWhere('owner', users[1].id)
+				.orWhere('owner', users[2].id)
+				.then();
+			});
+
+			after(function(){
+				return knex('users')
+				.del()
+				.where('id', users[0].id)
+				.orWhere('id', users[1].id)
+				.orWhere('owner', users[2].id)
+				.then();
+			});
+		}
+
+
 	});
 
 	describe('#del', function(){
@@ -1336,7 +1376,6 @@ describe.only("API Shared Passwords", function(){
 					return done();
 				});
 			});
-
 		}
 
 		describe('Fails due to parameter invalidity', function(){
@@ -1398,7 +1437,7 @@ describe.only("API Shared Passwords", function(){
 
 		describe('succeeds in deleting a password', function(){
 			
-			it('succeeds in deleting a password', function(done){
+			it('successfully completes api request', function(done){
 				// Delete
 				server
 				.del('/api/users/'+ users[1].id+'/passwords/shares/'+sharedPasswords[1])
@@ -1421,10 +1460,489 @@ describe.only("API Shared Passwords", function(){
 		});
 
 
+		{
+			after(function(){
+				return knex('audit')
+				.del()
+				.where('userId', users[0].id)
+				.orWhere('userId', users[1].id)
+				.then();
+			});
+	
+			after(function(){
+				return knex('shared_passwords')
+				.del()
+				.where('owner', users[0].id)
+				.orWhere('owner', users[1].id)
+				.then();
+			});
+		
+			after(function(){
+				return knex('passwords')
+				.del()
+				.where('owner', users[0].id)
+				.orWhere('owner', users[1].id)
+				.then();
+			});
+
+			after(function(){
+				return knex('users')
+				.del()
+				.where('id', users[0].id)
+				.orWhere('id', users[1].id)
+				.then();
+			});
+		}
 
 	});
 
 	describe('#update', function(){
+		{
+			var users = [
+				{
+					username: 'Routes#SharedPassword#Delete-User01',
+					isAdmin: false,
+					password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+					salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
+					privatekey: 'cGFzc3dvcmQ=',
+					iv: 'cGFzc3dvcmQ=',
+					pk_salt: 'cGFzc3dvcmQ=',
+					publickey: 'cGFzc3dvcmQ='
+				},
+				{
+					username: 'Routes#SharedPassword#Delete-User02',
+					isAdmin: false,
+					password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+					salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
+					privatekey: 'cGFzc3dvcmQ=',
+					iv: 'cGFzc3dvcmQ=',
+					pk_salt: 'cGFzc3dvcmQ=',
+					publickey: 'cGFzc3dvcmQ='
+				}
+			];
+			before(function(){
+				return knex
+				.insert(users[0])
+				.into('users')
+				.then(function(id){
+					users[0].id = id[0];
+
+					passwords[users[0].username][0].owner = id[0];
+					passwords[users[0].username][1].owner = id[0];
+
+					sharedPasswords[0].origin_owner = id[0];
+					sharedPasswords[1].origin_owner = id[0];
+				});
+			});
+			before(function(){
+				return knex
+				.insert(users[1])
+				.into('users')
+				.then(function(id){
+					users[1].id = id[0];
+					
+					sharedPasswords[0].owner = id[0];
+					sharedPasswords[1].owner = id[0];
+
+					category.owner = id[0];
+				});
+			});
+
+			var passwords = {};
+			passwords[users[0].username] = [
+				{
+					parent 		: null,
+					owner 		: null,
+					title 		: 'Routes#SharedPassword#Delete-Title001',
+					username 	: 'Routes#SharedPassword#Delete-User001',
+					password 	: 'cGFzc3dvcmQ=',
+					note 		: 'This is clearly a note!',
+					url 		: null
+				},
+				{
+					parent 		: null,
+					owner 		: null,
+					title 		: 'Routes#SharedPassword#Delete-Title002',
+					username 	: 'Routes#SharedPassword#Delete-User002',
+					password 	: 'cGFzc3dvcmQ=',
+					note 		: 'This is clearly a note!',
+					url 		: null
+				}
+			];
+
+			// User[0] passwords
+			before(function(){
+				var password = passwords[users[0].username][0];
+				return knex
+				.insert(password)
+				.into('passwords')
+				.then(function(ids){
+					password.id = ids[0];
+					sharedPasswords[0].origin_password = ids[0];
+				});
+			});
+			before(function(){
+				var password = passwords[users[0].username][1];
+				return knex
+				.insert(password)
+				.into('passwords')
+				.then(function(ids){
+					password.id = ids[0];
+					sharedPasswords[1].origin_password = ids[0];
+				});
+			});
+
+			var sharedPasswords = [
+				{
+					owner: null,
+					origin_owner: null,
+					parent: null,
+					origin_password: null,
+					password: 'c29tZW90aGVycGFzc3dvcmQ='
+				},
+				{
+					owner: null,
+					origin_owner: null,
+					parent: null,
+					origin_password: null,
+					password: 'c29tZW90aGVycGFzc3dvcmQ='
+
+				}
+			];
+
+			before(function(){
+				return knex
+				.insert(sharedPasswords[0])
+				.into('shared_passwords')
+				.then(function(ids){
+					sharedPasswords[0].id = ids[0];
+				});
+			});
+			before(function(){
+				return knex
+				.insert(sharedPasswords[1])
+				.into('shared_passwords')
+				.then(function(ids){
+					sharedPasswords[1].id = ids[0];
+				});
+			});
+
+			var category = {
+				title: 'Routes#SharedPassword#Delete-Category01',
+				owner: 1,
+				parent: null
+			};
+
+			before(function(){
+				return knex
+				.insert(category)
+				.into('categories')
+				.then(function(ids){
+					category.id = ids[0];
+				});
+			});
+
+
+			var tokens = [undefined, undefined];
+			before(function(done){
+				// Obtain auth token -- admin
+				server
+				.post('/api/auth/login')
+				.field('username', users[0].username)
+				.field('password', 'password')
+				.expect(200)
+				.end(function(err, res){
+					if(err) return done(err);
+					tokens[0] = res.body.token;
+					return done();
+				});
+			});
+			before(function(done){
+				// Obtain auth token -- admin
+				server
+				.post('/api/auth/login')
+				.field('username', users[1].username)
+				.field('password', 'password')
+				.expect(200)
+				.end(function(err, res){
+					if(err) return done(err);
+					tokens[1] = res.body.token;
+					return done();
+				});
+			});
+		}
+
+
+
+		describe('Fails due to json invalidity', function(){
+
+			describe('Wrong Types', function(){
+
+				it('returns an error when password is of wrong type', function(done){
+					var payload = {
+						password: true
+					}
+					server
+					.put('/api/users/'+users[1].id+'/passwords/shares/'+sharedPasswords[0].id)
+					.set('Authorization', 'Bearer ' + tokens[1])
+					.send(payload)
+					.expect(function(res){
+						assert.equal(res.body.message, 'Validation error');
+
+						assert.equal(res.body.errors.length, 1);
+						assert.equal(res.body.errors[0].field, 'password')
+						assert.equal(res.body.errors[0].error, 'is the wrong type');
+					})
+					.expect(400, done);
+				});
+
+				it('returns an error when parent is of wrong type', function(done){
+					var payload = {
+						parent: true
+					}
+					server
+					.put('/api/users/'+users[1].id+'/passwords/shares/'+sharedPasswords[0].id)
+					.set('Authorization', 'Bearer ' + tokens[1])
+					.send(payload)
+					.expect(function(res){
+						assert.equal(res.body.message, 'Validation error');
+
+						assert.equal(res.body.errors.length, 1);
+						assert.equal(res.body.errors[0].field, 'parent')
+						assert.equal(res.body.errors[0].error, 'is the wrong type');
+					})
+					.expect(400, done);
+				});
+			});
+
+			describe('Pattern Mismatch', function(){
+
+				it('returns an error when password is not base64 encoded', function(done){
+					var payload = {
+						password: 'asdsadsadsadas'
+					}
+					server
+					.put('/api/users/'+users[1].id+'/passwords/shares/'+sharedPasswords[0].id)
+					.set('Authorization', 'Bearer ' + tokens[1])
+					.send(payload)
+					.expect(function(res){
+						assert.equal(res.body.message, 'Validation error');
+
+						assert.equal(res.body.errors.length, 1);
+						assert.equal(res.body.errors[0].field, 'password')
+						assert.equal(res.body.errors[0].error, 'pattern mismatch');
+					})
+					.expect(400, done);
+				});
+
+			});
+
+			describe('Restricted Fields', function(){
+
+				it('fails when trying to update owner', function(done){
+					var payload = {
+						owner: 1337
+					}
+					server
+					.put('/api/users/'+users[1].id+'/passwords/shares/'+sharedPasswords[0].id)
+					.set('Authorization', 'Bearer ' + tokens[1])
+					.send(payload)
+					.expect(function(res){
+						assert.equal(res.body.message, 'Validation error');
+
+						assert.equal(res.body.errors.length, 1);
+						assert.equal(res.body.errors[0].field, 'data')
+						assert.equal(res.body.errors[0].error, 'has additional properties');
+					})
+					.expect(400, done);
+				});
+
+				it('fails when trying to update origin_owner', function(done){
+					var payload = {
+						origin_owner: 1337
+					}
+					server
+					.put('/api/users/'+users[1].id+'/passwords/shares/'+sharedPasswords[0].id)
+					.set('Authorization', 'Bearer ' + tokens[1])
+					.send(payload)
+					.expect(function(res){
+						assert.equal(res.body.message, 'Validation error');
+
+						assert.equal(res.body.errors.length, 1);
+						assert.equal(res.body.errors[0].field, 'data')
+						assert.equal(res.body.errors[0].error, 'has additional properties');
+					})
+					.expect(400, done);
+				});
+
+				it('fails when trying to update origin_password', function(done){
+					var payload = {
+						origin_password: 1337
+					}
+					server
+					.put('/api/users/'+users[1].id+'/passwords/shares/'+sharedPasswords[0].id)
+					.set('Authorization', 'Bearer ' + tokens[1])
+					.send(payload)
+					.expect(function(res){
+						assert.equal(res.body.message, 'Validation error');
+
+						assert.equal(res.body.errors.length, 1);
+						assert.equal(res.body.errors[0].field, 'data')
+						assert.equal(res.body.errors[0].error, 'has additional properties');
+					})
+					.expect(400, done);
+				});
+
+				it('fails when trying to update id', function(done){
+					var payload = {
+						id: 1337
+					}
+					server
+					.put('/api/users/'+users[1].id+'/passwords/shares/'+sharedPasswords[0].id)
+					.set('Authorization', 'Bearer ' + tokens[1])
+					.send(payload)
+					.expect(function(res){
+						assert.equal(res.body.message, 'Validation error');
+
+						assert.equal(res.body.errors.length, 1);
+						assert.equal(res.body.errors[0].field, 'data')
+						assert.equal(res.body.errors[0].error, 'has additional properties');
+					})
+					.expect(400, done);
+				});
+			});
+		});
+
+		describe('successfully updates encrypted password', function(){
+			
+			it('successfully completes api request', function(done){
+				var payload = {
+					password: 'V2VsY29tZVRvTGFsYUxhbmQh'
+				};
+
+				server
+				.put('/api/users/'+users[1].id+'/passwords/shares/'+sharedPasswords[0].id)
+				.set('Authorization', 'Bearer ' + tokens[1])
+				.send(payload)
+				.expect(function(res){
+
+					// Stays the same
+					assert.equal(res.body.id, 				sharedPasswords[0].id);
+					assert.equal(res.body.owner, 			sharedPasswords[0].owner);
+					assert.equal(res.body.origin_password, 	sharedPasswords[0].origin_password);
+					assert.equal(res.body.category, 	 	sharedPasswords[0].category);
+
+					// Changes
+					assert.equal(res.body.password,	 		payload.password)
+				})
+				.expect(200, done);
+			});
+
+			it('verify in database', function(){
+				return knex('shared_passwords')
+				.select()
+				.where({id: sharedPasswords[0].id})
+				.then(function(rows){
+					// Stays the same
+					assert.equal(rows[0].id, 				sharedPasswords[0].id);
+					assert.equal(rows[0].owner, 			sharedPasswords[0].owner);
+					assert.equal(rows[0].origin_password, 	sharedPasswords[0].origin_password);
+					assert.equal(rows[0].category, 	 		sharedPasswords[0].category);
+
+					// Changes
+					assert.equal(rows[0].password,	 		'V2VsY29tZVRvTGFsYUxhbmQh')
+				})
+			});
+
+		});
+
+		describe('successfully updates category', function(){
+			
+			it('successfully completes api request', function(done){
+				var payload = {
+					parent: category.id
+				};
+
+				server
+				.put('/api/users/'+users[1].id+'/passwords/shares/'+sharedPasswords[1].id)
+				.set('Authorization', 'Bearer ' + tokens[1])
+				.send(payload)
+				.expect(function(res){
+
+					// Stays the same
+					assert.equal(res.body.id, 				sharedPasswords[1].id);
+					assert.equal(res.body.owner, 			sharedPasswords[1].owner);
+					assert.equal(res.body.origin_password, 	sharedPasswords[1].origin_password);
+					assert.equal(res.body.password,	 		sharedPasswords[1].password)
+
+					// Changes
+					assert.equal(res.body.parent, 	 		category.id);
+
+				})
+				.expect(200, done);
+			});
+
+			it('verify in database', function(){
+				return knex('shared_passwords')
+				.select()
+				.where({id: sharedPasswords[1].id})
+				.then(function(rows){
+					// Stays the same
+					assert.equal(rows[0].id, 				sharedPasswords[1].id);
+					assert.equal(rows[0].owner, 			sharedPasswords[1].owner);
+					assert.equal(rows[0].origin_password, 	sharedPasswords[1].origin_password);
+					assert.equal(rows[0].password,	 		sharedPasswords[1].password)
+
+					// Changes
+					assert.equal(rows[0].parent, 	 		category.id);
+				});
+			});
+
+		});
+
+
+		// After All Deletes
+		{
+			after(function(){
+				return knex('audit')
+				.del()
+				.where('userId', users[0].id)
+				.orWhere('userId', users[1].id)
+				.then();
+			});
+
+			after(function(){
+				return knex('shared_passwords')
+				.del()
+				.where('owner', users[0].id)
+				.orWhere('owner', users[1].id)
+				.then();
+			});
+		
+			after(function(){
+				return knex('passwords')
+				.del()
+				.where('owner', users[0].id)
+				.orWhere('owner', users[1].id)
+				.then();
+			});
+
+			after(function(){
+				return knex('categories')
+				.del()
+				.where('owner', users[0].id)
+				.orWhere('owner', users[1].id)
+				.then();
+			});	
+
+			after(function(){
+				return knex('users')
+				.del()
+				.where('id', users[0].id)
+				.orWhere('id', users[1].id)
+				.then();
+			});
+		}
 
 	});
 
