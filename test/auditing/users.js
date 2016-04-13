@@ -145,7 +145,6 @@ describe('Users', function(){
 				return done();
 			});
 		});
-
 	}
 
 	//var actions = ['CREATE', 'READ', 'UPDATE', 'DELETE', 'SHARE', ''];

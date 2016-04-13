@@ -23,6 +23,7 @@ const AlreadyExistError	 		= require(__base + 'errors/Internal/AlreadyExistError
 const authentication 	= require(__base + 'middlewares/authentication.js');
 const authorization  	= require(__base + 'middlewares/authorization.js');
 const resolve 			= require(__base + 'middlewares/resolve.js');
+const ownership 		= require(__base + 'middlewares/ownership.js');
 
 module.exports = function(server, knex, log){
 
@@ -79,7 +80,7 @@ module.exports = function(server, knex, log){
 
 	server.get('/api/users/:userId/passwords/:passwordId', authentication, resolve, authorization, function(req, res, next){
 		res.send(200, req.resolved.params.password);
-		Audit.report(req.resolved.user, req, req.resolved.params.password, 'READ');
+		Audit.report(req.resolved.user, req, 'Password', req.resolved.params.password.id, 'READ');
 		return next();
 	});
 
@@ -109,7 +110,7 @@ module.exports = function(server, knex, log){
 		.then(function(password){
 			log.info({ method: 'POST', path: '/api/password', user: req.user, message: 'Password added' });
 			res.send(201, {message: 'OK', id: password.id});
-			Audit.report(req.resolved.user, req, 'password', password.id, 'CREATE');
+			Audit.report(req.resolved.user, req, 'Password', password.id, 'CREATE');
 			return next();
 		})
 		.catch(UserDoesNotExistError, function(err){
@@ -203,7 +204,8 @@ module.exports = function(server, knex, log){
 		SharedPassword.create(data)
 		.then(function(shared){
 			res.send(200, shared);
-			Audit.report(req.resolved.user, req, 'shared password', shared.id, 'CREATE');
+			Audit.report(req.resolved.user, req, 'password', req.resolved.params.password.id, 'SHARE');
+
 			return next();
 		})
 		.catch(ValidationError, function(err){

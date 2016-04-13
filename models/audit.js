@@ -27,6 +27,14 @@ class Action{
 		this.actionName = '';
 
 		var actions = ['CREATE', 'READ', 'UPDATE', 'DELETE', 'SHARE', ''];
+		/*
+			Create 	: 0
+			Read 	: 1
+			Update 	: 2
+			Delete 	: 3
+			Share 	: 4
+			NoOp 	: 5
+		*/
 
 		if( isNaN(input) ){
 			this.actionId 	= _.indexOf(actions, input.toUpperCase());
@@ -63,6 +71,8 @@ module.exports = class Audit{
 			action: (new Action(action)).id(),
 			time: moment().unix(),
 		}
+
+		//console.info('Auditing: %j', payload);
 
 		knex('audit')
 		.insert(payload)
