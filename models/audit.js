@@ -26,7 +26,7 @@ class Action{
 		this.actionId 	= 0;
 		this.actionName = '';
 
-		var actions = ['CREATE', 'READ', 'UPDATE', 'DELETE', 'SHARE', ''];
+		var actions = ['CREATE', 'READ', 'UPDATE', 'DELETE', 'SHARE', '', 'SUCCESS', 'FAILURE'];
 		/*
 			Create 	: 0
 			Read 	: 1
@@ -34,6 +34,8 @@ class Action{
 			Delete 	: 3
 			Share 	: 4
 			NoOp 	: 5
+			Success : 6
+			Failure : 7
 		*/
 
 		if( isNaN(input) ){

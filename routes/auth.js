@@ -87,6 +87,7 @@ module.exports = function(server, knex, log){
 				if( hash !== rows[0].password ){
 					// Login failed
 					log.info({ method: 'POST', path: '/api/auth/login', payload: req.body.username, message: 'Login failed'});
+					Audit.report(rows[0], req, 'Authentication (Invalid Credentials)', undefined, 'FAILURE');
 					return next(new restify.errors.UnauthorizedError('Wrong login credentials'));
 				}
 
@@ -96,6 +97,7 @@ module.exports = function(server, knex, log){
 	                                    				token: req.body.twoFactorToken });
 
 					if( !valid ){
+						Audit.report(rows[0], req, 'Authentication (Invalid Token)', undefined, 'FAILURE');
 						return next( new restify.errors.UnauthorizedError('Invalid token') );
 					}
 				}
@@ -107,9 +109,9 @@ module.exports = function(server, knex, log){
 
 
 				if( rows[0].two_factor_enabled ){
-					Audit.report(rows[0], req, 'Authenticated with Two Factor Authentication', undefined, '');
+					Audit.report(rows[0], req, 'Authenticated with Two Factor Authentication', undefined, 'SUCCESS');
 				}else{
-					Audit.report(rows[0], req, 'Authenticated', undefined, '');
+					Audit.report(rows[0], req, 'Authenticated', undefined, 'SUCCESS');
 				}
 
 			});
