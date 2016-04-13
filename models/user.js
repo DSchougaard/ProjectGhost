@@ -45,7 +45,11 @@ module.exports = class User{
 		this.salt 				= data.salt;
 
 		// Two Factor Authentication Fields
-		this.two_factor_enabled = data.two_factor_enabled;
+		if( data.two_factor_enabled === undefined ){
+			this.two_factor_enabled = false;
+		}else{		
+			this.two_factor_enabled = data.two_factor_enabled;
+		}
 		this.two_factor_secret 	= data.two_factor_secret;
 		
 		// User Private Key Fields

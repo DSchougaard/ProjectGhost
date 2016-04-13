@@ -828,8 +828,8 @@ describe('Password', function(){
 				assert.fail(undefined, undefined, 'Method succeeded when it should have failed');
 			})
 			.catch(ValidationError, function(err){
-				assert.equal(err.num, 9);
-				assert.equal(err.message, '9 errors: data.id is required. data.isAdmin is required. data.salt is required. data.password is required. data.publickey is required. data.privatekey is required. data.iv is required. data.pk_salt is required. data.two_factor_enabled is required.');
+				assert.equal(err.num, 8);
+				assert.equal(err.message, '8 errors: data.id is required. data.isAdmin is required. data.salt is required. data.password is required. data.publickey is required. data.privatekey is required. data.iv is required. data.pk_salt is required.');
 			});
 		});
 		
