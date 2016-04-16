@@ -25,6 +25,7 @@
 			self.userMenu.push('Users');
 			self.userMenu.push('Invite User');
 		}
+		self.userMenu.push('Audit');
 		self.userMenu.push('Log off');
 
 		// Exposed Interface
@@ -142,6 +143,9 @@
 					break;
 				case 'Users':
 					$state.transitionTo('user-list');
+					break;
+				case 'Audit':
+					$state.transitionTo('audit');
 					break;
 				case 'Invite User':
 					$state.transitionTo('invite');

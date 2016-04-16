@@ -1,6 +1,6 @@
 (function(){
 
-	var ghost = angular.module('ghost', ['ngMaterial', 'ngMessages', 'md.data.table', 'satellizer', 'ui.router', 'qAllSettled', 'monospaced.qrcode']);
+	var ghost = angular.module('ghost', ['ngMaterial', 'ngMessages', 'md.data.table', 'satellizer', 'ui.router', 'qAllSettled', 'monospaced.qrcode', 'md.data.table']);
 
 	ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider, $mdIconProvider){
 	    
@@ -37,7 +37,6 @@
 	    		}
 	    	}
 	    })
-
 	    .state('invite', {
 	    	url: '/invite',
 	    	views:{
@@ -76,7 +75,6 @@
 				}
 	    	}
 	    })		
-	    // ABOUT PAGE AND MULTIPLE NAMED VIEWS =================================
 	    .state('login', {
 	    	url: '/login',
 			views: {
@@ -174,7 +172,24 @@
 	    		}
 	    		
 	    	}
-	    });
+	    })
+	    .state('audit', {
+	    	url:'/audit',
+			authenticate: true,
+	    	views: {
+				'toolbar':{
+			        templateUrl: 'app/toolbar/toolbar.template.html',
+       				controller: 'ToolBarController',
+	        		controllerAs: 'vm',
+				},
+				'content': { 
+			        templateUrl: 'app/audit/audit.template.html',
+       				controller: 'AuditController',
+	        		controllerAs: 'vm'
+	    		}
+	    	}
+
+	    })
 
 	    $locationProvider.html5Mode(true);
 
