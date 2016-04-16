@@ -101,6 +101,14 @@ module.exports = class Audit{
 			for( var i = 0 ; i < rows.length ; i++){
 				var action = new Action( rows[i].action );
 				rows[i].action = action.text();
+
+				rows[i].time = moment.unix(rows[i].time).format('MMMM Do YYYY, H:mm:ss');
+
+
+				/*
+	format('MMMM Do YYYY, H:mm:ss');
+
+				*/
 			}
 
 			return new Promise.resolve(rows);

@@ -90,7 +90,7 @@ module.exports = function(server, log){
 		(req.resolved.params.category).update(req.body)
 		.then(function(){
 			res.send(200, 'OK');
-			Audit.report(req.resolved.user, req, 'Category', req.resolved.params.category.id, 'DELETE');
+			Audit.report(req.resolved.user, req, 'Category', req.resolved.params.category.id, 'UPDATE');
 
 			return next();
 		})
@@ -112,7 +112,7 @@ module.exports = function(server, log){
 		Category.findAll(req.resolved.user)
 		.then(function(categories){
 			res.send(200, categories);
-			Audit.report(req.resolved.user, req, 'Category Collection', undefined, 'DELETE');
+			Audit.report(req.resolved.user, req, 'Category Collection', undefined, 'READ');
 			
 			return next();
 		});

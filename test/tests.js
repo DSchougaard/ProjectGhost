@@ -47,6 +47,6 @@ describe('Auditing of the Routes', function(){
 	require(__base + 'test/auditing/passwords.js');
 	require(__base + 'test/auditing/authentication.js');
 	require(__base + 'test/auditing/invite.js');
-
+	require(__base + 'test/auditing/categories.js');
 
 })
