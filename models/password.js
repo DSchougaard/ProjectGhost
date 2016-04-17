@@ -91,7 +91,7 @@ module.exports = class Password{
 		}
 		
 		return knex('passwords')
-		.select()
+		.select('id', 'parent', 'title', 'username', 'url', 'note')	
 		.where('owner', user.id)
 		.then(function(rows){
 			return rows;

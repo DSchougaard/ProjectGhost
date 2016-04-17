@@ -23,6 +23,7 @@
 		self.getPublicKey 			= getPublicKey;
 		self.encrypt  				= encrypt;
 		self.decrypt 				= decrypt;
+		self._decrypt 				= _decrypt;
 		self.changeDecryptionKey 	= changeDecryptionKey;
 
 		function generateKeyPair(){
@@ -102,7 +103,24 @@
 
 
 
+		function _decrypt(blob){
+			return self.getEncryptionKey()
+			.then(function(privatekey){
 
+				var isBase64 = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$/.test(blob);
+
+				if( isBase64 ){
+					blob = forge.util.decode64( blob );
+				}
+
+				// Decrypt binary password
+				var decrypted = privatekey.decrypt(blob, 'RSA-OAEP', {
+					md: forge.md.sha256.create()
+				});
+
+				return decrypted;
+			});
+		}
 
 
 
@@ -236,6 +254,7 @@
 		};
 
 		function decrypt(password){
+			console.warn("Deprecated Method! Decrypt is deprecated now.");
 			return self.getEncryptionKey()
 			.then(function(privatekey){
 
@@ -252,6 +271,7 @@
 		};
 
 		function encrypt(password){
+			console.warn("Deprecated Method! Decrypt is deprecated now.");
 			return self.getPublicKey()
 			.then(function(key){
 				var binaryPublicKey = forge.util.decode64(key);

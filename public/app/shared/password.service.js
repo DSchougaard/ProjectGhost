@@ -56,6 +56,25 @@
 		}
 
 
+
+		function _show(password){
+			return $http({
+				method: 'GET',
+				url: '/api/users/'+$auth.getPayload().uid+'/passwords/'+password.id
+			})
+			.then(function(res){
+				return PasswordService._decrypt(password.password);
+			})
+			.then(function(decryptedPassword){
+				return password.decryptedPassword = decryptedPassword;
+			});
+		}
+
+		function _hide(password){
+			password.decryptedPassword = undefined;
+		}
+
+
 		function fetch(){
 			$http({
 				method: 'GET',
@@ -269,9 +288,7 @@
 					return;
 				}
 			});
-
-		}
-
+		};
 
 	};
 })();

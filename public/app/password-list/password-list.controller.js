@@ -104,7 +104,6 @@
 						console.error(err);
 					})
 				}
-
 			
 			}else{
 				self.selectedIndex = undefined;
@@ -113,7 +112,7 @@
 
 		function show(index){
 			var password = _.findWhere(self.entries, {id: index});
-			PasswordService.decrypt(password);
+
 		}
 
 		function hide(index){
