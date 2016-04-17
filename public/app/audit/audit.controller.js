@@ -29,12 +29,8 @@
 		self.date 		= {};
 		self.date.min 	= undefined;
 		self.date.max 	= undefined;
+		self.filter 	= undefined;
 		
-		// filter values
-		self.date.from 	= undefined;
-		self.date.to 	= undefined;
-		self.objectType = undefined;
-		self.host 		= undefined;
 
 		// Fetch data
 		$http({
@@ -55,27 +51,21 @@
 				if( !_hosts[res.data[i].host] ){
 					_hosts[res.data[i].host] = res.data[i].host; 
 				};
-
-				// Get object types
 			}
 			
 			// Convert map to list
 			self.hosts = self.hosts.concat(_.values(_hosts));
 			self.audit = res.data;
-
 		})
 		.catch(function(err){
 			console.err(err);
 		})
 
 		// Exposed Interface
-		self.filter 		= filter;
-		self.reset 			= reset;
-		self.test 			= test;
-
+		self.openFiltersDialog 	= openFiltersDialog;
 
 		// Methods
-		function test(){
+		function openFiltersDialog(){
 			$mdDialog.show({
 				controller: 'FiltersDialogController',
 				controllerAs: 'vm',
@@ -97,30 +87,6 @@
 			});
 		}
 
-		function filter(item){	
-
-			if(!item)
-				return false;
-
-
-			return ( self.date.from 	=== undefined || moment.unix(item.epoch).isAfter(self.date.from) 									)
-				&& ( self.date.to 		=== undefined || moment.unix(item.epoch).isBefore(self.date.to) 									)
-				&& ( self.objectType 	=== undefined || self.objectType 	=== 'all' 	|| item.targetType.indexOf(self.objectType) > -1  	)
-				&& ( self.host 			=== undefined || self.host 			=== 'all' 	|| item.host.indexOf(self.host) > -1  		);
-		}
-
-		function reset(){
-			self.date.from 	= undefined;
-			self.date.to 	= undefined;
-
-			self.objectType = undefined;
-			self.host 		= undefined;
-		}
 	}
 
 })();
-
-/*
-					&& (item.targetType.indexOf(self.filter.object) > -1)
-
-*/
