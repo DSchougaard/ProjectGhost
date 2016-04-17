@@ -12,7 +12,8 @@
     "angular-messages": "^1.5.0",
     "angular-material-data-table": "^0.9.11",
     "mdDataTable": "^1.4.2",
-    "angular-qrcode": "monospaced/angular-qrcode#^6.1.3"
+    "angular-qrcode": "monospaced/angular-qrcode#^6.1.3",
+    "angular-moment": "^0.10.3"
   },
   "private": true,
   "resolutions": {

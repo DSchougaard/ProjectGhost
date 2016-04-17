@@ -1,29 +1,69 @@
-<md-content flex="60" flex-offset="20" layout="column" layout-align="start center" layout-padding>
+<md-content flex="90" flex-offset="5" layout="column" layout-align="start center" layout-padding>
 
-	<md-toolbar class="md-table-toolbar md-default">
+	<md-toolbar class="md-table-toolbar">
 		<div class="md-toolbar-tools">
-		<span>Audit Log</span>
+			<span flex>Audit Log</span>
+			<md-button ng-click="vm.test()">
+				Filters
+				<md-icon md-svg-icon="filter-white" aria-label="filters"></md-icon>
+			</md-button>
 		</div>
 	</md-toolbar>
 
-	<!-- exact table from live demo -->
-	<md-table-container>
-		<table md-table md-row-select="test" multiple ng-model="selected" md-progress="promise">
-			<thead md-head md-order="query.order">
+	<!-- Filtering Settings -->
+	<div ng-if="false"  flex="noshrink" layout-fill style="height:75px" layout="row" class="md-inline-form" layout-padding>
+		<!-- Object Type -->
+		<md-input-container flex="20">
+			<label> Object Type </label>
+			<md-select ng-model="vm.objectType">
+				<md-option ng-repeat="object in vm.objects" value="{{object.toLowerCase()}}">
+					{{object}}
+				</md-option>
+			</md-select>
+		</md-input-container>
+
+		<!-- From Date -->
+	    <md-datepicker flex="20" ng-model="vm.date.from" md-placeholder="From Date"></md-datepicker>
+
+	    <!-- To Date -->
+		<md-datepicker flex="20" ng-model="vm.date.to" md-placeholder="To Date" ></md-datepicker>
+
+	    <!-- Host -->
+		<md-input-container flex=20>
+			<label>Host</label>
+			<md-select ng-model="vm.host">
+				<md-option ng-repeat="host in vm.hosts" value="{{host}}">
+					{{host}}
+				</md-option>
+			</md-select>
+		</md-input-container>
+
+
+	    <md-button ng-click="vm.reset()">
+	    	reset
+	    </md-button>
+	</div>
+
+	<!-- Table Containing Log -->
+	<md-table-container layout-fill>
+		<table md-table md-row-select="vm.selection" multiple ng-model="selected">
+			<thead md-head md-order="epoch">
 				<tr md-row>
 				<th md-column><span>Object</span></th>
 				<th md-column><span>Object ID</span></th>
 				<th md-column><span>Action</span></th>
+				<th md-column md-order-by="entry.date"><span>Date</span></th>
 				<th md-column md-order-by="entry.time"><span>Time</span></th>
 				<th md-column><span>Host</span></th>
 				</tr>
 			</thead>
 
 			<tbody md-body>
-				<tr md-row md-select="entry" md-select-id="id" md-auto-select ng-repeat="entry in vm.audit">
+				<tr md-row md-select="entry" md-select-id="id" md-auto-select ng-repeat="entry in vm.audit | filter:vm.filter">
 				<td md-cell>{{entry.targetType}}</td>
 				<td md-cell>{{entry.targetId}}</td>
 				<td md-cell>{{entry.action}}</td>
+				<td md-cell>{{entry.date}}</td>
 				<td md-cell>{{entry.time}}</td>
 				<td md-cell>{{entry.host}}</td>
 				</tr>

@@ -1,6 +1,6 @@
 (function(){
 
-	var ghost = angular.module('ghost', ['ngMaterial', 'ngMessages', 'md.data.table', 'satellizer', 'ui.router', 'qAllSettled', 'monospaced.qrcode', 'md.data.table']);
+	var ghost = angular.module('ghost', ['ngMaterial', 'ngMessages', 'md.data.table', 'satellizer', 'ui.router', 'qAllSettled', 'monospaced.qrcode', 'angularMoment', 'md.data.table']);
 
 	ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider, $mdIconProvider){
 	    
@@ -230,6 +230,8 @@
 		.icon('add-black', 				'img/icons/add-black.svg')
 		.icon('remove-white', 			'img/icons/remove-white.svg')
 		.icon('remove-black', 			'img/icons/remove-black.svg')
+		.icon('filter-white', 			'img/icons/filter-white.svg')
+		.icon('filter-black', 			'img/icons/filter-black.svg')
 
 
 	});
