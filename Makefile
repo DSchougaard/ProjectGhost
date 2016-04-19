@@ -2,6 +2,14 @@ SSL_SUBJ = "/C=DK/ST=NA/L=Copenhagen/O=Schougaard Technologies/CN=localhost"
 NAME = ghost
 DIR=crypto/ssl
 
+install: cert jwt
+	npm install
+	bower install
+	cd node_modules/node-forge; npm install; npm run minify
+	gulp
+
+
+
 cert:
 	mkdir -p $(DIR)
 	openssl genrsa -out $(DIR)/$(NAME).key 4096

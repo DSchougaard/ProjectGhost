@@ -7,19 +7,16 @@ var mainBowerFiles 	= require('gulp-main-bower-files');
 var gulpFilter 		= require('gulp-filter');
 var uglify 			= require('gulp-uglify')
 var sourcemaps 		= require('gulp-sourcemaps');
-var mocha 			= require('gulp-mocha');
-
-
-
-
-gulp.task('concat', function() {
-  return gulp.src(['./public/js/**/*.js', './public/toolbar/*.js'])
-    .pipe(concat('app.js'))
-    .pipe(gulp.dest('./public/'));
-});
 
 
 var dirs = ['./public/app/**/*.js'] 
+
+gulp.task('concat', function() {
+	return gulp.src(dirs)
+	.pipe(concat('bundle.js'))
+	.pipe(gulp.dest('./public/'));
+});
+
 gulp.task('auto-concat', function(cb){
 	watch(dirs, function(){
 		console.log(new Date());
@@ -30,27 +27,6 @@ gulp.task('auto-concat', function(cb){
 
 	})
 });
-gulp.task('set-test-node-env', function() {
-    return process.env.NODE_ENV = 'test';
-});
-
-var backend = ['./app.js','./models/**/*.js', './routes/**/*.js', './middlewares/**/*.js', './errors/**/*.js', './schemas/*.js', './test/**/*.js']
-gulp.task('auto-test', ['set-test-node-env'], function(cb){
-	watch(backend, function(){
-	    return gulp.src('test/tests.js', {read:false})
-        .pipe(mocha({reporter: 'nyan'}))
-        .once('end', () => {
-            process.exit();
-        });
-	});
-});
-
-
-gulp.task('test', () => {
-    return gulp.src('test/tests.js', {read:false})
-        .pipe(mocha({reporter: 'nyan'}));
-});
-
 
 var t = {
 	overrides: {
@@ -61,6 +37,7 @@ var t = {
 			}
 		}
 	}
+
 gulp.task('vendor-concat', function(){
     var filter = gulpFilter('**/*.js');
 
@@ -74,18 +51,10 @@ gulp.task('vendor-concat', function(){
 		.pipe(gulp.dest('./public/'))
 });
 
-
 gulp.task('validate', function(){
 	return gulp.src(['./public/app/**/*.html'])
 	.pipe(htmlhint())
   	.pipe(htmlhint.reporter("htmlhint-stylish"))
 })
 
-
-
-
-
-
-
-
-gulp.task('default', ['concat', 'validate']);
+gulp.task('default', ['concat', 'vendor-concat']);
