@@ -65,31 +65,27 @@
 				);
 		}
 
-		function logout(){
-			$auth.logout();
-			$state.transitionTo("login");
-		}	
-
-		function del(index){
-			PasswordService.del(index);
+		function del(id){
+			var password = _.findWhere(self.entries, {id: id});
+			PasswordService.del(password);
 			self.selectedIndex = undefined;
 		}
 
-		function edit(index){
-			$state.go('edit', { password: _.findWhere(self.entries, {id: index}) } );
+		function edit(id){
+			$state.go('edit', { password: _.findWhere(self.entries, {id: id}) } );
 		}
 
 		// List controls
-		function select(index){
-			if( self.selectedIndex !== undefined && index !== self.selectedIndex ){
+		function select(id){
+			if( self.selectedIndex !== undefined && id !== self.selectedIndex ){
 				// Hide previously shown password, when it looses focus.
 				PasswordService.hide(self.selectedIndex);
 			}
 
-			if(index !== self.selectedIndex){
-				self.selectedIndex = index;
+			if(id !== self.selectedIndex){
+				self.selectedIndex = id;
 
-				var password = _.findWhere(self.entries, {id: index});
+				var password = _.findWhere(self.entries, {id: id});
 
 				// Get the users to whom the password is shared
 				if( !password.origin_owner ){
@@ -112,6 +108,7 @@
 
 		function show(index){
 			var password = _.findWhere(self.entries, {id: index});
+			PasswordService.show(password);
 
 		}
 

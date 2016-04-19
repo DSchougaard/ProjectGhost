@@ -103,15 +103,11 @@
 
 
 
-		function _decrypt(blob){
+		function _decrypt(base64){
 			return self.getEncryptionKey()
 			.then(function(privatekey){
 
-				var isBase64 = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$/.test(blob);
-
-				if( isBase64 ){
-					blob = forge.util.decode64( blob );
-				}
+				var blob = forge.util.decode64(base64);
 
 				// Decrypt binary password
 				var decrypted = privatekey.decrypt(blob, 'RSA-OAEP', {

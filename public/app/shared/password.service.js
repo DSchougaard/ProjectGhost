@@ -7,73 +7,43 @@
 
 	function PasswordService($rootScope, $q, $http, $auth, $mdDialog, $mdToast, UserService, EncryptionService){
 		// I hate JS's version of "this"
-		var self = this;
+		var self 				= this;
 
 		// Content for storing the actual passwords
-		self.shownPasswords = [];
-		self.passwords 		= [];
-		self.sharedPasswords= [];
+		self.shownPasswords 	= [];
+		self.passwords 			= [];
+		self.sharedPasswords	= [];
 
 		// Exposed Interface
-		self.fetch  	= fetch;
-		self.update 	= update;
-		self.sharePassword = sharePassword;
-		self.unsharePassword = unsharePassword;
-
-		// --- Category Password Controls
-		self.select 	= select;
+		self.fetch  			= fetch;
+		self.update 			= update;
+		self.sharePassword 		= sharePassword;
+		self.unsharePassword 	= unsharePassword;
 
 		// --- Individual Password Controls
-		self.create 	= create;
-		self.del 		= del;
-		self.show  		= show;
-		self.hide  		= hide;
-		self.decrypt 	= decrypt;
-
-		function select(source, category){
-			switch(source){
-				case 'own':
-					return select.own(category);
-					break;
-				case 'favorites':
-					break;
-				case 'shared':
-					break;
-			}
-		}
-
-
-		var select = {};
-		select.own = function(category){
-
-			if( self.cache[category.id] !== undefined ){
-				self.cache[category.id] = _.filter(self.passwords, function(password){
-					return password.parent === category.id;
-				});
-			}
-
-			return self.cache[category.id];
-		}
+		self.create 			= create;
+		self.del 				= del;
+		self.show  				= show;
+		self.hide  				= hide;
 
 
 
-		function _show(password){
+		function show(password){
 			return $http({
 				method: 'GET',
 				url: '/api/users/'+$auth.getPayload().uid+'/passwords/'+password.id
 			})
 			.then(function(res){
-				return PasswordService._decrypt(password.password);
+				return EncryptionService._decrypt(res.data.password);
 			})
 			.then(function(decryptedPassword){
 				return password.decryptedPassword = decryptedPassword;
 			});
 		}
 
-		function _hide(password){
+		function hide(password){
 			password.decryptedPassword = undefined;
-		}
-
+		};
 
 		function fetch(){
 			$http({
@@ -119,33 +89,11 @@
 			});
 		}
 
-		function show(password){
-			return EncryptionService.decrypt(this.passwords[password])
-			.then(function(decryptedPassword){
 
-				password.decryptedPassword = decryptedPassword;
-
-			});
-		};
-
-		function decrypt(password){
-			return EncryptionService.decrypt(password)
-			.then(function(decrypted){
-				password.decryptedPassword = decrypted;
-				return password;
-			});
-		}
-
-		function hide(password){
-			password.decryptedPassword = undefined;
-		};
-
-		function create(password){};
-
-		function del(index){
+		function del(password){
 			var confirm = $mdDialog.confirm()
 			.title('Are you sure you wish to delete the password?')
-			.textContent('Accepting this will irrevocably delete the password, with title \"'+ self.passwords[index].title +'\". This process can\'t be undone.')
+			.textContent('Accepting this will irrevocably delete the password, with title \"'+ password.title +'\". This process can\'t be undone.')
 			.ariaLabel('Confirm delete')
 			.ok('Delete Password!')
 			.cancel('Do not delete password');
@@ -153,7 +101,7 @@
 				// User chose to delete Password
 				return $http({
 					method: 'DELETE',
-					url: '/api/users/' + $auth.getPayload().uid + '/passwords/' + self.passwords[index].id
+					url: '/api/users/' + $auth.getPayload().uid + '/passwords/' + password.id
 				})
 				.then(function(res){
 					self.fetch();
@@ -289,6 +237,9 @@
 				}
 			});
 		};
+
+
+		function create(password){};
 
 	};
 })();
