@@ -2,7 +2,6 @@ const restify 			= require('restify');
 const Promise 			= require('bluebird');
 const _ 				= require('underscore');
 const schemagic 		= require('schemagic');
-const get_ip			= require('ipware')().get_ip;
 
 // Models
 const Password 			= require(__base + 'models/password.js');

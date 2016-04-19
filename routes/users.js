@@ -5,7 +5,6 @@ const crypto 						= require('crypto');
 const bcrypt 						= require('bcrypt');
 const schemagic 					= require('schemagic');
 const _								= require('underscore');
-const get_ip						= require('ipware')().get_ip;
 
 
 const base64 						= require(__base + 'helpers/base64.js');

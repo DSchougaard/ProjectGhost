@@ -1,7 +1,6 @@
 const restify 			= require('restify');
 const knex 				= require('knex');
 const _ 				= require('underscore');
-const get_ip			= require('ipware')().get_ip;
 
 const authHelpers 		= require(__base + 'helpers/authHelpers.js');
 const constants 		= require(__base + 'helpers/constants.json');

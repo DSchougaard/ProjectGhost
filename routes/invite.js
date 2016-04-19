@@ -1,6 +1,5 @@
 const restify 					= require('restify');
 const _ 						= require('underscore');
-const get_ip					= require('ipware')().get_ip;
 
 // Models
 var Invite  					= require(__base + 'models/invite.js');

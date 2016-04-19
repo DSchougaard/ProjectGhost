@@ -4,7 +4,6 @@ const Promise 			= require('bluebird');
 const _ 				= require('underscore');
 const schemagic 		= require('schemagic');
 const moment 			= require('moment');
-const IpHeader 			= require('ip-header');
 
 // Models
 const User 				= require(__base + 'models/user.js');
@@ -59,12 +58,27 @@ class Action{
 module.exports = class Audit{
 
 	static report(user, request, targetType, targetId, action){
-		var iph  = new IpHeader(request)
-		var host = iph.src;
+   
+		var ip = request.headers['x-forwarded-for'] || 
+		request.connection.remoteAddress || 
+		request.socket.remoteAddress ||
+		request.connection.socket.remoteAddress;
+
+		var host = undefined;
+		if(ip === '::1'){
+			// This is localhost
+			host = '127.0.0.1'
+		}else if( ip.substr(0, 7) === '::ffff:' ){
+			host = ip.substr(7);
+		}else{
+			host = ip;
+		}
+
 		var validate = schemagic.user.validate(user);
 		if( !validate.valid ){
 			return new Promise.reject( new ValidationError(validate.errors) );
 		}
+
 		var payload = {
 			userId: user.id,
 			host: host,

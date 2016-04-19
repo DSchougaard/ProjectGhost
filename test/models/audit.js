@@ -25,6 +25,16 @@ const AlreadyExistError 			= require(__base + 'errors/Internal/AlreadyExistError
 // Database injection
 var knex 							= require(__base + 'database.js');
 
+
+
+var request = {};
+request.headers = {};
+request.connection = {}
+request.connection.remoteAddress = '127.0.0.1';
+request.connection.socket = {};
+request.socket = {};
+
+
 describe('Audit', function(){
 
 	describe('#report', function(){
@@ -71,9 +81,6 @@ describe('Audit', function(){
 
 
 		it('creates a report in the DB', function(){
-			var request = {};
-			request.headers = {};
-			request.headers.host = '127.0.0.1'
 
 			return Promise.all([User.find(user.id), Password.find(password.id)])
 			.spread(function(user, password){
@@ -101,10 +108,6 @@ describe('Audit', function(){
 				username: 'Audit#Report#User01',
 				isAdmin: false,
 			});
-
-			var request = {};
-			request.headers = {};
-			request.headers.host = '127.0.0.1'
 
 			return Audit.report(user, request, 'Password Collecton', undefined, 'READ')
 			.then(function(){
@@ -202,9 +205,7 @@ describe('Audit', function(){
 		before(function(){
 			return Promise.all([User.find(users[0].id), Password.find(password.id)])
 			.spread(function(user, password){
-				var request = {};
-				request.headers = {};
-				request.headers.host = '127.0.0.1'
+
 
 				var promises = [];
 				promises.push( Audit.report(user, request, 'password', password.id, 'UPDATE') );
