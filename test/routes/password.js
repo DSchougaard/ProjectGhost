@@ -350,7 +350,12 @@ describe("API /password", function(){
 			.end(function(err, res){
 				if(err) return done(err);
 
-				assert.deepEqual(res.body, passwords);
+				var _passwords = [];
+				for( var i = 0 ; i < passwords.length ; i++ ){
+					_passwords.push(_.omit(passwords[i], 'owner', 'password'));
+				}
+
+				assert.deepEqual(res.body, _passwords);
 
 				return done();
 			});

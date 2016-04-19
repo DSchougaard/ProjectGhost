@@ -92,12 +92,12 @@ describe('Invite', function(){
 		var users = [ generateTemplateUser('User02'), generateTemplateUser('User03') ];
 		users[0].isAdmin = true;
 
-		users[1] = _.omit(users[1], 'salt');
-		users[1].password = 'password';
+		users[1] = 			_.omit(users[1], 'salt', 'isAdmin');
+		users[1].password 	= 'password';
 
-		var token = undefined;
-		var invite = undefined;
-		var inviteId = undefined;
+		var token 			= undefined;
+		var invite 			= undefined;
+		var inviteId 		= undefined;
 
 		{
 			before(function(){

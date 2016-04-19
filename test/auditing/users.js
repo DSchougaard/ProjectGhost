@@ -271,7 +271,6 @@ describe('Users', function(){
 
 		var user = {
 			username 	: 'Auditing#Users#User-10-CreateMe',
-			isAdmin 	: false,
 			password 	: 'password',
 			privatekey 	: 'cGFzc3dvcmQ=',
 			iv 			: 'cGFzc3dvcmQ=',

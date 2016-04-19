@@ -9,12 +9,6 @@ module.exports = {
 			"type": "string",
 			"example": "User1"
 		},
-		"isAdmin":{
-			"description": "Denotes if the user is admin",
-			"required": false,
-			"type":["boolean",'null'],
-			"example":0
-		},
 		"password":{
 			"description" : "Password",
 			"required": true,

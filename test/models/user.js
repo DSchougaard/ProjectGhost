@@ -27,7 +27,6 @@ describe("User", function(){
 
 		validUser = {
 			username: 'Anakin Skywalker',
-			isAdmin: true,
 			password: 'password',
 			privatekey: base64.encode(fs.readFileSync('misc/unittest-private.key').toString('utf8')),
 			publickey: base64.encode(fs.readFileSync('misc/unittest-public.crt').toString('utf8')),
@@ -60,7 +59,7 @@ describe("User", function(){
 				//console.log(h);
 				assert.equal(user.id, 3);
 				assert.equal(user.username, validUser.username);
-				assert.equal(user.isAdmin, validUser.isAdmin);
+				assert.equal(user.isAdmin, false);
 				assert.equal(user.privatekey, validUser.privatekey);
 				assert.equal(user.publickey, validUser.publickey);
 			});
@@ -174,7 +173,7 @@ describe("User", function(){
 				});
 			});
 
-			it('should throw an error when creating a new user with admin bool of wrong type', function(){
+			/*it('should throw an error when creating a new user with admin bool of wrong type', function(){
 				var temp = _.clone(validUser);
 				temp.isAdmin = "true";
 				return User.create( temp )
@@ -185,7 +184,7 @@ describe("User", function(){
 					assert.equal(err.num, 1);
 					assert.equal(err.message, '1 error: data.isAdmin is the wrong type.');
 				});
-			});
+			});*/
 
 			it('should throw an error when creating a new user with password of wrong type', function(){
 				var temp = _.clone(validUser);
@@ -259,7 +258,7 @@ describe("User", function(){
 			.catch(ValidationError, function(err){
 				assert.equal(err.num, 1);
 				assert.equal(err.message, '1 error: data is the wrong type.');
-			});
+			}); 
 		})
 	});
 
@@ -486,7 +485,7 @@ describe("User", function(){
 				});
 			});
 
-			it('should throw an error when creating a new user with admin bool of wrong type', function(){
+			/*it('should throw an error when creating a new user with admin bool of wrong type', function(){
 				return User.find(3)
 				.then(function(user){
 					return user.update({isAdmin: "true"})
@@ -497,7 +496,7 @@ describe("User", function(){
 					assert.equal(err.num, 1);
 					assert.equal(err.message, '1 error: data.isAdmin is the wrong type.');
 				});
-			});
+			});*/
 
 			it('should throw an error when creating a new user with password of wrong type', function(){
 				return User.find(3)

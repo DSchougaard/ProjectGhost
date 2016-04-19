@@ -75,6 +75,10 @@ module.exports = function(server, log){
 		return next();
 	});
 
+	/*server.post('/api/users/:userId/promote', authentication, resolve, authorization({object: 'user', method:'promote'}), function(req, res, next){
+
+	});*/
+
 	server.post('/api/users', authentication, resolve, authorization2({object: 'user', method: 'create'}), function(req, res, next){
 		log.info({ method: 'POST', path: '/api/user', payload: req.body.username });
 		/*

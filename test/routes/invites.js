@@ -260,7 +260,6 @@ describe('API /invites/:inviteId/accept', function(){
 		var newUsers = [
 			{
 				username 	: 'Routes#Invites/:inviteId/accept#POST#User01',
-				isAdmin 	: false,
 				password 	: 'password',
 				privatekey 	: 'cGFzc3dvcmQ=',
 				iv 			: 'cGFzc3dvcmQ=',
@@ -269,7 +268,6 @@ describe('API /invites/:inviteId/accept', function(){
 			},
 			{
 				username 	: 'Routes#Invites/:inviteId/accept#POST#User02',
-				isAdmin 	: false,
 				password 	: 'password',
 				privatekey 	: 'cGFzc3dvcmQ=',
 				iv 			: 'cGFzc3dvcmQ=',
@@ -278,7 +276,6 @@ describe('API /invites/:inviteId/accept', function(){
 			},
 			{
 				username 	: 'Routes#Invites/:inviteId/accept#POST#User03',
-				isAdmin 	: false,
 				password 	: 'password',
 				privatekey 	: 'cGFzc3dvcmQ=',
 				iv 			: 'cGFzc3dvcmQ=',

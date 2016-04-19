@@ -32,7 +32,7 @@ var log = bunyan.createLogger({
     	level: 'info',
         path: __base + 'logs/ghost.info.log',
         // `type: 'file'` is implied
-    },{
+    },{ 
     	level: 'fatal',
     	path: __base + 'logs/ghost.fatal.log',
     },{

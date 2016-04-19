@@ -725,7 +725,6 @@ describe('Password', function(){
 			username: 'Passwords#findAll-User001',
 			salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
 			password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
-			isAdmin: false,
 			privatekey: 'cGFzc3dvcmQ=',
 			publickey: 'cGFzc3dvcmQ=',
 			iv: 'cGFzc3dvcmQ=',
@@ -794,9 +793,12 @@ describe('Password', function(){
 			.then(Password.findAll)
 			.then(function(passwords2){
 				
-				//var passwordsWithoutIDs = _.map(passwords, function(o) { return _.omit(o, 'id'); });
+				var _passwords = [];
+				for( var i = 0 ; i < passwords.length ; i++ ){
+					_passwords.push( _.omit(passwords[i], 'owner', 'password') ) 
+				}
 			
-				assert.deepEqual(passwords, passwords2);
+				assert.deepEqual(_passwords, passwords2);
 			});
 		});
 		

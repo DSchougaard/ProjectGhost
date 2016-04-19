@@ -90,7 +90,7 @@ module.exports = class User{
 				return new Promise.reject( new SqlError('Catastrophic database error') );	
 			}
 			data.id = id[0];
-
+  
 			return new Promise.resolve( new User(data) );
 		}, function(err){
 			// SQLite Username Exists error
