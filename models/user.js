@@ -58,13 +58,13 @@ module.exports = class User{
 		this.pk_salt 			= data.pk_salt;
 	}
 
-	static create(input, trx){
+	static create(input, trx, force){
 		var db = trx === undefined ? knex : trx;
 
 		var data = _.clone(input);
 		
 		var validate = schemagic.userInput.validate(data);
-		if( !validate.valid ){
+		if( !validate.valid && !force ){
 			return new Promise.reject( new ValidationError(validate.errors) );
 		}
 		

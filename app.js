@@ -138,7 +138,7 @@ knex.schema.createTableIfNotExists('users', function(table){
 	rootUser.pk_salt = forge.util.encode64(pk_salt), 
 	rootUser.privatekey =  forge.util.encode64(cipher.output.getBytes());
 
-	User.create(rootUser)
+	User.create(rootUser, undefined, true)
 	.then(function(id){
 		console.log("Admin user generated");
 	});
