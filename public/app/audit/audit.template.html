@@ -47,13 +47,13 @@
 	<!-- Table Containing Log -->
 	<md-table-container layout-fill>
 		<table md-table md-row-select="vm.selection" multiple ng-model="selected">
-			<thead md-head md-order="epoch">
+			<thead md-head md-order="epoch" md-on-reorder="vm.onReorder">
 				<tr md-row>
-				<th md-column><span>Object</span></th>
-				<th md-column><span>Object ID</span></th>
-				<th md-column><span>Action</span></th>
-				<th md-column md-order-by="entry.date"><span>Date</span></th>
-				<th md-column md-order-by="entry.time"><span>Time</span></th>
+				<th md-column md-order-by="targetType"><span>Object</span></th>
+				<th md-column md-numeric md-order-by="targetId"><span>Object ID</span></th>
+				<th md-column md-order-by="action"><span>Action</span></th>
+				<th md-column md-order-by="date"><span>Date</span></th>
+				<th md-column md-order-by="time"><span>Time</span></th>
 				<th md-column><span>Host</span></th>
 				</tr>
 			</thead>

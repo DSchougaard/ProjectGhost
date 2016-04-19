@@ -63,6 +63,7 @@
 
 		// Exposed Interface
 		self.openFiltersDialog 	= openFiltersDialog;
+		self.onReorder 			= onReorder;
 
 		// Methods
 		function openFiltersDialog(){
@@ -85,6 +86,24 @@
 			.then(function(answer) {
 				self.filter = answer;
 			});
+		}
+
+
+		function onReorder(order){
+			var reverse = false;
+			if( order.charAt(0) === '-'){
+				// We should reverse the order
+				reverse = true;
+				// Split the neg sign from it
+				order = order.substring(1);
+			}
+
+			self.audit = _.sortBy(self.audit, order);
+
+			// If we need to reverse it for descending sort
+			if( reverse ){
+				self.audit = self.audit.reverse();
+			}
 		}
 
 	}
