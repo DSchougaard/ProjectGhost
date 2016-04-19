@@ -22,7 +22,6 @@ const AlreadyExistError	 		= require(__base + 'errors/Internal/AlreadyExistError
 const authentication 	= require(__base + 'middlewares/authentication.js');
 const authorization  	= require(__base + 'middlewares/authorization.js');
 const resolve 			= require(__base + 'middlewares/resolve.js');
-const ownership 		= require(__base + 'middlewares/ownership.js');
 
 module.exports = function(server, knex, log){
 
