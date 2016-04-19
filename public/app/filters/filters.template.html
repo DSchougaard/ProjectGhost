@@ -1,6 +1,6 @@
 <md-dialog aria-label="Audit Filters">
 
-	<form layout="column" >
+	<form layout="column">
 		<!-- Object Type -->
 		<md-toolbar>
 			<div class="md-toolbar-tools">
@@ -12,37 +12,44 @@
 			</div>
 		</md-toolbar>
 
+		<div layout-padding>
 
-	    <md-dialog-content layout-padding>
+		    <md-dialog-content >
+				<md-input-container class="md-block">
+					<label>Object Type</label>
+					<md-select ng-model="vm.objectType">
+						<md-option ng-repeat="object in vm.objects" value="{{object.toLowerCase()}}">
+							{{object}}
+						</md-option>
+					</md-select>
+				</md-input-container>
 
-			<md-input-container style="margin-top: 20px;" class="md-block">
-				<label> Object Type </label>
-				<md-select ng-model="vm.objectType">
-					<md-option ng-repeat="object in vm.objects" value="{{object.toLowerCase()}}">
-						{{object}}
-					</md-option>
-				</md-select>
-			</md-input-container>
+				<!-- Object ID Limit -->
+				<md-input-container ng-show="vm.objectType !== undefined && vm.objectType !== 'all'"  class="md-block" >
+					<label>Object ID</label>
+					<input ng-model="vm.objectId"/>
+				</md-input-container>
+		
+				<div layout="row" class="md-block">
+					<!-- From Date -->
+				    <md-datepicker flex style="margin: 0px" ng-model="vm.date.from" md-placeholder="From Date"></md-datepicker>
 
-			<div layout="row" class="md-block">
-				<!-- From Date -->
-			    <md-datepicker flex style="margin: 0px" ng-model="vm.date.from" md-placeholder="From Date"></md-datepicker>
+				    <!-- To Date -->
+					<md-datepicker flex style="margin: 0px" ng-model="vm.date.to" md-placeholder="To Date" ></md-datepicker>
+				</div>
 
-			    <!-- To Date -->
-				<md-datepicker flex style="margin: 0px" ng-model="vm.date.to" md-placeholder="To Date" ></md-datepicker>
-			</div>
+				<!-- Host -->
+				<md-input-container class="md-block">
+					<label>Host</label>
+					<md-select ng-model="vm.host">
+						<md-option ng-repeat="host in vm.hosts" value="{{host}}">
+							{{host}}
+						</md-option>
+					</md-select>
+				</md-input-container>
+	   		</md-dialog-content>
 
-			<!-- Host -->
-			<md-input-container class="md-block">
-				<label>Host</label>
-				<md-select ng-model="vm.host">
-					<md-option ng-repeat="host in vm.hosts" value="{{host}}">
-						{{host}}
-					</md-option>
-				</md-select>
-			</md-input-container>
-   		</md-dialog-content>
-
+	   	</div>
 
 		<md-dialog-actions layout="row">
 			<md-button class="md-primary" ng-click="vm.cancel()" >

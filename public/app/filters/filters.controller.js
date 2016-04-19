@@ -18,6 +18,7 @@
 		self.date.to 	= undefined;
 		self.objectType = undefined;
 		self.host 		= undefined;
+		self.objectId 	= undefined;
 
 		// Methods
 		function submit(){
@@ -29,14 +30,14 @@
 		}
 
 		function filter(item){
-
 			if(!item)
 				return false;
 
 			return ( self.date.from 	=== undefined || moment.unix(item.epoch).isAfter(self.date.from) 									)
 				&& ( self.date.to 		=== undefined || moment.unix(item.epoch).isBefore(self.date.to) 									)
 				&& ( self.objectType 	=== undefined || self.objectType 	=== 'all' 	|| item.targetType.indexOf(self.objectType) > -1  	)
-				&& ( self.host 			=== undefined || self.host 			=== 'all' 	|| item.host.indexOf(self.host) > -1  		);
+				&& ( self.host 			=== undefined || self.host 			=== 'all' 	|| item.host.indexOf(self.host) > -1  		)
+				&& ( self.objectId 		=== undefined || self.objectId 		=== '' 		|| item.targetId == self.objectId );
 		}
 
 	};
