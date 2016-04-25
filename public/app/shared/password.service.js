@@ -140,10 +140,21 @@
 				data: _.pick(password, filter)
 			}
 
-			
+			if( password.password ){
+				
+				return EncryptionService.getPublicKey()
+				.then(function(publicKey){
+					return EncryptionService.encryptPassword(password.password, publicKey);
+				})
+				.then(function(encryptedPassword){
+					payload.data.password = encryptedPassword;
+					return $http(payload);
+				});
 
+			}else{
+				return $http(payload);
+			}
 			
-			return $http(payload);
 		}
 
 

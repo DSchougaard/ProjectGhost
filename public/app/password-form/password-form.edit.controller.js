@@ -110,7 +110,9 @@
 
 		function submit(){
 
-			var payload = {};
+			var payload = {
+				id: self.password.id
+			};
 			var keys = _.keys(_.omit(self.password, 'password'));
 			for( var i = 0 ; i < keys.length ; i++ ){
 				if( self.passwordClone[keys[i]] !== self.password[keys[i]] ){
@@ -131,32 +133,19 @@
 			var unshare 		= _.difference(self.oldSharedWith, intersection);
 
 			var promises = [];
-			promises.push( PasswordService.update(self.password) );
+			promises.push( PasswordService.update(payload) );
 			if( share.length > 0 )
 				promises.push( PasswordService.sharePassword(self.password, share) );
 			if( unshare.length > 0 )
 				promises.push( PasswordService.unsharePassword(self.password, unshare) );
 
-			if( !self.passwordDecrypted && share.length > 0 ){
-
-			}
-
-			console.log("%j", payload);
-
-
-			/*EncryptionService.decrypt(self.password)
-			.then(function(decrypted){
-				var t = _.clone(self.password);
-				t.password = decrypted;
-				return 	$q.allSettled(promises)
-				})*/
 			$q.allSettled(promises)
 			.then(function(res){
 				$state.transitionTo('home');
 			})
 			.catch(function(err){
 				console.error("%j", err);
-			})
+			});
 		}
 
 		function display(){
