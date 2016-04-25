@@ -4,7 +4,7 @@
 		.module('ghost')
 		.controller('addController', AddController);
 		
-	function AddController(CategoryService, $http, $auth, $state, $stateParams, EncryptionService, PasswordService) {
+	function AddController(CategoryService, $http, $auth, $state, $stateParams, EncryptionService, PasswordService, $mdMedia, $mdDialog) {
 		var self = this;
 
 		// Text Strings
@@ -27,6 +27,7 @@
 		self.treeSelect = treeSelect;
 		self.submit 	= submit;
 		self.querySearch = querySearch;
+		self.generatePassword = generatePassword;
 
 		// Fetch category data
 		CategoryService.structure()
@@ -144,6 +145,21 @@
 
 			return structure;
 
+		}
+
+		function generatePassword(){
+			var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+			$mdDialog.show({
+				controller: 'PasswordGeneratorController',
+				controllerAs: 'vm',
+				templateUrl: '/app/password-generator/password-generator.template.html',
+				parent: angular.element(document.body),
+				clickOutsideToClose:true,
+				fullscreen: useFullScreen
+			})
+			.then(function(password){
+				self.password.password = password;
+			});
 		}
 	};
 })();

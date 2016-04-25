@@ -3,7 +3,7 @@
 	.module('ghost')
 	.controller('PasswordSideNavController', PasswordSideNavController);
 
-	function PasswordSideNavController($rootScope, $state, $http, $auth, AuthorizationService, CategoryService, UserService, $timeout, $mdDialog){
+	function PasswordSideNavController($rootScope, $state, $http, $auth, AuthorizationService, CategoryService, UserService, $timeout, $mdDialog, PasswordGeneratorService){
 		var self = this;
 
 		// Literals

@@ -4,7 +4,7 @@
 		.module('ghost')
 		.controller('EditPasswordController', EditPasswordController);
 		
-	function EditPasswordController($q, CategoryService, PasswordService, $http, $auth, $state, $stateParams, EncryptionService) {
+	function EditPasswordController($q, CategoryService, PasswordService, $http, $auth, $state, $stateParams, EncryptionService,$mdMedia, $mdDialog) {
 		var self = this;
 
 		// Quick Fix for no Passed Parameters
@@ -41,6 +41,18 @@
 		self.treeSelect 	= treeSelect;
 		self.display 		= display;
 		self.querySearch 	= querySearch;
+		self.generatePassword = generatePassword;
+
+		$http({
+			method: 'GET',
+			url: '/api/users/'+$auth.getPayload().uid+'/passwords/'+$stateParams.password.id
+		})
+		.then(function(res){
+			// We're editing a password
+			self.password 		= res.data;
+			self.passwordClone 	= _.clone(self.password);
+			self.selection.id 	= self.password.parent;
+		})
 
 		$http({
 			method: 'GET',
@@ -91,11 +103,6 @@
 
 			self.categories.push(rootCat);
 		})
-
-		// We're editing a password
-		self.password 		= $stateParams.password;
-		self.passwordClone 	= _.clone(self.password);
-		self.selection.id 	= self.password.parent;
 
 		function treeSelect(selection){
 			console.log("Selection: %j", selection)
@@ -168,5 +175,23 @@
 			self.passwordDecrypted = !self.passwordDecrypted;
 			// Decrypt the password
 		}
+
+		function generatePassword(){
+			var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+			$mdDialog.show({
+				controller: 'PasswordGeneratorController',
+				controllerAs: 'vm',
+				templateUrl: '/app/password-generator/password-generator.template.html',
+				parent: angular.element(document.body),
+				clickOutsideToClose:true,
+				fullscreen: useFullScreen
+			})
+			.then(function(password){
+				console.log(password)
+				self.password.password = password;
+				self.decryptEnabled = false;
+			});
+		}
+
 	};
 })();
