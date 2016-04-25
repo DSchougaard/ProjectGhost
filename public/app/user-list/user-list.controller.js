@@ -30,7 +30,7 @@
 			}).then(function(res){
 				self.users = res.data;
 			}, function(err){
-				console.log("Error!\n%j", err);
+				console.error(err);
 			});
 		}
 

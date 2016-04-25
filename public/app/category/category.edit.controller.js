@@ -45,13 +45,11 @@
 
 		function submit(){
 
-			console.log("Cat: %j", self.category);
-
 			CategoryService.edit(self.category)
 			.then(function(res){
 				$mdDialog.hide(res.data);
 			}, function(err){
-				console.log("Edit.Category Error: %j", err);
+				console.error("Edit.Category Error: %j", err);
 			})
 		}
 

@@ -48,7 +48,6 @@
 			url: '/api/users'
 		})
 		.then(function(res){
-			console.log("%j", res.data)
 			self.users = res.data;
 		})
 		.catch(function(err){
@@ -107,10 +106,7 @@
 				return $state.transitionTo('home');
 			})
 			.catch(function(err){
-				console.log("AddControler Error: %j", err);
-
-				// Handle validation errors
-				
+				console.error(err);
 			});
 		}
 

@@ -50,8 +50,6 @@
 				data: self.category
 			})
 			.then(function(res){
-				console.log("Created category");
-				console.log("%j", res);
 				$mdDialog.hide(res.data);
 			}, function(err){
 				$mdDialog.show(
@@ -66,7 +64,6 @@
 		}
 
 		function createStructure(categories){
-			console.log("Creating tree structure..");
 			var map = {};
 			var structure = [];
 

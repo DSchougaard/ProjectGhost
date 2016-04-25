@@ -27,7 +27,6 @@
 		self.changeDecryptionKey 	= changeDecryptionKey;
 
 		function generateKeyPair(){
-			console.log("Generating KeyPair");
  			var deferred = $q.defer();
 
 			// Default RSA key length. Optional later?
@@ -41,10 +40,9 @@
 
 			forge.pki.rsa.generateKeyPair(options, function(err, keypair) {
 				if(err){
-					console.err(err);
+					console.error(err);
 					deferred.reject(err);
 				}else{
-					console.log("Generated KeyPair successfully.");
 					deferred.resolve(keypair);
 				}
 			});
@@ -158,7 +156,6 @@
 		};
 
 		function _encryptPrivateKey(password, key){
-			console.log("Encrypting privatekey");
 			var privatekey = key.privateKey !== undefined ? key.privateKey : key;
 
 			// Generate New Decryption key
@@ -221,7 +218,7 @@
 
 				})
 				.catch(function(err){
-					console.log("Error!: " + err);
+					console.error(err);
 				    $mdDialog.show(
 				        $mdDialog.alert()
 			            .parent(angular.element(document.querySelector('#popupContainer')))
@@ -267,7 +264,7 @@
 		};
 
 		function encrypt(password){
-			console.warn("Deprecated Method! Decrypt is deprecated now.");
+			console.warn("Deprecated Method! Encrypt is deprecated now.");
 			return self.getPublicKey()
 			.then(function(key){
 				var binaryPublicKey = forge.util.decode64(key);

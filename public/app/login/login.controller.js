@@ -22,7 +22,6 @@
 				$state.transitionTo("home");
 			})
 			.catch(function(err){
-				console.log("%j", err)
 
 				if( err.status === 403 ){
 					// Two-Factor Token is Required

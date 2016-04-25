@@ -84,16 +84,12 @@
 			
 			$mdDialog.show(confirm).then(function(result) {
 
-				console.log("%j", result);
-
 				$http({
 					method: 'POST',
 					url: '/api/auth/totp/verify',
 					data: result
 				})
-				.then(function(res){
-					console.log(res.data);
-				})
+				.then(function(res){})
 				.catch(function(err){
 					console.dir(err);
 				})
@@ -116,7 +112,6 @@
 
 				return $mdDialog.show(token)
 				.then(function(result){
-					console.log(result);
 					return $q.resolve( {username: self.old.username, password: self.user.password, twoFactorToken: result });
 				}, function(cancel){
 					return $q.reject(cancel);
@@ -141,7 +136,6 @@
 			// Authenticate to verify user's password
 			generateAuthPayload()
 			.then(function(payload){
-				console.log("Payload = %j", payload);
 				return $http.post('/api/auth/login', payload)
 			})
 			.then(function(res){
@@ -208,24 +202,21 @@
 					}
 					
 				}).then(function(res){
-					console.log("Success!");
 					UserService.fetch(true)
 					.then(function(){
 						$state.transitionTo('home');
 					});
 				}, function(err){
-					console.log("%j", err);
+					console.error("%j", err);
 				})
 
 			}, function(err){
 				console.warn(err);
-				console.log("Invalid password");
 			})
 		}
 
 		$http.get('/api/users/me')
 		.then(function(res){
-			console.log("%j", res.data);
 			self.user 			= _.omit(res.data, 'password');
 			self.old 	 		= _.clone(res.data);
 

@@ -63,7 +63,7 @@
 
 			return $http({
 				method: 'GET',
-				url: '/api/users/'+$auth.getPayload().uid+'/passwords/'+self.password.id+'/shares'
+				url: '/api/users/'+$auth.getPayload().uid+'/passwords/'+$stateParams.password.id+'/shares'
 			});
 		})
 		.then(function(res){
@@ -105,9 +105,7 @@
 		})
 
 		function treeSelect(selection){
-			console.log("Selection: %j", selection)
 			self.password.parent = selection.id;
-			console.log("Password: %j", self.password)
 		}
 
 		function submit(){
@@ -139,12 +137,11 @@
 			if( unshare.length > 0 )
 				promises.push( PasswordService.unsharePassword(self.password, unshare) );
 
-			console.log("Share: %j", share);
-			console.log("Unshare: %j", unshare);
-
 			if( !self.passwordDecrypted && share.length > 0 ){
 
 			}
+
+			console.log("%j", payload);
 
 
 			/*EncryptionService.decrypt(self.password)
@@ -155,11 +152,10 @@
 				})*/
 			$q.allSettled(promises)
 			.then(function(res){
-				console.log("got OK! %j", res);
 				$state.transitionTo('home');
 			})
 			.catch(function(err){
-				console.error(err);
+				console.error("%j", err);
 			})
 		}
 
@@ -187,7 +183,6 @@
 				fullscreen: useFullScreen
 			})
 			.then(function(password){
-				console.log(password)
 				self.password.password = password;
 				self.decryptEnabled = false;
 			});

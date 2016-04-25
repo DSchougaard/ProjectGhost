@@ -31,7 +31,7 @@
 				self.link = document.location + '/' + res.data;
 			})
 			.catch(function(err){
-				console.log(err);
+				console.error(err);
 			})
 		}	
 	};

@@ -126,7 +126,6 @@
 				} 
 			})
 			.then(function(answer) {
-				console.log("%j", answer);
 				fetch();
 			});
 		}
@@ -134,7 +133,6 @@
 		function selectMenu(item){
 			switch(item){ 
 				case 'Preferences':
-					console.log("Going to User.Edit");
 					$state.go('user');
 					break;
 				case 'Log off':
@@ -151,7 +149,7 @@
 					$state.transitionTo('invite');
 					break;
 				default:
-					console.log('Invalid selection');
+					console.error('Invalid selection');
 					break;
 			};
 		}

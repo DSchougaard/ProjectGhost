@@ -139,14 +139,16 @@
 				url: url,
 				data: _.pick(password, filter)
 			}
-			console.log("Payload: %j", payload)
+
+			
+
+			
 			return $http(payload);
 		}
 
 
 
 		function sharePassword(password, users){
-			console.log("%j", password);
 
 			return self.decrypt(password)
 			.then(function(password){
@@ -154,7 +156,6 @@
 				var httpRequests = [];
 				// Queue up all http requests to share
 				for( var i = 0 ; i < users.length ; i++ ){
-					console.log("Ùser %j", users[i])
 					var encr = EncryptionService.encryptPassword(password.decryptedPassword, users[i].publickey);
 					httpRequests.push(
 						$http({

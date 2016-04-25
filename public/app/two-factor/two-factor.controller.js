@@ -43,15 +43,11 @@
 				data: self.token
 			})
 			.then(function(res){
-				console.log("Then... %j", res.data);
 				$mdDialog.hide(res.data);
 			})
 			.catch(function(err){
-				console.log("Catch... %j", err);
-				//self.token.$error = {invalid: true};
-				//$scope.tokenForm.token.$error.invalid = true;
+				console.error("%j", err);
 				self.tokenErrors.invalid = true;
-				console.log("%j", self.serverErrors);
 			})
 		}
 

@@ -30,13 +30,6 @@
 
 
 		function cancel(){
-			/*$mdDialog.show({
-				controller: 'LoadingController',
-				templateUrl: '/app/shared/loading/loading.template.html',
-				parent: angular.element(document.body),
-				clickOutsideToClose:false,
-				fullscreen: false
-			});		*/
 			console.warn("Trying...");
 		}
 

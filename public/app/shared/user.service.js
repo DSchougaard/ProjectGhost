@@ -37,14 +37,12 @@
 		}
 
 		function fetch(force){
-			console.log("Fetching data");
 			return $http({
 				cache: force,
 				method:'GET',
 				url:'/api/users/me',
 			})
 			.then(function(res){
-				console.log("Data fetched");
 				self.data = _.clone(res.data);
 				self.username = self.data.username;
 				return $q.resolve(self.data);
