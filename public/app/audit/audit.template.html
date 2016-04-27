@@ -45,29 +45,38 @@
 	</div>
 
 	<!-- Table Containing Log -->
-	<md-table-container layout-fill>
-		<table md-table md-row-select="vm.selection" multiple ng-model="selected">
-			<thead md-head md-order="epoch" md-on-reorder="vm.onReorder">
-				<tr md-row>
-				<th md-column md-order-by="targetType"><span>Object</span></th>
-				<th md-column md-numeric md-order-by="targetId"><span>Object ID</span></th>
-				<th md-column md-order-by="action"><span>Action</span></th>
-				<th md-column md-order-by="date"><span>Date</span></th>
-				<th md-column md-order-by="time"><span>Time</span></th>
-				<th md-column><span>Host</span></th>
-				</tr>
-			</thead>
+	<!-- <div layout-fill cg-busy="vm.request">-->
+	<div  layout-fill cg-busy="vm.loadingConfig" style="padding: 0; margin: 0">
+		<md-progress-circular ng-show="vm.test" md-mode='indeterminate'></md-progress-circular>
 
-			<tbody md-body>
-				<tr md-row md-select="entry" md-select-id="id" md-auto-select ng-repeat="entry in vm.audit | filter:vm.filter">
-				<td md-cell>{{entry.targetType}}</td>
-				<td md-cell>{{entry.targetId}}</td>
-				<td md-cell>{{entry.action}}</td>
-				<td md-cell>{{entry.date}}</td>
-				<td md-cell>{{entry.time}}</td>
-				<td md-cell>{{entry.host}}</td>
-				</tr>
-			</tbody>
-		</table>
-	</md-table-container>
+		<md-table-pagination md-limit-options="vm.pagination.limitOptions" md-limit="vm.pagination.limit"  md-page="vm.pagination.page" md-total="{{vm.audit.length}}" md-page-select></md-table-pagination>
+
+		<md-table-container layout-fill ng-cloak>
+			<table md-table md-row-select="vm.selection" multiple ng-model="selected">
+				<thead ng-cloak md-head md-order="epoch" md-on-reorder="vm.onReorder">
+					<tr md-row>
+					<th md-column md-order-by="targetType"><span>Object</span></th>
+					<th md-column md-numeric md-order-by="targetId"><span>Object ID</span></th>
+					<th md-column md-order-by="action"><span>Action</span></th>
+					<th md-column md-order-by="date"><span>Date</span></th>
+					<th md-column md-order-by="time"><span>Time</span></th>
+					<th md-column><span>Host</span></th>
+					</tr>
+				</thead>
+
+				<tbody md-body>
+					<tr md-row md-select="entry" md-select-id="id" md-auto-select ng-repeat="entry in vm.audit | filter:vm.filter | limitTo: vm.pagination.limit: (vm.pagination.page - 1) * vm.pagination.limit">
+					<td md-cell>{{entry.targetType}}</td>
+					<td md-cell>{{entry.targetId}}</td>
+					<td md-cell>{{entry.action}}</td>
+					<td md-cell>{{entry.date}}</td>
+					<td md-cell>{{entry.time}}</td>
+					<td md-cell>{{entry.host}}</td>
+					</tr>
+				</tbody>
+			</table>
+		</md-table-container>
+
+	</div>
+
 </md-content>

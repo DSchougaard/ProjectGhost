@@ -100,6 +100,18 @@ module.exports = class Audit{
 		});	
 	}
 
+	static getHosts(user){
+		var validate = schemagic.user.validate(user);
+		if( !validate.valid ){
+			return new Promise.reject( new ValidationError(validate.errors) );
+		}
+
+		return knex('audit')
+  		.distinct('host')
+		.select();
+
+	}
+
 	static get(user){
 
 		var validate = schemagic.user.validate(user);
