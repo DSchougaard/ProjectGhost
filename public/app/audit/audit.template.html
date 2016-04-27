@@ -1,4 +1,4 @@
-<md-content flex="90" flex-offset="5" layout="column" layout-align="start center" layout-padding>
+<div flex="90" flex-offset="5" layout="column" layout-align="start center" layout-padding>
 
 	<md-toolbar class="md-table-toolbar">
 		<div class="md-toolbar-tools">
@@ -10,50 +10,12 @@
 		</div>
 	</md-toolbar>
 
-	<!-- Filtering Settings -->
-	<div ng-if="false"  flex="noshrink" layout-fill style="height:75px" layout="row" class="md-inline-form" layout-padding>
-		<!-- Object Type -->
-		<md-input-container flex="20">
-			<label> Object Type </label>
-			<md-select ng-model="vm.objectType">
-				<md-option ng-repeat="object in vm.objects" value="{{object.toLowerCase()}}">
-					{{object}}
-				</md-option>
-			</md-select>
-		</md-input-container>
-
-		<!-- From Date -->
-	    <md-datepicker flex="20" ng-model="vm.date.from" md-placeholder="From Date"></md-datepicker>
-
-	    <!-- To Date -->
-		<md-datepicker flex="20" ng-model="vm.date.to" md-placeholder="To Date" ></md-datepicker>
-
-	    <!-- Host -->
-		<md-input-container flex=20>
-			<label>Host</label>
-			<md-select ng-model="vm.host">
-				<md-option ng-repeat="host in vm.hosts" value="{{host}}">
-					{{host}}
-				</md-option>
-			</md-select>
-		</md-input-container>
-
-
-	    <md-button ng-click="vm.reset()">
-	    	reset
-	    </md-button>
-	</div>
 
 	<!-- Table Containing Log -->
-	<!-- <div layout-fill cg-busy="vm.request">-->
-	<div  layout-fill cg-busy="vm.loadingConfig" style="padding: 0; margin: 0">
-		<md-progress-circular ng-show="vm.test" md-mode='indeterminate'></md-progress-circular>
-
-		<md-table-pagination md-limit-options="vm.pagination.limitOptions" md-limit="vm.pagination.limit"  md-page="vm.pagination.page" md-total="{{vm.audit.length}}" md-page-select></md-table-pagination>
-
-		<md-table-container layout-fill ng-cloak>
+	<md-content layout-fill ng-cloak>
+		<md-table-container>
 			<table md-table md-row-select="vm.selection" multiple ng-model="selected">
-				<thead ng-cloak md-head md-order="epoch" md-on-reorder="vm.onReorder">
+				<thead md-head md-order="epoch" md-on-reorder="vm.onReorder">
 					<tr md-row>
 					<th md-column md-order-by="targetType"><span>Object</span></th>
 					<th md-column md-numeric md-order-by="targetId"><span>Object ID</span></th>
@@ -76,7 +38,9 @@
 				</tbody>
 			</table>
 		</md-table-container>
+	</md-content>
+	<md-table-pagination style="min-height:50px" md-limit-options="vm.pagination.limitOptions" md-limit="vm.pagination.limit"  md-page="vm.pagination.page" md-total="{{vm.audit.length}}" md-page-select></md-table-pagination>
 
-	</div>
 
-</md-content>
+
+</div>
