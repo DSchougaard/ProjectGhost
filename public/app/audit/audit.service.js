@@ -24,8 +24,6 @@
 				//self.log.push(formatted.audit[0])
 				self.log.push.apply(self.log, 		formatted.audit);
 				self.hosts.push.apply(self.hosts, 	formatted.hosts);
-
-				console.log(self.log)
 			});
 		}
 

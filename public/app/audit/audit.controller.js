@@ -34,7 +34,12 @@
 		self.pagination = {
 			limit: 15,
 			page: 1,
-			limitOptions: [10, 50, 100]
+			limitOptions: [10, 25, 50, 100, {
+				label: 'All',
+				value: function () {
+					return self.audit.length;
+				}
+			}]
 		}
 
 		self.audit = AuditService.log;
