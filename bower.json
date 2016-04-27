@@ -13,7 +13,8 @@
     "angular-qrcode": "monospaced/angular-qrcode#^6.1.3",
     "angular-moment": "^0.10.3",
     "angular-busy": "^4.1.3",
-    "angular-material-data-table": "^0.10.9"
+    "angular-material-data-table": "^0.10.9",
+    "angular-busy-plus": "^4.1.5"
   },
   "private": true,
   "resolutions": {

@@ -1,6 +1,6 @@
 (function(){
 
-	var ghost = angular.module('ghost', ['ngMaterial', 'ngMessages','satellizer', 'ui.router', 'qAllSettled', 'monospaced.qrcode', 'angularMoment', 'md.data.table']);
+	var ghost = angular.module('ghost', ['ngMaterial', 'ngMessages','satellizer', 'ui.router', 'qAllSettled', 'monospaced.qrcode', 'angularMoment', 'md.data.table', 'cgBusy']);
 
 	ghost.config(function($locationProvider, $authProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider, $mdIconProvider){
 	    

@@ -23,14 +23,21 @@
 		self.new 				= {};
 		self.repeat 			= {};
 		self.enabled 			= true;
+		self.request 			= undefined;
 
 		// Exposed Interface
 		self.cancel  			= cancel;
 		self.submit 			= submit;
 
+		self.busyConfig = {
+			backdrop: true,
+			promise: self.request,
+			message: 'Creating User, please wait...',
+			templateUrl: '/app/loading/loading.template.html',
+		}
 
 		function cancel(){
-			console.warn("Trying...");
+			window.history.back();
 		}
 
 		self.errors = [];
@@ -48,8 +55,10 @@
 
 			self.enabled = false;
 
-			$q.all([EncryptionService.generateKeyPair(), 
-				EncryptionService.createEncryptionKey(self.encryption.decryptionPassword)])
+			self.busyConfig.promise = $q.all([EncryptionService.generateKeyPair(), 
+				EncryptionService.createEncryptionKey(self.encryption.decryptionPassword)]);
+
+			self.busyConfig.promise
 			.then(function(vals){
 				newUser.pk_salt = vals[1].pk_salt;
 				return EncryptionService.encryptPrivateKey(vals[0], vals[1].encryptionKey);

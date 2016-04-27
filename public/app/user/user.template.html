@@ -1,5 +1,5 @@
 <md-content id="addUser" flex="60" flex-offset="20" layout="column" layout-align="start center" layout-padding >
-	<section class="md-whiteframe-z1"  height="100%" width="100" layout-fill flex="noshrink"	>
+	<section cg-busy="vm.busyConfig"  class="md-whiteframe-z1"  height="100%" width="100" layout-fill flex="noshrink"	>
 
 			<md-toolbar >
 				<div class="md-toolbar-tools">
@@ -103,12 +103,6 @@
 				<div ng-show="vm.enabled">
 					<md-button type="submit" class="md-primary md-raised" ng-disabled="!vm.enabled" ng-bind="vm.config.text.submit"></md-button>
 					<md-button ng-click="vm.cancel()" class="md-primary md-raised" ng-disabled="!vm.enabled"> Cancel </md-button>
-				</div>
-				<!-- Loading -->
-
-				<div ng-show="!vm.enabled">
-					<md-progress-circular ng-show="!vm.enabled"></md-progress-circular>
-					<p>Please wait... This might take some time.</p>
 				</div>
 					
 			</form>
