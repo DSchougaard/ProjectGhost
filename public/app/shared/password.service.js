@@ -5,7 +5,7 @@
 		.service('PasswordService', PasswordService);
 
 
-	function PasswordService($rootScope, $q, $http, $auth, $mdDialog, $mdToast, UserService, EncryptionService){
+	function PasswordService($rootScope, $q, $state, $http, $auth, $mdDialog, $mdToast, UserService, EncryptionService, AuthService){
 		// I hate JS's version of "this"
 		var self 				= this;
 
@@ -76,10 +76,10 @@
 				$rootScope.$broadcast('passwords', 'fetched');				
 			})
 			.catch(function(err){
-				console.error(err);
 
 				if( err.status === 401 ){
-					$state.transitionTo("home");
+					// Auth token was invalid. Redirect to login page again.
+					AuthService.logout();	
 					return;
 				}
 

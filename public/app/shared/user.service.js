@@ -5,7 +5,7 @@
 		.service('UserService', UserService);
 
 
-	function UserService($q, $http, $auth){
+	function UserService($q, $http, $auth, AuthService){
 		var self 		= this;
 
 		// Literals
@@ -46,6 +46,13 @@
 				self.data = _.clone(res.data);
 				self.username = self.data.username;
 				return $q.resolve(self.data);
+			})
+			.catch(function(err){
+				if( err.status === 401 ){
+					// Auth token was invalid. Redirect to login page again.
+					AuthService.logout();	
+					return;
+				}
 			});
 		}
 	};
