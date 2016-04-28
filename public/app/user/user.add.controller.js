@@ -23,7 +23,6 @@
 		self.new 				= {};
 		self.repeat 			= {};
 		self.enabled 			= true;
-		self.request 			= undefined;
 
 		// Exposed Interface
 		self.cancel  			= cancel;
@@ -31,7 +30,7 @@
 
 		self.busyConfig = {
 			backdrop: true,
-			promise: self.request,
+			promise: undefined,
 			message: 'Creating User, please wait...',
 			templateUrl: '/app/loading/loading.template.html',
 		}

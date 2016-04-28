@@ -13,7 +13,7 @@
 		</md-toolbar>
 
 
-		<form name="userForm" novalidate ng-submit="userForm.$valid && vm.submit()" class="md-inline-form white-background ghost-padding">
+		<form name="userForm" cg-busy="vm.busyConfig" novalidate ng-submit="userForm.$valid && vm.submit()" class="md-inline-form white-background ghost-padding">
 
 			<!-- Username Input -->
 			<md-input-container class="md-block">
