@@ -1,5 +1,5 @@
 
-<md-content flex-gt-sm="60" flex-offset-gt-sm="20" flex="100" flex-offset="0" layout="column" layout-align="start center" layout-padding  class="md-whiteframe-z1">
+<div flex="100" flex-offset="0" layout="column" layout-align="start center"  class="white-background md-whiteframe-z3">
 		
 		<!-- Default Toolbar -->
 		<md-toolbar class="md-table-toolbar" ng-show="vm.state === 'default'" class="md-table-toolbar md-primary md-hue-1">
@@ -31,35 +31,34 @@
 	  
 			</div>
 		</md-toolbar>
+	
+		<md-content layout-fill ng-cloak>
+			<md-table-container style="width: 100%" >
+			  	<table md-table md-row-select md-multiple ng-model="vm.selected">
+			    	
+	   				<thead md-head md-order="vm.query.order" md-on-reorder="vm.onReorder">
+						<tr md-row>
+							<th md-column md-numeric width="25px" md-order-by="id" class="disable-text-selection">ID</th>
+							<th md-column md-order-by="username" class="disable-text-selection"> <span> Username </span> </th>
+							<th md-column class="disable-text-selection">Role</th>
+						</tr>
+					</thead>
 
 
+					<tbody md-body>
+			      		<tr md-row md-select="user" md-select-id="{{user.id}}" md-auto-select ng-repeat="user in vm.users">
+							<td md-cell>{{user.id}}</td>
+							<td md-cell>{{user.username}}</td>
+							<td md-cell>{{user.isAdmin?'Admin':'User'}}</td>
+						</tr>
+					</tbody>
 
-		<md-table-container style="width: 100%" >
-		  	<table md-table md-row-select ng-model="vm.selected">
-		    	
-   				<thead md-head md-order="vm.query.order" md-on-reorder="vm.onReorder">
-					<tr md-row>
-						<th md-column md-numeric width="25px" md-order-by="id" class="disable-text-selection">ID</th>
-						<th md-column md-order-by="username" class="disable-text-selection"> <span> Username </span> </th>
-						<th md-column class="disable-text-selection">Role</th>
-					</tr>
-				</thead>
-
-
-				<tbody md-body>
-		      		<tr md-row md-select="user" md-select-id="{{user.id}}" md-auto-select ng-repeat="user in vm.users">
-						<td md-cell>{{user.id}}</td>
-						<td md-cell>{{user.username}}</td>
-						<td md-cell>{{user.isAdmin?'Admin':'User'}}</td>
-					</tr>
-				</tbody>
-
-			</table>
-
-		</md-table-container>
-</md-content>
-
+				</table>
+			</md-table-container>
+		</md-content>
+</div>
 
 <md-button ng-href="/users/add" class="md-fab float-fab ghost-fab" aria-label="Mini FAB">
-    <md-icon md-svg-src="img/icons/add.svg"></md-icon>
+	<md-icon md-svg-src="img/icons/add.svg"></md-icon>
 </md-button>
+

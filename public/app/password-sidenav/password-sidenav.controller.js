@@ -86,7 +86,7 @@
 		          .textContent('It is impossible to undo this action. Deleting the category will remove it permanently.')
 		          .ariaLabel('Delete category')
 		          .targetEvent(ev)
-		          .ok('Please do it!')
+		          .ok('Yes, delete category')
 		          .cancel('No thanks')
 			).then(function(answer){
 				// Yes, delete it

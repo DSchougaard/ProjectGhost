@@ -1,6 +1,6 @@
-<div flex="100" layout="column" layout-align="start center" layout-padding>
+<div flex layout="column">
 
-	<md-toolbar class="md-table-toolbar">
+	<md-toolbar flex="none" class="md-table-toolbar">
 		<div class="md-toolbar-tools">
 			<span flex>Audit Log</span>
 			<md-button ng-click="vm.openFiltersDialog()">
@@ -12,7 +12,7 @@
 
 
 	<!-- Table Containing Log -->
-	<md-content layout-fill ng-cloak>
+	<md-content ng-if="true" flex ng-cloak>
 		<md-table-container>
 			<table md-table md-row-select="vm.selection" multiple ng-model="selected">
 				<thead md-head md-order="epoch" md-on-reorder="vm.onReorder">
@@ -39,7 +39,10 @@
 			</table>
 		</md-table-container>
 	</md-content>
-	<md-table-pagination style="min-height:50px" md-limit-options="vm.pagination.limitOptions" md-limit="vm.pagination.limit"  md-page="vm.pagination.page" md-total="{{vm.audit.length}}" md-page-select></md-table-pagination>
+
+	<div ng-if="false" flex style="background-color: #aaaaaa"></div>
+
+	<md-table-pagination flex="none" class="white-background" md-limit-options="vm.pagination.limitOptions" md-limit="vm.pagination.limit"  md-page="vm.pagination.page" md-total="{{(vm.audit | filter:vm.filter).length}}" md-page-select></md-table-pagination>
 
 
 

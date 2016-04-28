@@ -52,3 +52,17 @@
 	right: 20px; /* Adjust to where you want it */
 	z-index: 9999;
 }
+
+.white-background {
+	background-color: #FFFFFF;
+}
+
+.grey-background {
+	background-color: #E6E6E6;
+}
+
+.ghost-padding {
+	padding-left: 14px;
+	padding-right: 14px;
+	padding-bottom: 14px;
+}

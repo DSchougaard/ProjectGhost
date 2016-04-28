@@ -32,7 +32,7 @@
 		self.filter 	= undefined;
 		
 		self.pagination = {
-			limit: 15,
+			limit: 50,
 			page: 1,
 			limitOptions: [10, 25, 50, 100, {
 				label: 'All',

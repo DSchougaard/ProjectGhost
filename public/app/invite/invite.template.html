@@ -1,6 +1,6 @@
-<md-content id="invite" flex="60" flex-offset="20" layout="column" layout-align="start center" layout-padding >
+<div layout="row" class="grey-background" layout-fill layout-align="center start" >
 	
-	<section class="md-whiteframe-z1" layout-fill>
+	<div layout="column" class="md-whiteframe-z3 white-background" flex="100" flex-gt-sm="60"=>
 		<md-toolbar >
 			<div class="md-toolbar-tools">
 				<h3>
@@ -10,7 +10,7 @@
 		</md-toolbar>
 
 
-		<form name="inviteForm" novalidate layout="column" ng-submit="inviteForm.$valid && vm.submit()" class="md-inline-form">
+		<form layout-padding name="inviteForm" novalidate layout="column" ng-submit="inviteForm.$valid && vm.submit()" class="md-inline-form ghost-padding">
 			<md-input-container>
 				<label>Link</label>
 				<input ng-model="vm.link" readonly>
@@ -20,5 +20,19 @@
 			</md-button>
 		</form>
 
+	</div>
+</div>
+
+
+<!-- 
+
+
+
+<md-content id="invite" flex="60" flex-offset="20" layout="column" layout-align="start center" layout-padding >
+	
+	<section class="md-whiteframe-z1" layout-fill>
+		
+
 	</section>
 </md-content>
+-->
