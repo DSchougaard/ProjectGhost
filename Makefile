@@ -6,7 +6,6 @@ install: cert jwt
 	mkdir logs
 	npm install
 	bower install
-	cd node_modules/node_forge/;npm install;
 	cd public/components/forge; npm install; npm run bundle
 	gulp
 
