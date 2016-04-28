@@ -247,6 +247,11 @@ module.exports = function(server, knex, log){
 		})
 	});
 
+	server.get('/api/users/:userId/passwords/shared/:shareId', authentication, resolve, authorization, function(req, res, next){
+		res.send(200, req.resolved.params.share);
+		Audit.report(req.resolved.user, req, 'Shared Password', req.resolved.params.share.id, 'READ');
+		return next();
+	});
 
 	server.put('/api/users/:userId/passwords/shares/:shareId', authentication, resolve, authorization, function(req, res, next){
 		req.resolved.params.share.update(req.body)
@@ -267,7 +272,6 @@ module.exports = function(server, knex, log){
 			return next();
 		});
 	});
-
 
 	server.get('/api/users/:userId/passwords/shared', authentication, resolve, authorization, function(req, res, next){
 		SharedPassword.findSharedFromMe(req.resolved.params.user)

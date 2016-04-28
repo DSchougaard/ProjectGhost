@@ -29,10 +29,21 @@
 
 
 		function show(password){
-			return $http({
-				method: 'GET',
-				url: '/api/users/'+$auth.getPayload().uid+'/passwords/'+password.id
-			})
+
+			var request = undefined;
+			if( password.origin_owner ){
+				request = $http({
+					method: 'GET',
+					url: '/api/users/'+$auth.getPayload().uid+'/passwords/shared/'+password.id
+				});
+			}else{
+				request = $http({
+					method: 'GET',
+					url: '/api/users/'+$auth.getPayload().uid+'/passwords/'+password.id
+				});
+			}
+
+			return request
 			.then(function(res){
 				return EncryptionService._decrypt(res.data.password);
 			})
@@ -54,6 +65,8 @@
 				self.passwords = _.clone(res.data);
 				$rootScope.$broadcast('passwords', 'fetched');
 
+				console.dir(res.data)
+
 				return $http({
 					method:'GET',
 					url: '/api/users/' + $auth.getPayload().uid +'/passwords/shares'
@@ -62,6 +75,7 @@
 			.then(function(res){
 
 				self.sharedPasswords = _.map(res.data, function(pwrd){ 
+				console.dir(res.data)
 
 					if( pwrd.parent === null ){
 						pwrd.parent = -1;
