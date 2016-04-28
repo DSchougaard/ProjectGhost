@@ -77,6 +77,12 @@
 			})
 			.catch(function(err){
 				console.error(err);
+
+				if( err.status === 401 ){
+					$state.transitionTo("home");
+					return;
+				}
+
 			    $mdDialog.show(
 			        $mdDialog.alert()
 		            .parent(angular.element(document.querySelector('#popupContainer')))
