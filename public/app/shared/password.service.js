@@ -161,13 +161,13 @@
 
 		function sharePassword(password, users){
 
-			return self.decrypt(password)
-			.then(function(password){
+			return EncryptionService._decrypt(password.password)
+			.then(function(decryptedPassword){
 
 				var httpRequests = [];
 				// Queue up all http requests to share
 				for( var i = 0 ; i < users.length ; i++ ){
-					var encr = EncryptionService.encryptPassword(password.decryptedPassword, users[i].publickey);
+					var encr = EncryptionService.encryptPassword(decryptedPassword, users[i].publickey);
 					httpRequests.push(
 						$http({
 							method: 'POST',
