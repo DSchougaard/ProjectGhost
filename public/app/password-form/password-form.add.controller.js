@@ -85,15 +85,12 @@
 			EncryptionService.encrypt(self.password)
 			.then(function(encrypted){
 
-				var password = _.clone(self.password);
-				password.password = encrypted;
-
-				console.dir(password)
+				self.password.password = encrypted;
 
 				return $http({
 					method: 'POST',
 					url: '/api/users/'+ $auth.getPayload().uid+'/passwords',
-					data: password
+					data: self.password
 				});
 			})
 			.then(function(res){
@@ -102,6 +99,7 @@
 					return $state.transitionTo('home');
 				}
 				self.password.id = res.data.id;
+
 				return PasswordService.sharePassword(self.password, self.sharedWith);	
 			})
 			.then(function(res){
