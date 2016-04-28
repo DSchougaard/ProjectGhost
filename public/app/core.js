@@ -26,7 +26,7 @@
 	        		controllerAs: 'vm',
 				},
 				'content': { 
-			        templateUrl: 'app/password-list/password-list.template.html',
+			        templateUrl: 'app/password-list/password-list.test.template.html',
        				controller: 'listController',
 	        		controllerAs: 'vm'
 	    		},

@@ -88,6 +88,8 @@
 				var password = _.clone(self.password);
 				password.password = encrypted;
 
+				console.dir(password)
+
 				return $http({
 					method: 'POST',
 					url: '/api/users/'+ $auth.getPayload().uid+'/passwords',
