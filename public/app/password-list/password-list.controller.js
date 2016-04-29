@@ -106,14 +106,14 @@
 			}
 		}
 
-		function show(index){
-			var password = _.findWhere(self.entries, {id: index});
+		function show(password){
+			//var password = _.findWhere(self.entries, {id: index, origin_owner: origin_owner});
 			PasswordService.show(password);
 
 		}
 
-		function hide(index){
-			var password = _.findWhere(self.entries, {id: index});
+		function hide(password){
+			//var password = _.findWhere(self.entries, {id: index});
 			password.decryptedPassword = undefined;
 		}
 
