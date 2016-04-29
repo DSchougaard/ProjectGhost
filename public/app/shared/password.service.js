@@ -65,8 +65,6 @@
 				self.passwords = _.clone(res.data);
 				$rootScope.$broadcast('passwords', 'fetched');
 
-				console.dir(res.data)
-
 				return $http({
 					method:'GET',
 					url: '/api/users/' + $auth.getPayload().uid +'/passwords/shares'
@@ -75,7 +73,6 @@
 			.then(function(res){
 
 				self.sharedPasswords = _.map(res.data, function(pwrd){ 
-				console.dir(res.data)
 
 					if( pwrd.parent === null ){
 						pwrd.parent = -1;

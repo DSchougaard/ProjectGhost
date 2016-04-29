@@ -92,7 +92,7 @@
 				// Yes, delete it
 				return CategoryService.del( _.omit(self.cachedSelection, 'children') )
 				.then(function(res){
-
+					fetch();
 				})
 				.catch(function(err){
 					$mdDialog.show(
