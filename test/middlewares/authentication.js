@@ -21,29 +21,28 @@ const ValidationError 		= require(__base + 'errors/ValidationError.js');
 const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js');
 const SqlError 				= require(__base + 'errors/SqlError.js');
 
-const unittestData = require(__base + 'misc/unitTestData.js');
-
 var knex = require(__base + 'database.js');
 
 var authentication = require(__base + 'middlewares/authentication.js');
 
+function generateTemplateUser(username){
+	return {
+		username 	: 'Auditing#Authentication#' + username,
+		isAdmin 	: false,
+		salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+		password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+		privatekey 	: 'cGFzc3dvcmQ=',
+		iv 			: 'cGFzc3dvcmQ=',
+		pk_salt 	: 'cGFzc3dvcmQ=',
+		publickey 	: 'cGFzc3dvcmQ='
+	};
+}
+
 describe('Authentication', function(){
 
-	var testUser = {
-		username 			: 'AuthenticationMiddlewareUser',
-		isAdmin 			: false,
-		privatekey 			: base64.encode('privatekey'),
-		publickey 			: base64.encode('publickey'),
-		pk_salt 			: "Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI=",
-		iv 					: base64.encode('111111111'),
-		two_factor_enabled 	: 0,
-		two_factor_secret 	: null
-	};
+	var testUser = generateTemplateUser('AuthenticationMiddlewareUser');
 
 	before(function(){
-		testUser.salt =  bcrypt.genSaltSync();
-		testUser.password =  bcrypt.hashSync('password', testUser.salt);
-
 		return knex('users')
 		.insert(testUser)
 		.then(function(ids){
@@ -89,8 +88,8 @@ describe('Authentication', function(){
 		nonExistingUserToken 	= jwt.sign(nonExistingUserToken, privateKey, {algorithm: 'RS256'});
 
 
-		var fakePrivateKey = fs.readFileSync(__base + 'misc/unittest-private.key');
-		invalidToken 	= jwt.sign(invalidToken, fakePrivateKey, {algorithm: 'RS256'});
+		var fakePrivateKey 	= require(__base + '/test/certs.js').privateKey.raw;
+		invalidToken 		= jwt.sign(invalidToken, fakePrivateKey, {algorithm: 'RS256'});
 
 		return done();
 	});
@@ -125,7 +124,7 @@ describe('Authentication', function(){
 		authentication(req, null, function(err){
 			assert.notEqual(req.resolved, undefined);
 			assert.notEqual(req.resolved.user, undefined);
-			assert.deepEqual(req.resolved.user, testUser);
+			assert.deepEqual(_.omit(req.resolved.user, 'two_factor_enabled', 'two_factor_secret'), testUser);
 			
 			assert.equal(err, undefined);
 			return done();
