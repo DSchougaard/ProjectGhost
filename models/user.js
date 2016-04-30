@@ -269,13 +269,18 @@ module.exports = class User{
 	}
 
 	del(){
+		var self = this;
 		if( typeof this.id !== 'number' ){
 			return new Promise.reject( new ValidationError([{message: 'is the wrong type', property: 'user.id'}]) );
 		}
-
-		return knex('users')
-		.where('id', this.id)
+		return knex('audit')
+		.where('userId', self.id)
 		.del()
+		.then(function(){
+			return knex('users')
+			.where('id', self.id)
+			.del();
+		})
 		.then(function(rows){
 			if( rows === 0 ){
 				return new Promise.reject(new SqlError('User was not found'));

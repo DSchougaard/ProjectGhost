@@ -7,7 +7,6 @@ var sinon 				= require('sinon');
 
 var fs 					= require('fs');
 var fse 				= require('fs-extra');
-var rsa 				= require('node-rsa');
 var _					= require('underscore');
 var crypto 				= require('crypto');
 var bcrypt 				= require('bcrypt');
@@ -16,21 +15,21 @@ var base64 				= require(__base + 'helpers/base64.js');
 var restifyInstance 	= require(__base + 'app.js');
 var server 				= request(restifyInstance.server);
 
-//var server = request.agent('https://localhost:8080');
-const unittestData 		= require(__base + 'misc/unitTestData.js');
+const certs 			= require(__base + 'test/certs.js');
+
 // Test user
 var testUser = {
 	username: 				'User3',
 	password: 				'password',
 	isAdmin: 				false,
-	privatekey: 			fs.readFileSync('misc/unittest-private.key').toString('utf8'),
-	publickey: 				fs.readFileSync('misc/unittest-public.crt').toString('utf8'),
+	publickey: 				certs.publicKey.raw,
+	privatekey: 			certs.privateKey.raw,
 	pk_salt: 				"Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI=",
 	iv:  					base64.encode('111111111')
 };
 testUser.base64 = {
-		publickey: base64.encode(testUser.publickey),
-		privatekey: base64.encode(testUser.privatekey)
+		publickey: certs.publicKey.base64,
+		privatekey: certs.privateKey.base64
 }
 //var IV = encrypt.generateIV();
 //var ciphertext = encrypt.encrypt()
@@ -39,13 +38,43 @@ var knex = require(__base + 'database.js');
 
 describe('API /users', function(){
 
+	function generateTemplateUser(username){
+		return {
+			username 	: 'Api#Users#' + username,
+			salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+			password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+			privatekey 	: 'cGFzc3dvcmQ=',
+			iv 			: 'cGFzc3dvcmQ=',
+			pk_salt 	: 'cGFzc3dvcmQ=',
+			publickey 	: 'cGFzc3dvcmQ='
+		};
+	}
+
+	var users = [
+		generateTemplateUser('GET-User001'),
+		generateTemplateUser('GET-User002'),
+		generateTemplateUser('GET-User003'),
+	];
+
+	before(function(){
+		return knex('users')
+		.insert(users)
+		.then(function(){
+			return knex('users')
+			.select();
+		})
+		.then(function(_users){
+			users = _users;
+		});
+	})
+
 	var authToken = '';
 
 	before(function(done){
 		// Obtain auth token
 		server
 		.post('/api/auth/login')
-		.field('username', 'User1')
+		.field('username', users[0].username)
 		.field('password', 'password')
 		.expect(200)
 		.end(function(err, res){
@@ -75,12 +104,13 @@ describe('API /users', function(){
 			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
-				assert.equal(res.body.length, 2);
+				assert.equal(res.body.length, users.length);
+
+
+				assert.deepEqual(res.body, _.map(users, function(o) { return _.pick(o, 'id', 'isAdmin', 'publickey', 'username'); }) );
+
+				//var usersWithoutIDs = _.map(res.body, function(o) { return _.omit(o, 'id'); });
 				
-				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'iv', 'pk_salt', 'privatekey', 'salt', 'password'); });	
-				var usersWithoutIDs = _.map(res.body, function(o) { return _.omit(o, 'id'); });
-				
-				assert.deepEqual(usersWithoutIDs, filteredData);
 				done();
 			})
 		});
@@ -96,51 +126,86 @@ describe('API /users', function(){
 			})
 		})
 	});
+
+	after(function(){
+		return knex('audit')
+		.del()
+		.then();
+	});
+	after(function(){
+		return knex('users')
+		.del()
+		.then();
+	});
 });
 
 describe("API /user", function(){
+	function generateTemplateUser(username){
+		return {
+			username 	: 'Api#User#' + username,
+			salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+			password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+			privatekey 	: 'cGFzc3dvcmQ=',
+			iv 			: 'cGFzc3dvcmQ=',
+			pk_salt 	: 'cGFzc3dvcmQ=',
+			publickey 	: 'cGFzc3dvcmQ='
+		};
+	}
 
-	var authToken = '';
-	var otherAuthToken = '';
-
-	before(function(done){
-		// Obtain auth token
-		server
-		.post('/api/auth/login')
-		.field('username', 'User1')
-		.field('password', 'password')
-		.expect(200)
-		.end(function(err, res){
-			if(err) return done(err);
-			authToken = res.body.token;
-			return done();
-		});
-	});
-
-
-	before(function(done){
-		// Obtain auth token
-		server
-		.post('/api/auth/login')
-		.field('username', 'User2')
-		.field('password', 'password')
-		.expect(200)
-		.end(function(err, res){
-			if(err) return done(err);
-			otherAuthToken = res.body.token;
-			return done();
-		});
-	});
 
 	describe("POST: Create a new user", function(){
 
-		/*
-			.field('username', testUser.username)
-			.field('password', testUser.password)
-			.field('privatekey', testUser.privatekey)
-			.field('publickey', testUser.publickey)
-		*/
+		var authToken = '';
+		var otherAuthToken = '';
 
+		var users = [
+			generateTemplateUser('User001-Admin'),
+			generateTemplateUser('User002-User'),
+		]
+		users[0].isAdmin = true;
+		users[1].isAdmin = false;
+
+		before(function(){
+			return knex('users')
+			.insert(users)
+			.then(function(){
+				return knex('users').select();
+			})
+			.then(function(_users){
+				users = _users;
+			});
+		});
+
+
+		before(function(done){
+			// Obtain auth token
+			server
+			.post('/api/auth/login')
+			.field('username', users[0].username)
+			.field('password', 'password')
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+				authToken = res.body.token;
+				return done();
+			});
+		});
+
+
+		before(function(done){
+			// Obtain auth token
+			server
+			.post('/api/auth/login')
+			.field('username', users[1].username)
+			.field('password', 'password')
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+				otherAuthToken = res.body.token;
+				return done();
+			});
+		});
+	
 		it('should fail when a password is not supplied', function(done){
 			server
 			.post('/api/users')
@@ -262,15 +327,14 @@ describe("API /user", function(){
 		});
 
 		it("Should fail at creating a user that already exists", function(done){
+
+			var t = _.omit(generateTemplateUser('User001-Admin'), 'password', 'salt');
+			t.password = 'password'
+
 			server
 			.post('/api/users')
 			.set('Authorization', 'Bearer ' + authToken)
-			.field('username', 'User1')
-			.field('password', testUser.password)
-			.field('privatekey', testUser.base64.privatekey)
-			.field('publickey', testUser.base64.publickey)
-			.field('iv', testUser.iv)
-			.field('pk_salt', testUser.pk_salt)
+			.send(t)
 			.expect(400)
 			.end(function(err, res){
 				if(err){
@@ -283,21 +347,15 @@ describe("API /user", function(){
 			});
 		});
 
-		it("Database file has should change after insert", function(done){
-			// Create finger print before insert
-			var originalDB = fs.readFileSync('./unittest.sqlite');
-			var originalChecksum = crypto.createHash('sha1').update(originalDB).digest('hex');
+		it("Successfully inserts a user", function(done){
+			var newUser = _.omit(generateTemplateUser('User003'), 'salt', 'password');
+			newUser.password = 'password';
 
 			// Insert user
 			server
 			.post('/api/users')
+			.send(newUser)
 			.set('Authorization', 'Bearer ' + authToken)
-			.field('username', testUser.username)
-			.field('password', testUser.password)
-			.field('privatekey', testUser.base64.privatekey)
-			.field('publickey', testUser.base64.publickey)
-			.field('iv', testUser.iv)
-			.field('pk_salt', testUser.pk_salt)
 			.expect(200)
 			.end(function(err,res){
 				if(err){
@@ -307,13 +365,12 @@ describe("API /user", function(){
 				var returnedID = parseInt(res.body.id);
 				
 				assert.notEqual(returnedID, NaN);
-				testUser.id = returnedID;
 				assert.equal(res.body.message, 'OK');
 
-				var newDB = fs.readFileSync('./unittest.sqlite');
-				var newChecksum = crypto.createHash('sha1').update(newDB).digest('hex');
+				newUser.id = returnedID;
+				newUser.isAdmin = 0; // Hacky
+				users.push(newUser);
 
-				newChecksum.should.not.equal(originalChecksum);
 				return done();
 			});
 		});
@@ -326,19 +383,7 @@ describe("API /user", function(){
 			.end(function(err,res){
 				if(err) return done(err);
 				
-				assert.equal(res.body.length, 3);
-				var usersWithoutIDs = _.map(res.body, function(o) { o.isAdmin === 1 ? o.isAdmin = true : o.isAdmin = false; return _.omit(o, 'id'); });
-				
-				var expectedInsertedUser = {
-					username: testUser.username,
-					publickey: testUser.base64.publickey,
-					isAdmin: false
-				}
-				
-				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'iv', 'pk_salt','privatekey', 'salt', 'password'); });	
-				filteredData.push(expectedInsertedUser);
-
-				assert.deepEqual(usersWithoutIDs, filteredData);
+				assert.deepEqual(res.body, _.map(users, function(o) { return _.pick(o, 'id', 'isAdmin', 'publickey', 'username'); }) );
 					
 				done();
 			});
@@ -349,36 +394,83 @@ describe("API /user", function(){
 			.del()
 			.then();
 		});
+
+
+		after(function(){
+			return knex('users')
+			.del()
+			.then();
+		});
 	});
 	
 
 	describe('PUT: Updating a user', function(){
 
-		var testUserToken = undefined;
+
+		var users = [
+			generateTemplateUser('PUT-User001'),
+			generateTemplateUser('PUT-User002'),
+			generateTemplateUser('PUT-User003'),
+		]
+
+		before(function(){
+			return knex('users')
+			.insert(users)
+			.then(function(){
+				return knex('users').select();
+			})
+			.then(function(_users){
+				users = _users;
+			});
+		});
+
+		var tokens = [ undefined, undefined, undefined ];
+
 		before(function(done){
 			// Obtain auth token
 			server
 			.post('/api/auth/login')
-			.field('username', testUser.username)
+			.field('username', users[0].username)
 			.field('password', 'password')
 			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
-				console.log("got token")
-				testUserToken = res.body.token;
+				tokens[0] = res.body.token;
+				return done();
+			});
+		});
+		before(function(done){
+			// Obtain auth token
+			server
+			.post('/api/auth/login')
+			.field('username', users[1].username)
+			.field('password', 'password')
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+				tokens[1] = res.body.token;
+				return done();
+			});
+		});
+		before(function(done){
+			// Obtain auth token
+			server
+			.post('/api/auth/login')
+			.field('username', users[2].username)
+			.field('password', 'password')
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+				tokens[2] = res.body.token;
 				return done();
 			});
 		});
 
-
-
-		var testUpdatedUsername = 'NotAUnitTestUser';
-
 		it('successfully updates a single field, non-password', function(done){
 			server
-			.put('/api/users/' + testUser.id)
-			.set('Authorization', 'Bearer ' + testUserToken)
-			.field('username', testUpdatedUsername)
+			.put('/api/users/' + users[0].id)
+			.set('Authorization', 'Bearer ' + tokens[0])
+			.field('username', 'Kylo Ren')
 			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -391,23 +483,23 @@ describe("API /user", function(){
 		it('should have updated the database entry, after the previous test', function(){
 			return knex('users')
 			.select()
-			.where('username', testUpdatedUsername)
+			.where('id', users[0].id)
 			.then(function(user){
-				assert.equal(user.length, 1);
+				assert.equal(user.length, 			1);
 
-				assert.equal(user[0].username,		testUpdatedUsername);
+				assert.equal(user[0].username,		'Kylo Ren');
 
-				assert.equal(user[0].id, 			testUser.id);
-				assert.equal(user[0].privatekey, 	testUser.base64.privatekey)
-				assert.equal(user[0].publickey, 	testUser.base64.publickey)
+				assert.equal(user[0].id, 			users[0].id);
+				assert.equal(user[0].privatekey, 	users[0].privatekey)
+				assert.equal(user[0].publickey, 	users[0].publickey)
 				assert.equal(user[0].isAdmin, 		false);	
 			});
 		});
 
 		it('successfully updates password and generates new salt', function(done){
 			server
-			.put('/api/users/' + testUser.id)
-			.set('Authorization', 'Bearer ' + testUserToken)
+			.put('/api/users/' + users[1].id)
+			.set('Authorization', 'Bearer ' + tokens[1])
 			.field('password', 'totallysecure')
 			.expect(200)
 			.end(function(err, res){
@@ -420,25 +512,25 @@ describe("API /user", function(){
 		it('should have updated the database entry, after the previous test', function(){
 			return knex('users')
 			.select()
-			.where('username', testUpdatedUsername)
+			.where('id', users[1].id)
 			.then(function(user){
 				assert.equal(user.length, 1);
 
 				var expectedPassword = bcrypt.hashSync('totallysecure', user[0].salt);
 				assert.equal(user[0].password, expectedPassword);
 
-				assert.equal(user[0].username, 		testUpdatedUsername);
-				assert.equal(user[0].id, 			testUser.id);
-				assert.equal(user[0].privatekey, 	testUser.base64.privatekey)
-				assert.equal(user[0].publickey, 	testUser.base64.publickey)
+				assert.equal(user[0].username, 		users[1].username);
+				assert.equal(user[0].id, 			users[1].id);
+				assert.equal(user[0].privatekey, 	users[1].privatekey)
+				assert.equal(user[0].publickey, 	users[1].publickey)
 				assert.equal(user[0].isAdmin, 		false);	
 			});
 		});
 
 		it('fails when trying to update id', function(done){
 			server
-			.put('/api/users/' + testUser.id)
-			.set('Authorization', 'Bearer ' + testUserToken)
+			.put('/api/users/' + users[2].id)
+			.set('Authorization', 'Bearer ' + tokens[2])
 			.field('id', 1337)
 			.expect(400)
 			.end(function(err, res){
@@ -454,8 +546,8 @@ describe("API /user", function(){
 
 		it('fails when payload has invalid values', function(done){
 			server
-			.put('/api/users/' + testUser.id)
-			.set('Authorization', 'Bearer ' + testUserToken)
+			.put('/api/users/' + users[2].id)
+			.set('Authorization', 'Bearer ' + tokens[2])
 			.field('privatekey', 'this is not base64')
 			.expect(400)
 			.end(function(err, res){
@@ -472,8 +564,8 @@ describe("API /user", function(){
 
 		it('fails when payload is empty', function(done){
 			server
-			.put('/api/users/' + testUser.id)
-			.set('Authorization', 'Bearer ' + testUserToken)
+			.put('/api/users/' + users[2].id)
+			.set('Authorization', 'Bearer ' + tokens[2])
 			.expect(400)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -490,7 +582,7 @@ describe("API /user", function(){
 		it('fails when updating non-existant user', function(done){
 			server
 			.put('/api/users/' + 1337)
-			.set('Authorization', 'Bearer ' + testUserToken)
+			.set('Authorization', 'Bearer ' + tokens[2])
 			.expect(404)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -507,15 +599,81 @@ describe("API /user", function(){
 			.del()
 			.then();
 		});
+		after(function(){
+			return knex('users')
+			.del()
+			.then();
+		});
 	});
 
 
 	describe("DELETE: Delete a user", function(){
 
+		{
+			var users = [
+				generateTemplateUser('DELETE-User001'),
+				generateTemplateUser('DELETE-User002'),
+				generateTemplateUser('DELETE-User003'),
+			]
+
+			before(function(){
+				return knex('users')
+				.insert(users)
+				.then(function(){
+					return knex('users').select();
+				})
+				.then(function(_users){
+					users = _users;
+				});
+			});
+
+			var tokens = [ undefined, undefined, undefined ];
+
+			before(function(done){
+				// Obtain auth token
+				server
+				.post('/api/auth/login')
+				.field('username', users[0].username)
+				.field('password', 'password')
+				.expect(200)
+				.end(function(err, res){
+					if(err) return done(err);
+					tokens[0] = res.body.token;
+					return done();
+				});
+			});
+			before(function(done){
+				// Obtain auth token
+				server
+				.post('/api/auth/login')
+				.field('username', users[1].username)
+				.field('password', 'password')
+				.expect(200)
+				.end(function(err, res){
+					if(err) return done(err);
+					tokens[1] = res.body.token;
+					return done();
+				});
+			});
+			before(function(done){
+				// Obtain auth token
+				server
+				.post('/api/auth/login')
+				.field('username', users[2].username)
+				.field('password', 'password')
+				.expect(200)
+				.end(function(err, res){
+					if(err) return done(err);
+					tokens[2] = res.body.token;
+					return done();
+				});
+			});
+		}
+
 		it('should fail on deleting non-existant user', function(done){
 			server
 			.del('/api/users/'+1337)
-			.set('Authorization', 'Bearer ' + authToken)
+			.set('Authorization', 'Bearer ' + tokens[0])
 			.expect(404)
 			.end(function(err,res){
 				if(err){
@@ -532,7 +690,7 @@ describe("API /user", function(){
 		it('should fail when passed id is of the wrong type', function(done){
 			server
 			.del('/api/users/true')
-			.set('Authorization', 'Bearer ' + authToken)
+			.set('Authorization', 'Bearer ' + tokens[0])
 			.expect(400)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -548,7 +706,7 @@ describe("API /user", function(){
 
 		it('should fail when no auth token is passed', function(done){
 			server
-			.del('/api/users/'+testUser.id)
+			.del('/api/users/'+users[0].id)
 			.expect(401)
 			.end(function(err,res){
 				if(err) return done(err);
@@ -562,14 +720,14 @@ describe("API /user", function(){
 		
 		it('should successfully delete a user', function(done){
 			server
-			.del('/api/users/'+testUser.id)
-			.set('Authorization', 'Bearer ' + authToken)
+			.del('/api/users/'+users[1].id)
+			.set('Authorization', 'Bearer ' + tokens[1])
 			.expect(200)
 			.end(function(err,res){
 				if(err){
 					return done(err);
 				} 
-				
+
 				assert.equal(res.body, 'OK');
 				
 				return done();
@@ -579,25 +737,27 @@ describe("API /user", function(){
 		it('should return one less user', function(done){
 			server
 			.get('/api/users')
-			.set('Authorization', 'Bearer ' + authToken)
+			.set('Authorization', 'Bearer ' + tokens[0])
 			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
 
 				(res.body).should.have.length(2);
+
+				var userRemoved = _.filter(users, function(u){
+					return u.username !== generateTemplateUser('DELETE-User002').username;
+				});
 				
-				var usersWithoutIDs = _.map(res.body, function(o) { return _.omit(o, 'id'); });
-				var filteredData = _.map(unittestData.userData, function(o) { return _.omit(o, 'iv', 'pk_salt', 'privatekey', 'salt', 'password'); });	
-				
-				assert.deepEqual(usersWithoutIDs, filteredData);
+				assert.deepEqual(res.body, _.map(userRemoved, function(o) { return _.pick(o, 'id', 'isAdmin', 'publickey', 'username'); }) );
+
 				return done();
 			});
 		});
 
 		it('should not allow a user to delete another user', function(done){
 			server
-			.del('/api/users/'+1)
-			.set('Authorization', 'Bearer ' + otherAuthToken)
+			.del('/api/users/'+users[0].id)
+			.set('Authorization', 'Bearer ' + tokens[2])
 			.expect(403)
 			.end(function(err,res){
 				if(err){
@@ -621,28 +781,60 @@ describe("API /user", function(){
 
 
 	describe('GET: Get a single user', function(){
-		
+	
+		{
+			var users = [
+				generateTemplateUser('GET-User001'),
+			]
+
+			before(function(){
+				return knex('users')
+				.insert(users)
+				.then(function(){
+					return knex('users').select();
+				})
+				.then(function(_users){
+					users = _users;
+				});
+			});
+
+			var tokens = [ undefined ];
+
+			before(function(done){
+				// Obtain auth token
+				server
+				.post('/api/auth/login')
+				.field('username', users[0].username)
+				.field('password', 'password')
+				.expect(200)
+				.end(function(err, res){
+					if(err) return done(err);
+					tokens[0] = res.body.token;
+					return done();
+				});
+			});
+		}
+
 		it('should succeed in getting a user', function(done){
-			var id = 1;
 			server
-			.get('/api/users/' + id)
-			.set('Authorization', 'Bearer ' + authToken)
+			.get('/api/users/' + users[0].id)
+			.set('Authorization', 'Bearer ' + tokens[0])
 			.expect(200)
 			.end(function(err,res){
 				if(err) return done(err);
 
-				assert.equal(res.body.username, unittestData.userData[0].username);
-				assert.equal(res.body.publickey, unittestData.userData[0].publickey);
-				assert.equal(res.body.id, id);
+				assert.equal(res.body.username, 	users[0].username);
+				assert.equal(res.body.publickey, 	users[0].publickey);
+				assert.equal(res.body.id,			users[0].id);
+
 				return done();
 			});
 		});
 		
 		it('should fail at getting non-existant user', function(done){
-			var id = 1337;
 			server
-			.get('/api/users/' + id)
-			.set('Authorization', 'Bearer ' + authToken)
+			.get('/api/users/' + 1337)
+			.set('Authorization', 'Bearer ' + tokens[0])
 			.expect(404)
 			.end(function(err,res){
 				if(err) return done(err);
@@ -657,7 +849,7 @@ describe("API /user", function(){
 		it('should fail when a id of wrong type is passed', function(done){
 			server
 			.get('/api/users/true')
-			.set('Authorization', 'Bearer ' + authToken)
+			.set('Authorization', 'Bearer ' + tokens[0])
 			.expect(400)
 			.end(function(err,res){
 				if(err) return done(err);
@@ -689,6 +881,12 @@ describe("API /user", function(){
 		
 		after(function(){
 			return knex('audit')
+			.del()
+			.then();
+		});
+
+		after(function(){
+			return knex('users')
 			.del()
 			.then();
 		});

@@ -35,14 +35,17 @@ const privateKey 		= fs.readFileSync(__base + '/crypto/jwt/ghost-jwt.key');
 const publicKey 		= fs.readFileSync(__base + '/crypto/jwt/ghost-jwt.crt');
 
 
-describe.only('API /auth', function(){
+describe('API /auth', function(){
 	describe('AuthToken without 2FA', function(){
 		
 		var user = generateTemplateUser('Without2FA-User001');
+
 		before(function(){
 			return knex('users')
 			.insert(user)
-			.then();
+			.then(function(ids){
+				user.id = ids[0];
+			});
 		});
 
 		it('returns an auth token for a user that exists', function(done){
@@ -59,7 +62,7 @@ describe.only('API /auth', function(){
 				jwt.verify(token, publicKey, function(err, decoded){
 					if(err) done(err);
 
-					(decoded).should.have.property('uid',1);
+					(decoded).should.have.property('uid', user.id);
 					(decoded).should.have.property('iat');
 					(decoded).should.have.property('exp');
 

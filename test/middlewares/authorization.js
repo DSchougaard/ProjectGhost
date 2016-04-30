@@ -14,8 +14,6 @@ const ValidationError 		= require(__base + 'errors/ValidationError.js');
 const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js');
 const SqlError 				= require(__base + 'errors/SqlError.js');
 
-const unittestData = require(__base + 'misc/unitTestData.js');
-
 var User 			= require(__base + 'models/user.js');
 
 var knex = require(__base + 'database.js');

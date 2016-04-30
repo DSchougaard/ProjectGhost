@@ -28,7 +28,7 @@ tree:
 test:
 	rm -f logs/*
 	rm -f unittest.sqlite
-	node misc/createUnitTestDB.js
+	#node misc/createUnitTestDB.js
 	NODE_ENV=test mocha test/tests
 
 cov: 

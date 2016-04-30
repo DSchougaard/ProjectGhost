@@ -1,20 +1,21 @@
 "use strict";
 
-var assert = require('assert');
-
+const assert 	= require('assert');
 const fs 		= require('fs');
 const _ 		= require('underscore');
 
+const base64 	= require(__base + '/helpers/base64.js');
+
+// Errors
 const ValidationError 		= require(__base + 'errors/ValidationError.js');
 const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js');
 const SqlError 				= require(__base + 'errors/SqlError.js');
 const AlreadyExistError 	= require(__base + 'errors/Internal/AlreadyExistError.js');
 
 const certs 				= require(__base + 'test/certs.js');
-var base64 = require(__base + '/helpers/base64.js')
 
 var knex = require(__base + 'database.js');
-	var User = require(__base + 'models/user.js');
+var User = require(__base + 'models/user.js');
 
 function generateTemplateUser(username){
 	return {

@@ -109,7 +109,6 @@ module.exports = class Audit{
 		return knex('audit')
   		.distinct('host')
 		.select();
-
 	}
 
 	static get(user){
@@ -136,7 +135,7 @@ module.exports = class Audit{
 		})
 		.catch(function(err){
 			if( err.errno === 19 && err.code === 'SQLITE_CONSTRAINT' ){
-				return new Promise.reject( new SqlError('Username already exists') );
+				return new Promise.reject( new SqlError(err) );
 				//throw new SqlError('Username already exists.')
 			}else if( err.errno === 5 && err.code === 'SQLITE_BUSY'){
 				return new Promise.reject( new SqlError('database temporarily unavailable') );
@@ -145,4 +144,5 @@ module.exports = class Audit{
 			return new Promise.reject( err );
 		});
 	}
+
 }

@@ -107,6 +107,11 @@ knex.schema.createTableIfNotExists('users', function(table){
 	table.boolean('two_factor_enabled').defaultTo(false);
 })
 .then(function(){
+	if( process.env.NODE_ENV === 'test' ){
+		return;
+	}
+
+
 	console.log("Database was empty. Creating default Admin account -- this will take some time.");
 	var User = require(__base + 'models/user.js');
 	var forge 		= require('node-forge');

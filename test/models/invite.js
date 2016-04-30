@@ -6,7 +6,6 @@ const _ 			= require('underscore');
 const moment 		= require('moment');
 const uuid 			= require('uuid');
 
-const unittestData 	= require(__base + 'misc/unitTestData.js');
 const knex 			= require(__base + 'database.js');
 
 // Models
