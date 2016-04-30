@@ -3,7 +3,6 @@
 var assert = require('assert');
 
 const fs 		= require('fs');
-const base64 	= require(__base + 'helpers/base64.js');
 const _ 		= require('underscore');
 
 const ValidationError 		= require(__base + 'errors/ValidationError.js');
@@ -11,36 +10,48 @@ const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js'
 const SqlError 				= require(__base + 'errors/SqlError.js');
 const AlreadyExistError 	= require(__base + 'errors/Internal/AlreadyExistError.js');
 
-const unittestData = require(__base + 'misc/unitTestData.js');
-
+const certs 				= require(__base + 'test/certs.js');
+var base64 = require(__base + '/helpers/base64.js')
 
 var knex = require(__base + 'database.js');
+	var User = require(__base + 'models/user.js');
+
+function generateTemplateUser(username){
+	return {
+		username 	: 'Models#User#' + username,
+		salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+		password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+		privatekey 	: 'cGFzc3dvcmQ=',
+		iv 			: 'cGFzc3dvcmQ=',
+		pk_salt 	: 'cGFzc3dvcmQ=',
+		publickey 	: 'cGFzc3dvcmQ='
+	};
+}
+
 
 
 describe("User", function(){
-	
-	var User = require(__base + 'models/user.js');
 
-	var validUser;
 
-	before(function(done){
-
-		validUser = {
-			username: 'Anakin Skywalker',
-			password: 'password',
-			privatekey: base64.encode(fs.readFileSync('misc/unittest-private.key').toString('utf8')),
-			publickey: base64.encode(fs.readFileSync('misc/unittest-public.crt').toString('utf8')),
-			pk_salt 	: "Gvfqk3Dp/ezVweCxJ1BZgDADKWHDQGhy7tyEU5p+p3kZ9N8eWcPTEfLXqplZA5WVqMbLB3slU47jPXnj4krRDywT6CnK096wWP7Mc3khwlaRFLyjnf0u3TD9hs0udc194JwYXq0fAuzvM36iKlpXeGFDBVtP4NZV/7OIJX1LBkI=",
-			iv 			: base64.encode('111111111')
-		}
-		done();
-	});
-	
 	describe('#findAll', function(){
+
+		var names = ['FindAll-User001', 'FindAll-User002', 'FindAll-User003'];
+
+		before(function(){
+
+			return knex('users')
+			.insert([
+				generateTemplateUser(names[0]),
+				generateTemplateUser(names[1]),
+				generateTemplateUser(names[2]),
+			])
+			.then();
+		})
+
 		it('should find the contents of the unittest database', function(){
 			return User.findAll()
 			.then(function(users){
-				
+
 				return knex
 				.select('id', 'username', 'publickey', 'isAdmin')
 				.from('users')
@@ -49,26 +60,60 @@ describe("User", function(){
 				});
 			});
 		});
+
+		after(function(){
+			return knex('users')
+			.del()
+			.then()
+		})
 	});
 	
 	describe('#create', function(){
 
+		var newUser = undefined;
+		before(function(){
+			return knex('users')
+			.insert(generateTemplateUser('Create-User001'))
+			.then();
+		})
+
+		before(function(done){
+			newUser = generateTemplateUser('Create-User002');
+			done();
+		});
+
 		it('succeeds in creating new user', function(){
-			return User.create(validUser)
+			var t = _.omit(newUser, 'password', 'salt');
+			t.password = 'password';
+
+			return User.create(t)
 			.then(function(user){
 				//console.log(h);
-				assert.equal(user.id, 3);
-				assert.equal(user.username, validUser.username);
-				assert.equal(user.isAdmin, false);
-				assert.equal(user.privatekey, validUser.privatekey);
-				assert.equal(user.publickey, validUser.publickey);
+				assert.equal(user.username, 	newUser.username);
+				assert.equal(user.isAdmin, 		false);
+				assert.equal(user.privatekey, 	newUser.privatekey);
+				assert.equal(user.publickey, 	newUser.publickey);
+
+				return knex('users')
+				.select()
+				.where('username', user.username)
+				.then(function(rows){
+					assert.equal(rows.length, 			1);
+
+					assert.equal(rows[0].username, 		newUser.username);
+					assert.equal(rows[0].isAdmin, 		false);
+					assert.equal(rows[0].privatekey, 	newUser.privatekey);
+					assert.equal(rows[0].publickey, 	newUser.publickey);
+				});
 			});
 		});
 
 		it('fails when creating a user with already existing username', function(){
-			var temp = _.clone(validUser);
-			temp.username = unittestData.userData[0].username;
-			return User.create(temp)
+
+			var user = _.omit(generateTemplateUser('Create-User001'), 'password', 'salt');
+			user.password = 'password';
+
+			return User.create(user)
 			.then(function(user){
 				assert.fail(user);
 			})
@@ -78,6 +123,10 @@ describe("User", function(){
 		})
 
 		describe('missing fields', function(){ 
+
+			var user = _.omit(generateTemplateUser('Create-User003'), 'password', 'salt');
+			user.password = 'password';
+
 			it('should throw error when creating a new user with undefined data', function(){
 				return User.create(undefined)
 				.then(function(user){
@@ -92,7 +141,7 @@ describe("User", function(){
 			});
 
 			it('should throw error when creating a new user with undefined username', function(){
-				return User.create( _.omit(validUser, 'username') )
+				return User.create( _.omit(user, 'username') )
 				.then(function(user){
 					assert.fail();
 				})
@@ -114,7 +163,7 @@ describe("User", function(){
 			});*/
 
 			it('should throw error when creating a new user with undefined password', function(){
-				return User.create( _.omit(validUser, 'password') )
+				return User.create( _.omit(user, 'password') )
 				.then(function(user){
 					assert.fail();
 				})
@@ -126,7 +175,7 @@ describe("User", function(){
 			
 	
 			it('should throw error when creating a new user with undefined publickey', function(){
-				return User.create( _.omit(validUser, 'publickey') )
+				return User.create( _.omit(user, 'publickey') )
 				.then(function(user){
 					assert.fail();
 				})
@@ -137,7 +186,7 @@ describe("User", function(){
 			});
 
 			it('should throw error when creating a new user with undefined privatekey', function(){
-				return User.create( _.omit(validUser, 'privatekey') )
+				return User.create( _.omit(user, 'privatekey') )
 				.then(function(user){
 					assert.fail();
 				})
@@ -149,6 +198,10 @@ describe("User", function(){
 		});
 	
 		describe('wrong field types', function(){
+			var user = _.omit(generateTemplateUser('Create-User004'), 'password', 'salt');
+			user.password = 'password';
+
+
 			it('should throw an error when creating a new user with data of wrong type', function(){
 				return User.create(true)
 				.then(function(user){
@@ -161,7 +214,7 @@ describe("User", function(){
 			});
 
 			it('should throw an error when creating a new user with username of wrong type', function(){
-				var temp = _.clone(validUser);
+				var temp = _.clone(user);
 				temp.username = true;
 				return User.create( temp )
 				.then(function(user){
@@ -174,7 +227,7 @@ describe("User", function(){
 			});
 
 			/*it('should throw an error when creating a new user with admin bool of wrong type', function(){
-				var temp = _.clone(validUser);
+				var temp = _.clone(user);
 				temp.isAdmin = "true";
 				return User.create( temp )
 				.then(function(user){
@@ -187,7 +240,7 @@ describe("User", function(){
 			});*/
 
 			it('should throw an error when creating a new user with password of wrong type', function(){
-				var temp = _.clone(validUser);
+				var temp = _.clone(user);
 				temp.password = true;
 				return User.create( temp )
 				.then(function(user){
@@ -200,7 +253,7 @@ describe("User", function(){
 			});
 
 			it('should throw an error when creating a new user with privatekey of wrong type', function(){
-				var temp = _.clone(validUser);
+				var temp = _.clone(user);
 				temp.privatekey = true;
 				return User.create( temp )
 				.then(function(user){
@@ -213,7 +266,7 @@ describe("User", function(){
 			});
 
 			it('should throw an error when creating a new user with publickey of wrong type', function(){
-				var temp = _.clone(validUser);
+				var temp = _.clone(user);
 				temp.publickey = true;
 				return User.create( temp )
 				.then(function(user){
@@ -225,9 +278,26 @@ describe("User", function(){
 				});
 			});
 		});	
+
+		after(function(){
+			return knex('users')
+			.del()
+			.then()
+		});
 	});
 	
 	describe('#find', function(){
+
+		var user = generateTemplateUser('Find-User001');
+		before(function(){
+			return knex('users')
+			.insert(user)
+			.then(function(ids){
+				user.id = ids[0];
+			});
+		})
+		
+
 		it('should fail when trying to find a non-existant id', function(){
 			return User.find(1337)
 			.then(function(user){
@@ -239,14 +309,14 @@ describe("User", function(){
 		});
 
 		it('should fetch user when finding existing id', function(){
-			return User.find(1)
-			.then(function(user){
-				assert.equal(1, 									user.id);
+			return User.find(user.id)
+			.then(function(_user){
+				assert.equal(_user.id, 			user.id);
 
-				assert.equal(unittestData.userData[0].username, 	user.username);
-				assert.equal(unittestData.userData[0].isadmin, 		user.isadmin);
-				assert.equal(unittestData.userData[0].privatekey, 	user.privatekey);
-				assert.equal(unittestData.userData[0].publickey, 	user.publickey);
+				assert.equal(_user.username, 	user.username);
+				assert.equal(_user.isadmin, 	user.isadmin);
+				assert.equal(_user.privatekey, 	user.privatekey);
+				assert.equal(_user.publickey, 	user.publickey);
 			});
 		});
 
@@ -259,13 +329,43 @@ describe("User", function(){
 				assert.equal(err.num, 1);
 				assert.equal(err.message, '1 error: data is the wrong type.');
 			}); 
-		})
+		});
+
+		after(function(){
+			return knex('users')
+			.del()
+			.then()
+		});
 	});
 
 	describe('#put', function(){
+
+		var users = [
+			generateTemplateUser('Put-User001'),
+			generateTemplateUser('Put-User002'),
+			generateTemplateUser('Put-User003'),
+			generateTemplateUser('Put-User004'),
+			generateTemplateUser('Put-User005'),
+			generateTemplateUser('Put-User006-MissingInput'),
+			generateTemplateUser('Put-User007-InvalidInput')
+			];
+
+		before(function(){
+			return knex('users')
+			.insert(users)
+			.then(function(){
+				return knex('users')
+				.select();
+			})
+			.then(function(_users){
+				users = _users;
+			});
+		})
+
+
 		it('update password', function(){
 			var oldValues = undefined;
-			return User.find(3)
+			return User.find(users[0].id)
 			.then(function(user){
 				oldValues = _.clone(user);
 				return user.update({password: 'LongLiveTheEmpire'})
@@ -301,7 +401,7 @@ describe("User", function(){
 
 		it('update username AND password', function(){
 			var oldValues = undefined;
-			return User.find(3)
+			return User.find(users[1].id)
 			.then(function(user){
 				oldValues = _.clone(user);
 				return user.update({username: 'Darth Vader', password: 'DeathToTheJedi'})
@@ -337,7 +437,7 @@ describe("User", function(){
 
 		it('update username', function(){
 			var oldValues = undefined;
-			return User.find(3)
+			return User.find(users[2].id)
 			.then(function(user){
 				oldValues = _.clone(user);
 				return user.update({username: 'Darth Sidious'})
@@ -373,7 +473,7 @@ describe("User", function(){
 		
 		it('update privatekey', function(){
 			var oldValues = undefined;
-			return User.find(3)
+			return User.find(users[3].id)
 			.then(function(user){
 				oldValues = _.clone(user);
 				return user.update({privatekey: base64.encode('ThisIsSOOOOMuchNotACert.....')})
@@ -409,7 +509,7 @@ describe("User", function(){
 	
 		it('update publickey', function(){
 			var oldValues = undefined;
-			return User.find(3)
+			return User.find(users[4].id)
 			.then(function(user){
 				oldValues = _.clone(user);
 				return user.update({publickey: base64.encode('ThisIsSOOOOMuchNotACert.....')})
@@ -444,7 +544,7 @@ describe("User", function(){
 		});
 
 		it('should fail when no input is given', function(){
-			return User.find(3)
+			return User.find(users[5].id)
 			.then(function(user){
 				return user.update()
 			}).then(function(u){
@@ -459,7 +559,7 @@ describe("User", function(){
 		describe('when given invalid fields in input, it', function(){
 
 			it('should throw an error when creating a new user with data of wrong type', function(){
-				return User.find(3)
+				return User.find(users[6].id)
 				.then(function(user){
 					return user.update(true)
 				}).then(function(u){
@@ -473,7 +573,7 @@ describe("User", function(){
 
 
 			it('should throw an error when creating a new user with username of wrong type', function(){
-				return User.find(3)
+				return User.find(users[6].id)
 				.then(function(user){
 					return user.update({username: true})
 				}).then(function(u){
@@ -486,7 +586,7 @@ describe("User", function(){
 			});
 
 			/*it('should throw an error when creating a new user with admin bool of wrong type', function(){
-				return User.find(3)
+				return User.find(users[6].id)
 				.then(function(user){
 					return user.update({isAdmin: "true"})
 				}).then(function(u){
@@ -499,7 +599,7 @@ describe("User", function(){
 			});*/
 
 			it('should throw an error when creating a new user with password of wrong type', function(){
-				return User.find(3)
+				return User.find(users[6].id)
 				.then(function(user){
 					return user.update({password: true})
 				}).then(function(u){
@@ -512,7 +612,7 @@ describe("User", function(){
 			});
 
 			it('should throw an error when creating a new user with privatekey of wrong type', function(){
-				return User.find(3)
+				return User.find(users[6].id)
 				.then(function(user){
 					return user.update({privatekey: true})
 				}).then(function(u){
@@ -525,7 +625,7 @@ describe("User", function(){
 			});
 
 			it('should throw an error when creating a new user with privatekey of wrong pattern', function(){
-				return User.find(3)
+				return User.find(users[6].id)
 				.then(function(user){
 					return user.update({privatekey: 'this is not base 64'})
 				}).then(function(u){
@@ -538,7 +638,7 @@ describe("User", function(){
 			});
 
 			it('should throw an error when creating a new user with publickey of wrong type', function(){
-				return User.find(3)
+				return User.find(users[6].id)
 				.then(function(user){
 					return user.update({publickey: true})
 				}).then(function(u){
@@ -550,11 +650,35 @@ describe("User", function(){
 				});
 			});
 		});
+
+
+		after(function(){
+			return knex('users')
+			.del()
+			.then()
+		});
 	});
 
 	describe('#del', function(){
+
+		var users = [
+			generateTemplateUser('Del-User001'),
+			generateTemplateUser('Del-User002')];
+
+		before(function(){
+			return knex('users')
+			.insert(users)
+			.then(function(){
+				return knex('users')
+				.select();
+			})
+			.then(function(_users){
+				users = _users;
+			});
+		});
+
 		it('fails when id has been edited to be invalid', function(){
-			User.find(3)
+			return User.find(users[0].id)
 			.then(function(user){
 				user.id = 1337;
 				return user.del();
@@ -567,10 +691,9 @@ describe("User", function(){
 			});
 		});
 
-
 		it('succeeds in deleting user', function(){
 			var idForThisTest = 3;
-			User.find(idForThisTest)
+			return User.find(users[1].id)
 			.then(function(user){
 				return user.del();
 			})
@@ -599,6 +722,12 @@ describe("User", function(){
 				assert.equal(err.num, 1);
 				assert.equal(err.message, '1 error: user.id is the wrong type.');
 			});
+		});
+
+		after(function(){
+			return knex('users')
+			.del()
+			.then();
 		});
 	});
 
