@@ -17,34 +17,74 @@ const ValidationError 		= require(__base + 'errors/ValidationError.js');
 const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js');
 const SqlError 				= require(__base + 'errors/SqlError.js');
 
-const unittestData = require(__base + 'misc/unitTestData.js');
-
 var knex = require(__base + 'database.js');
+var User = require(__base + 'models/user.js');
+var Password = require(__base + 'models/password.js');
 
+function generateTemplateUser(username){
+	return {
+		username 	: 'Models#Passwords#' + username,
+		isAdmin 	: false,
+		salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+		password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+		privatekey 	: 'cGFzc3dvcmQ=',
+		iv 			: 'cGFzc3dvcmQ=',
+		pk_salt 	: 'cGFzc3dvcmQ=',
+		publickey 	: 'cGFzc3dvcmQ='
+	};
+}
+
+function generateTemplatePassword(title){
+	return { 
+		owner 		: null,
+		parent 		: null,
+		title 		: 'Models#Passwords#'+title,
+		username 	: 'Models#Passwords#'+title+'-User',
+		password 	: 'cGFzc3dvcmQ=',
+		note 		: 'This is clearly a note!',
+		url 		: null
+	};
+}
+
+/*
+{
+	after(function(){
+		return knex('passwords')
+		.del()
+		.then();
+	});
+
+	after(function(){
+		return knex('users')
+		.del()
+		.then();
+	});
+}
+*/
 describe('Password', function(){
-	var User = require(__base + 'models/user.js');
-	var Password = require(__base + 'models/password.js');
-    
-    var validPassword = {
-        'owner': 2,
-        'parent': null,
-        'title': 'How to Find the Rebels',
-        'username': 'Count Boba Fett',
-        'password': base64.encode('MandaloriansRulez'),
-        'note': "I'll get revenge on that damned Skywalker!"
-    };
-	
-	var validPasswordWithoutANote = {
-        'owner': 2,
-        'parent': null,
-        'title': 'Sarlacc Pit',
-        'username': 'Pew Pew',
-        'password': base64.encode('He tasted good'),
-	}
     
 	describe('Object creation and manipulation', function(){
+
+		var user 		= generateTemplateUser('ObjectCreation-User001');
+		var password 	= generateTemplatePassword('ObjectCreation-User001');
+
+		before(function(){
+			return knex('users')
+			.insert(user)
+			.then(function(ids){
+				user.id = ids[0];
+				password.owner = user.id;
+
+				return knex('passwords')
+				.insert(password);
+			})
+			.then(function(ids){
+				password.id = ids[0];
+			});
+		})
+
 		it('should allow edit on one object, without affecting the other', function(){
-			return Promise.all([Password.find(1), Password.find(1)])
+			return Promise.all([Password.find(password.id), Password.find(password.id)])
 			.spread(function(passwordOne, passwordTwo){
 				var originalValues = _.clone(passwordTwo);
 				passwordOne.title = "Ugh, not that green little shit again.";
@@ -61,6 +101,19 @@ describe('Password', function(){
 				
 			});
 		});
+		{
+			after(function(){
+				return knex('passwords')
+				.del()
+				.then();
+			});
+
+			after(function(){
+				return knex('users')
+				.del()
+				.then();
+			});
+		}
 	});
 
 	describe('#find', function(){
@@ -151,38 +204,28 @@ describe('Password', function(){
     
     describe('#create', function(){
 
-		var user = {
-			username: 'Passwords#create-User001',
-			salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
-			password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
-			isAdmin: false,
-			privatekey: 'cGFzc3dvcmQ=',
-			publickey: 'cGFzc3dvcmQ=',
-			iv: 'cGFzc3dvcmQ=',
-			pk_salt: 'cGFzc3dvcmQ='
-		};
-
-		var password = {
-			parent 		: null,
-			owner 		: undefined,
-			title 		: 'Passwords#create-Title001',
-			username 	: 'Passwords#create-User001',
-			password 	: 'cGFzc3dvcmQ=',
-			note 		: 'This is clearly a note!',
-			url 		: null
-		}
+		var user 		= generateTemplateUser('Create-User001');
+		var passwords 	= [
+			generateTemplatePassword('Create-001-ShouldNeverBeCreated'), 
+			generateTemplatePassword('Create-002'), 
+			generateTemplatePassword('Create-003'),
+			generateTemplatePassword('Create-004-InvalidInput'),
+			generateTemplatePassword('Create-004-WrongType') ];
 
 		before(function(){
 			return knex('users')
 			.insert(user)
 			.then(function(ids){
 				user.id = ids[0];
-				password.owner = user.id;
+
+				for(var i = 0 ; i < passwords.length; i++){
+					passwords[i].owner = user.id;
+				}
 			});
 		})
 
         it('fails when exploiting data structure, to hardcode ID', function(){
-            var temp = _.clone(validPassword);
+            var temp = _.clone(passwords[0]);
             temp.id = 1337;
 
             return Password.create(temp)
@@ -198,7 +241,7 @@ describe('Password', function(){
 
 
         it('fails when creating a password, with a non-existant owner', function(){
-            var temp = _.clone(validPassword);
+            var temp = _.clone(passwords[0]);
             temp.owner = 1337;
             
             return Password.create(temp)
@@ -209,23 +252,19 @@ describe('Password', function(){
                 assert.equal(err.message, 'User ID 1337 was not found');
             });
         });
-
-    
-        
+       
         it('succeeds in creating new password, with a note', function(){
-			var temp = _.clone(validPassword);
-			
-			return Password.create(temp)
+			return Password.create(passwords[1])
 			.then(function(password){
                 
                 // Actual inserts
-                assert.equal(password.owner , validPassword.owner );
-                assert.equal(password.parent , validPassword.parent );
-                assert.equal(password.title , validPassword.title );
-                assert.equal(password.username , validPassword.username );
-                assert.equal(password.password , validPassword.password );
-                assert.equal(password.iv , validPassword.iv );
-                assert.equal(password.note , validPassword.note );
+                assert.equal(password.owner , 		passwords[1].owner );
+                assert.equal(password.parent , 		passwords[1].parent );
+                assert.equal(password.title , 		passwords[1].title );
+                assert.equal(password.username , 	passwords[1].username );
+                assert.equal(password.password , 	passwords[1].password );
+                assert.equal(password.iv , 			passwords[1].iv );
+                assert.equal(password.note , 		passwords[1].note );
 
                 return knex
                 .select()
@@ -245,17 +284,16 @@ describe('Password', function(){
 		});
 		
 		it('succeeds in creating a new password, without a note', function(){
-			var temp = _.clone(validPasswordWithoutANote);
 			
-			return Password.create(temp)
+			return Password.create(_.omit(passwords[2], 'note'))
 			.then(function(password){                
                 // Actual inserts
-                assert.equal(password.owner, 	validPasswordWithoutANote.owner );
-                assert.equal(password.parent, 	validPasswordWithoutANote.parent );
-                assert.equal(password.title, 	validPasswordWithoutANote.title );
-                assert.equal(password.username, validPasswordWithoutANote.username );
-                assert.equal(password.password, validPasswordWithoutANote.password );
-                assert.equal(password.iv, 		validPasswordWithoutANote.iv );
+                assert.equal(password.owner, 	passwords[2].owner );
+                assert.equal(password.parent, 	passwords[2].parent );
+                assert.equal(password.title, 	passwords[2].title );
+                assert.equal(password.username, passwords[2].username );
+                assert.equal(password.password, passwords[2].password );
+                assert.equal(password.iv, 		passwords[2].iv );
 
                 return knex
                 .select()
@@ -287,7 +325,7 @@ describe('Password', function(){
 			});
 
 			it('should throw an error when creating a new password with owner field missing', function(){
-				return Password.create( _.omit(validPassword, 'owner') )
+				return Password.create( _.omit(passwords[3], 'owner') )
 				.then(function(password){
 					assert.fail();
 				})
@@ -298,7 +336,7 @@ describe('Password', function(){
 			});
 
 			it('should throw an error when creating a new password with parent field missing', function(){
-				return Password.create( _.omit(validPassword, 'parent') )
+				return Password.create( _.omit(passwords[3], 'parent') )
 				.then(function(password){
 					assert.fail();
 				})
@@ -309,7 +347,7 @@ describe('Password', function(){
 			});
 			
 			it('should throw an error when creating a new password with title field missing', function(){
-				return Password.create( _.omit(validPassword, 'title') )
+				return Password.create( _.omit(passwords[3], 'title') )
 				.then(function(password){
 					assert.fail();
 				})
@@ -321,7 +359,7 @@ describe('Password', function(){
 			
 
 			it('should throw an error when creating a new password with password field missing', function(){
-				return Password.create( _.omit(validPassword, 'password') )
+				return Password.create( _.omit(passwords[3], 'password') )
 				.then(function(password){
 					assert.fail();
 				})
@@ -345,7 +383,7 @@ describe('Password', function(){
 			});
 
 			it('should throw an error when creating a new password with owner of wrong type', function(){
-				var temp = _.clone(validPassword);
+				var temp = _.clone(passwords[4]);
 				temp.owner = true;
 				return Password.create( temp )
 				.then(function(password){
@@ -358,7 +396,7 @@ describe('Password', function(){
 			});
 
 			it('should throw an error when creating a new password with parent of wrong type', function(){
-				var temp = _.clone(validPassword);
+				var temp = _.clone(passwords[4]);
 				temp.parent = true;
 				return Password.create( temp )
 				.then(function(password){
@@ -371,7 +409,7 @@ describe('Password', function(){
 			});
 			
 			it('should throw an error when creating a new password with title of wrong type', function(){
-				var temp = _.clone(validPassword);
+				var temp = _.clone(passwords[4]);
 				temp.title = true;
 				return Password.create( temp )
 				.then(function(password){
@@ -385,7 +423,7 @@ describe('Password', function(){
 			
 
 			it('should throw an error when creating a new password with username of wrong type', function(){
-				var temp = _.clone(validPassword);
+				var temp = _.clone(passwords[4]);
 				temp.username = true;
 				return Password.create( temp )
 				.then(function(password){
@@ -398,7 +436,7 @@ describe('Password', function(){
 			});
 
 			it('should throw an error when creating a new password with password of wrong type', function(){
-				var temp = _.clone(validPassword);
+				var temp = _.clone(passwords[4]);
 				temp.password = true;
 				return Password.create( temp )
 				.then(function(password){
@@ -411,7 +449,7 @@ describe('Password', function(){
 			});
 
 			it('should throw an error when creating a new password with note of wrong type', function(){
-				var temp = _.clone(validPassword);
+				var temp = _.clone(passwords[4]);
 				temp.note = true;
 				return Password.create( temp )
 				.then(function(password){
@@ -424,31 +462,63 @@ describe('Password', function(){
 			});
 		});
 		
-		after(function(){
-			return knex('passwords')
-			.where('id', password.id)
-			.del()
-			.then(function(){
-				return knex('users')
-				.where('id', user.id)
+		{
+			after(function(){
+				return knex('passwords')
 				.del()
-			})
-			.then(function(){ });
-		});
+				.then();
+			});
+
+			after(function(){
+				return knex('users')
+				.del()
+				.then();
+			});
+		}
 
     });
     
 	describe('#update', function(){
+
+		var user 		= generateTemplateUser('Update-User001');
+		var passwords 	= [
+			generateTemplatePassword('Update-001'),
+			generateTemplatePassword('Update-002'),
+			generateTemplatePassword('Update-003'),
+			generateTemplatePassword('Update-004')];
+
+		before(function(){
+			return knex('users')
+			.insert(user)
+			.then(function(ids){
+				user.id = ids[0];
+
+				for(var i = 0 ; i < passwords.length ; i++ ){
+					passwords[i].owner = user.id;
+				}
+
+				return knex('passwords')
+				.insert(passwords);
+			})
+			.then(function(){
+				return knex('passwords')
+				.select();
+			})
+			.then(function(_passwords){
+				passwords = _passwords;
+			});
+		})
+
 		it('successfully updates single field', function(){
 			
-			var testValue = 'SithCode Online';
-			var testID = 4;
+			var testValue 	= 'SithCode Online';
+			var testID 		= passwords[0].id;
 			
 			var originalPassword = undefined;
 			return Password.find(testID)
 			.then(function(password){
 				originalPassword = _.clone(password);
-				return password.update({title: testValue});
+				return password.update({title: 'SithCode Online'});
 			})
 			.then(function(updatedPassword){
 				assert.equal(updatedPassword.id, 		 testID);
@@ -478,8 +548,8 @@ describe('Password', function(){
 		
 		it('successfully updates several fields', function(){
 			
-			var testValues = [ 'Rebel Dating', 'BlueSaber132' ];
-			var testID = 4;
+			var testValues 	= [ 'Rebel Dating', 'BlueSaber132' ];
+			var testID 		= passwords[1].id;
 						
 			var originalPassword = undefined;
 			return Password.find(testID)
@@ -513,7 +583,7 @@ describe('Password', function(){
 		});
 		
 		it('should fail when trying to update id', function(){
-			return Password.find(1)
+			return Password.find(passwords[2].id)
 			.then(function(password){
 				return password.update({id: 1337});
 			})
@@ -529,7 +599,7 @@ describe('Password', function(){
 		describe('fails on wrong input for update', function(){
 			
 			it('should throw an error when creating a new password with data of wrong type', function(){
-				return Password.find(1)
+				return Password.find(passwords[3].id)
 				.then(function(password){
 					return password.update(true);
 				})
@@ -543,7 +613,7 @@ describe('Password', function(){
 			});
 			
 			it('should throw an error when creating a new password with owner of wrong type', function(){
-				return Password.find(1)
+				return Password.find(passwords[3].id)
 				.then(function(password){
 					return password.update({owner:true});
 				})
@@ -557,7 +627,7 @@ describe('Password', function(){
 			});
 			
 			it('should throw an error when creating a new password with parent of wrong type', function(){
-				return Password.find(1)
+				return Password.find(passwords[3].id)
 				.then(function(password){
 					return password.update({parent:true});
 				})
@@ -571,7 +641,7 @@ describe('Password', function(){
 			});		
 			
 			it('should throw an error when creating a new password with title of wrong type', function(){
-				return Password.find(1)
+				return Password.find(passwords[3].id)
 				.then(function(password){
 					return password.update({title:true});
 				})
@@ -585,7 +655,7 @@ describe('Password', function(){
 			});		
 						
 			it('should throw an error when creating a new password with username of wrong type', function(){
-				return Password.find(1)
+				return Password.find(passwords[3].id)
 				.then(function(password){
 					return password.update({username:true});
 				})
@@ -599,7 +669,7 @@ describe('Password', function(){
 			});			
 		
 			it('should throw an error when creating a new password with password of wrong type', function(){
-				return Password.find(1)
+				return Password.find(passwords[3].id)
 				.then(function(password){
 					return password.update({password:true});
 				})
@@ -614,7 +684,7 @@ describe('Password', function(){
 							
 			
 			it('should throw an error when creating a new password with note of wrong type', function(){
-				return Password.find(1)
+				return Password.find(passwords[3].id)
 				.then(function(password){
 					return password.update({note:true});
 				})
@@ -626,9 +696,21 @@ describe('Password', function(){
 					assert.equal(err.message, '1 error: data.note is the wrong type.');
 				});
 			});		
-				
 		});	
-		
+
+		{
+			after(function(){
+				return knex('passwords')
+				.del()
+				.then();
+			});
+
+			after(function(){
+				return knex('users')
+				.del()
+				.then();
+			});
+		}
 	});
 	
 	describe('#del', function(){
