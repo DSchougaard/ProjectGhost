@@ -68,6 +68,7 @@ if( config.database === 'sqlite' ){
 if( process.env.NODE_ENV === 'test' ){
 	opts.connection.filename = './unittest.sqlite';
 }
+
 log.info("Bootstrapping Project Ghost with the following options:\n%j", opts);
 
 

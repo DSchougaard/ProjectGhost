@@ -15,8 +15,6 @@ const UserDoesNotExistError = require(__base + 'errors/UserDoesNotExistError.js'
 const SqlError 				= require(__base + 'errors/SqlError.js');
 const OperationalError      = Promise.OperationalError;
 
-const unittestData = require(__base + 'misc/unitTestData.js');
-
 
 var knex = require(__base + 'database.js');
 

@@ -4,7 +4,10 @@
   "description": "Implementation of Ghost system, for master thesis 2016.",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "gulp": "gulp",
+    "bower": "bower",
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
@@ -57,17 +60,13 @@
     "bluebird": "^3.1.1",
     "bunyan": "^1.5.1",
     "jsonwebtoken": "^5.5.4",
-    "jwt-simple": "^0.4.0",
     "knex": "^0.9.0",
     "moment": "^2.11.1",
-    "node-rsa": "^0.2.30",
-    "q": "^1.4.1",
     "restify": "^4.0.3",
     "schemagic": "^2.1.3",
     "speakeasy": "^2.0.0",
     "sqlite3": "^3.1.1",
     "underscore": "^1.8.3",
-    "validator": "^4.5.0",
-    "xss-filters": "^1.2.6"
+    "uuid": "^2.0.2"
   }
 }

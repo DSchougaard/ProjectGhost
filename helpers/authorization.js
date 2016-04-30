@@ -2,7 +2,6 @@ var Promise 	= require("bluebird");
 Promise.onPossiblyUnhandledRejection(function(error,promise) { throw error });
 
 const util 		= require('util');
-var q = require('q')
 
 // Erros - BlueBird
 const OperationalError 			= Promise.OperationalError;

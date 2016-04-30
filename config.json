@@ -10,7 +10,7 @@
 		"password" : "ghostpassword",
 		"database" : "ghostdb"
 	},
-	"port"			: 8080,
+	"port"			: 8081,
 	"ssl_key"		: "crypto/ssl/ghost.key",
 	"ssl_cert" 		: "crypto/ssl/ghost.cert"
 }

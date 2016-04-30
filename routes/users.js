@@ -1,6 +1,5 @@
 const fs 							= require('fs');
 const restify 						= require('restify');
-const validator 					= require('validator');
 const crypto 						= require('crypto');
 const bcrypt 						= require('bcrypt');
 const schemagic 					= require('schemagic');

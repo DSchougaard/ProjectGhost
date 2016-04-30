@@ -4,7 +4,6 @@ const fs 						= require('fs');
 const restify 					= require('restify');
 const speakeasy		 			= require("speakeasy");
 const bcrypt 					= require('bcrypt');
-const validator					= require('validator');
 	
 const authHelpers 				= require(__base + '/helpers/authHelpers.js');
 
