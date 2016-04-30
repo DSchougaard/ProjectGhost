@@ -7,7 +7,6 @@ var sinon 				= require('sinon');
 
 var fs 					= require('fs');
 var fse 				= require('fs-extra');
-var rsa 				= require('node-rsa');
 var _					= require('underscore');
 var crypto 				= require('crypto');
 var bcrypt 				= require('bcrypt');
@@ -17,15 +16,37 @@ var restifyInstance 	= require(__base + 'app.js');
 var server 				= request(restifyInstance.server);
 
 //var server = request.agent('https://localhost:8080');
-const unittestData 		= require(__base + 'misc/unitTestData.js');
 
 var knex = require(__base + 'database.js');
 
+function generateTemplateUser(username){
+	return {
+		username 	: 'Routes#Passwords#' + username,
+		isAdmin 	: false,
+		salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+		password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+		privatekey 	: 'cGFzc3dvcmQ=',
+		iv 			: 'cGFzc3dvcmQ=',
+		pk_salt 	: 'cGFzc3dvcmQ=',
+		publickey 	: 'cGFzc3dvcmQ='
+	};
+}
 
+function generateTemplatePassword(title){
+	return { 
+		owner 		: null,
+		parent 		: null,
+		title 		: 'Routes#Passwords#'+title,
+		username 	: 'Routes#Passwords#'+title+'-User',
+		password 	: 'cGFzc3dvcmQ=',
+		note 		: 'This is clearly a note!',
+		url 		: null
+	};
+}
 
 describe("API /password", function(){
 
-	var authToken = '';
+	/*var authToken = '';
 	var idAuthToken = '1';
 
 	var otherAuthToken = '';
@@ -66,58 +87,65 @@ describe("API /password", function(){
 		password: base64.encode('IMissQuiGonJinn'),
 		note: 'Darth Maul is a meanie!'
 	};
-
+*/
 	describe('GET/id', function(){
 
 		var testID = 1;
 
 		var users = [
-			{
-				//username: 'Routes/Passwords/GET/id-User1',
-				username: 'Routes#Passwords#GET#id-User1',
-				isAdmin: false,
-				salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
-				password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
-				privatekey: 'cGFzc3dvcmQ=',
-				iv: 'cGFzc3dvcmQ=',
-				pk_salt: 'cGFzc3dvcmQ=',
-				publickey: 'cGFzc3dvcmQ='
-			}
-		];
+			generateTemplateUser('GET-User001'),
+			generateTemplateUser('GET-User002'),
+		]
 
 
 		var passwords = [
-			{
-				parent 		: null,
-				//title 		: 'Routes/Passwords/GET/id-User1-Password01',
-				//username 	: 'Routes/Passwords/GET/id-User1-Password01-User',
-				title 		: 'Routes#Passwords#GET#id-User1-Password01',
-				username 	: 'Routes#Passwords#GET#id-User1-Password01-User',
-
-				password 	: 'cGFzc3dvcmQ=',
-				note 		: 'This is clearly a note!',
-				url 		: null
-			}
+			generateTemplatePassword('GET-Password001'),
+			generateTemplatePassword('GET-Password002'),
 		]
 
 		before(function(){
 			return knex('users')
-			.insert(users[0])
-			.then(function(ids){
-				users[0].id = ids[0];
-				passwords[0].owner = users[0].id;
-				return knex('passwords').insert(passwords[0]);
+			.insert(users)
+			.then(function(){
+				return knex('users').select();
 			})
-			.then(function(ids){
-				passwords[0].id = ids[0];
+			.then(function(_users){
+				users = _users;
+
+				passwords[0].owner = users[0].id;
+				passwords[1].owner = users[1].id;
+
+				return knex('passwords').insert(passwords);
+			})
+			.then(function(){
+				return knex('passwords').select();
+			})
+			.then(function(_passwords){
+				passwords = _passwords;
 			});
-		})
+
+		});	
+
+		var token = undefined;
+		before(function(done){
+		// Obtain auth token -- admin
+			server
+			.post('/api/auth/login')
+			.field('username', users[0].username)
+			.field('password', 'password')
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+				token = res.body.token;
+				return done();
+			});
+		});
 
 
 		it('should successfully get a password', function(){
 			server
-			.get('/api/users/'+idAuthToken+'/passwords/' + testID)
-			.set('Authorization', 'Bearer ' + authToken)
+			.get('/api/users/'+users[0].id+'/passwords/' + testID)
+			.set('Authorization', 'Bearer ' + token)
 			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -141,7 +169,7 @@ describe("API /password", function(){
 		it('should fail when trying to get a password, for a user that does not exist', function(done){
 			server
 			.get('/api/users/' + 1337 + '/passwords/' + testID)
-			.set('Authorization', 'Bearer ' + authToken)	
+			.set('Authorization', 'Bearer ' + token)	
 			.expect(404)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -155,8 +183,8 @@ describe("API /password", function(){
 
 		it('should fail trying to get a password that does not exist', function(done){
 			server
-			.get('/api/users/'+idAuthToken+'/passwords/1337')
-			.set('Authorization', 'Bearer ' + authToken)
+			.get('/api/users/'+users[0].id+'/passwords/1337')
+			.set('Authorization', 'Bearer ' + token)
 			.expect(404)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -170,8 +198,8 @@ describe("API /password", function(){
 
 		it('should fail trying to get a password when input is malformed', function(done){
 			server
-			.get('/api/users/'+idAuthToken+'/passwords/true')
-			.set('Authorization', 'Bearer ' + authToken)
+			.get('/api/users/'+users[0].id+'/passwords/true')
+			.set('Authorization', 'Bearer ' + token)
 			.expect(400)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -188,8 +216,8 @@ describe("API /password", function(){
 
 		it('should fail when trying to get another user\'s password', function(done){
 			server
-			.get('/api/users/'+idAuthToken+'/passwords/' + passwords[0].id)
-			.set('Authorization', 'Bearer ' + authToken)
+			.get('/api/users/'+users[1].id+'/passwords/' + passwords[1].id)
+			.set('Authorization', 'Bearer ' + token)
 			.expect(403)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -203,7 +231,7 @@ describe("API /password", function(){
 
 		it('should fail when no auth token is supplied', function(done){
 			server
-			.get('/api/users/' + idAuthToken + '/passwords')
+			.get('/api/users/' + users[0].id + '/passwords')
 			.expect(401)
 			.end(function(err, res){
 				assert.equal(res.body.code, 'UnauthorizedError');
@@ -215,21 +243,15 @@ describe("API /password", function(){
 
 		
 		after(function(){
-			return knex('passwords')
-			.where('id', passwords[0].id)
-			//.orWhere('id', passwords[1].id)
-			.del()
+			return knex('audit').del()
 			.then(function(){
-				return knex('users')
-				.where('id', users[0].id)
-				//.orWhere('id', users[1].id)
-				.del();
+				return knex('passwords').del();
 			})
 			.then(function(){
-
-			});
+				return knex('users').del();
+			})
+			.then();
 		})
-
 	});
 
 	describe('GET', function(){
@@ -432,12 +454,54 @@ describe("API /password", function(){
 
 	describe('POST', function(){
 
+		{
+			var users = [
+				generateTemplateUser('POST-User001'),
+			]
+
+
+			var passwords = [
+				generateTemplatePassword('POST-Password001'),
+				generateTemplatePassword('POST-Password002'),
+			]
+
+			before(function(){
+				return knex('users')
+				.insert(users)
+				.then(function(){
+					return knex('users').select();
+				})
+				.then(function(_users){
+					users = _users;
+
+					passwords[0].owner = users[0].id;
+					passwords[1].owner = users[0].id;
+
+				});
+			});	
+
+			var token = undefined;
+			before(function(done){
+			// Obtain auth token -- admin
+				server
+				.post('/api/auth/login')
+				.field('username', users[0].username)
+				.field('password', 'password')
+				.expect(200)
+				.end(function(err, res){
+					if(err) return done(err);
+					token = res.body.token;
+					return done();
+				});
+			});
+
+		}
 
 		it('should successfully create a new password', function(done){
 			server
-			.post('/api/users/'+idAuthToken+'/passwords')
-			.set('Authorization', 'Bearer ' + authToken)	
-			.send(validPassword)
+			.post('/api/users/'+users[0].id+'/passwords')
+			.set('Authorization', 'Bearer ' + token)	
+			.send(passwords[0])
 			.expect(201)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -445,8 +509,6 @@ describe("API /password", function(){
 				assert.equal(res.body.message, 'OK');
 				assert.notEqual(res.body.id, NaN);
 				
-				validPassword.id = parseInt(res.body.id);
-
 				return done();
 			});
 		});
@@ -454,12 +516,12 @@ describe("API /password", function(){
 		describe('failures on wrong input', function(){
 		
 			it('should fail when given invalid input for title', function(done){
-				var temp = _.omit(validPassword, 'id');
+				var temp = _.omit(passwords[1], 'id');
 				temp.title = true;
 
 				server
-				.post('/api/users/'+idAuthToken+'/passwords')
-				.set('Authorization', 'Bearer ' + authToken)	
+				.post('/api/users/'+users[0].id+'/passwords')
+				.set('Authorization', 'Bearer ' + token)	
 				.send(temp)
 				.end(function(err, res){
 					if(err) return done(err);
@@ -474,12 +536,12 @@ describe("API /password", function(){
 			});
 
 			it('should fail when given invalid input for username', function(done){
-				var temp = _.omit(validPassword, 'id');
+				var temp = _.omit(passwords[1], 'id');
 				temp.username = true;
 
 				server
-				.post('/api/users/'+idAuthToken+'/passwords')
-				.set('Authorization', 'Bearer ' + authToken)	
+				.post('/api/users/'+users[0].id+'/passwords')
+				.set('Authorization', 'Bearer ' + token)	
 				.send(temp)
 				.end(function(err, res){
 					if(err) return done(err);
@@ -494,12 +556,12 @@ describe("API /password", function(){
 			});
 
 			it('should fail when given invalid input for url', function(done){
-				var temp = _.omit(validPassword, 'id');
+				var temp = _.omit(passwords[1], 'id');
 				temp.url = true;
 
 				server
-				.post('/api/users/'+idAuthToken+'/passwords')
-				.set('Authorization', 'Bearer ' + authToken)	
+				.post('/api/users/'+users[0].id+'/passwords')
+				.set('Authorization', 'Bearer ' + token)	
 				.send(temp)
 				.end(function(err, res){
 					if(err) return done(err);
@@ -514,12 +576,12 @@ describe("API /password", function(){
 			});
 
 			it('should fail when given invalid input for password', function(done){
-				var temp = _.omit(validPassword, 'id');
+				var temp = _.omit(passwords[1], 'id');
 				temp.password = true;
 
 				server
-				.post('/api/users/'+idAuthToken+'/passwords')
-				.set('Authorization', 'Bearer ' + authToken)	
+				.post('/api/users/'+users[0].id+'/passwords')
+				.set('Authorization', 'Bearer ' + token)	
 				.send(temp)
 				.end(function(err, res){
 					if(err) return done(err);
@@ -534,12 +596,12 @@ describe("API /password", function(){
 			});
 			
 			it('should fail when given invalid encoding for password', function(done){
-				var temp = _.omit(validPassword, 'id');
+				var temp = _.omit(passwords[1], 'id');
 				temp.password = 'clearly not base 64';
 
 				server
-				.post('/api/users/'+idAuthToken+'/passwords')
-				.set('Authorization', 'Bearer ' + authToken)	
+				.post('/api/users/'+users[0].id+'/passwords')
+				.set('Authorization', 'Bearer ' + token)	
 				.send(temp)
 				.end(function(err, res){
 					if(err) return done(err);
@@ -554,12 +616,12 @@ describe("API /password", function(){
 			});
 
 			it('should fail when given invalid input for parent', function(done){
-				var temp = _.omit(validPassword, 'id');
+				var temp = _.omit(passwords[1], 'id');
 				temp.parent = 'test';
 
 				server
-				.post('/api/users/'+idAuthToken+'/passwords')
-				.set('Authorization', 'Bearer ' + authToken)	
+				.post('/api/users/'+users[0].id+'/passwords')
+				.set('Authorization', 'Bearer ' + token)	
 				.send(temp)
 				.end(function(err, res){
 					if(err) return done(err);
@@ -574,12 +636,12 @@ describe("API /password", function(){
 			});
 
 			it('should fail when given invalid input for note', function(done){
-				var temp = _.omit(validPassword, 'id');
+				var temp = _.omit(passwords[1], 'id');
 				temp.note = true;
 
 				server
-				.post('/api/users/'+idAuthToken+'/passwords')
-				.set('Authorization', 'Bearer ' + authToken)	
+				.post('/api/users/'+users[0].id+'/passwords')
+				.set('Authorization', 'Bearer ' + token)	
 				.send(temp)
 				.end(function(err, res){
 					if(err) return done(err);
@@ -596,6 +658,12 @@ describe("API /password", function(){
 			after(function(){
 				return knex('audit')
 				.del()
+				.then(function(){
+					return knex('passwords').del();
+				})
+				.then(function(){
+					return knex('users').del();
+				})
 				.then();
 			});	
 
@@ -603,29 +671,63 @@ describe("API /password", function(){
 	});
 
 	describe('PUT', function(){
-		
-		var PUT_password = {
-			owner: 1,
-			parent: 1,
-			title: 'Death Star Back Entrance',
-			username: 'AAAAAAAAA',
-			password: base64.encode('AAAAAAAAA'),
-		}
+	
+		{
+			var users = [
+				generateTemplateUser('PUT-User001'),
+			]
 
-		before(function(){
-			return knex('passwords')
-			.insert(PUT_password)
-			.then(function(id){
-				PUT_password.id = id[0];
+
+			var passwords = [
+				generateTemplatePassword('PUT-Password001'),
+				generateTemplatePassword('PUT-Password002'),
+			]
+
+			before(function(){
+				return knex('users')
+				.insert(users)
+				.then(function(){
+					return knex('users').select();
+				})
+				.then(function(_users){
+					users = _users;
+
+					passwords[0].owner = users[0].id;
+					passwords[1].owner = users[0].id;
+
+					return knex('passwords').insert(passwords);
+				})
+				.then(function(){
+					return knex('passwords').select();
+				})
+				.then(function(_passwords){
+					passwords = _passwords;
+				})
+			});	
+
+			var token = undefined;
+			before(function(done){
+			// Obtain auth token -- admin
+				server
+				.post('/api/auth/login')
+				.field('username', users[0].username)
+				.field('password', 'password')
+				.expect(200)
+				.end(function(err, res){
+					if(err) return done(err);
+					token = res.body.token;
+					return done();
+				});
 			});
-		});
+
+		}
 
 
 		var newTitle = 'Exposed Exhaust Port';
 		it('should successfully update title of password', function(done){
 			server
-			.put('/api/users/'+idAuthToken+'/passwords/ ' + PUT_password.id)
-			.set('Authorization', 'Bearer ' + authToken)	
+			.put('/api/users/'+users[0].id+'/passwords/ ' + passwords[0].id)
+			.set('Authorization', 'Bearer ' + token)	
 			.send({title: newTitle})
 			.expect(200)
 			.end(function(err, res){
@@ -645,13 +747,13 @@ describe("API /password", function(){
 
 				assert.equal(rows[0].title, 	newTitle);
 
-				assert.equal(rows[0].id, 		PUT_password.id);
+				assert.equal(rows[0].id, 		passwords[0].id);
 				assert.notEqual(rows[0].owner, 	NaN);
-				assert.equal(rows[0].parent, 	PUT_password.parent);
-				assert.equal(rows[0].username, 	PUT_password.username);
-				assert.equal(rows[0].password, 	PUT_password.password);
-				assert.equal(rows[0].iv, 		PUT_password.iv);
-				assert.equal(rows[0].note, 		PUT_password.note);
+				assert.equal(rows[0].parent, 	passwords[0].parent);
+				assert.equal(rows[0].username, 	passwords[0].username);
+				assert.equal(rows[0].password, 	passwords[0].password);
+				assert.equal(rows[0].iv, 		passwords[0].iv);
+				assert.equal(rows[0].note, 		passwords[0].note);
 			});
 		});
 
@@ -661,8 +763,8 @@ describe("API /password", function(){
 		describe('failures on wrong input', function(){
 			it('should fail when given invalid input for title', function(done){
 				server
-				.put('/api/users/'+idAuthToken+'/passwords/ ' + PUT_password.id)
-				.set('Authorization', 'Bearer ' + authToken)	
+				.put('/api/users/'+users[0].id+'/passwords/ ' + passwords[0].id)
+				.set('Authorization', 'Bearer ' + token)	
 				.send({title: true})
 				.end(function(err, res){
 					if(err) return done(err);
@@ -678,8 +780,8 @@ describe("API /password", function(){
 
 			it('should fail when given invalid input for username', function(done){
 				server
-				.put('/api/users/'+idAuthToken+'/passwords/ ' + PUT_password.id)
-				.set('Authorization', 'Bearer ' + authToken)	
+				.put('/api/users/'+users[0].id+'/passwords/ ' + passwords[0].id)
+				.set('Authorization', 'Bearer ' + token)	
 				.send({username: true})
 				.end(function(err, res){
 					if(err) return done(err);
@@ -695,8 +797,8 @@ describe("API /password", function(){
 
 			it('should fail when given invalid input for url', function(done){
 				server
-				.put('/api/users/'+idAuthToken+'/passwords/ ' + PUT_password.id)
-				.set('Authorization', 'Bearer ' + authToken)	
+				.put('/api/users/'+users[0].id+'/passwords/ ' + passwords[0].id)
+				.set('Authorization', 'Bearer ' + token)	
 				.send({url: true})
 				.end(function(err, res){
 					if(err) return done(err);
@@ -712,8 +814,8 @@ describe("API /password", function(){
 		
 			it('should fail when given invalid input for password', function(done){
 				server
-				.put('/api/users/'+idAuthToken+'/passwords/ ' + PUT_password.id)
-				.set('Authorization', 'Bearer ' + authToken)	
+				.put('/api/users/'+users[0].id+'/passwords/ ' + passwords[0].id)
+				.set('Authorization', 'Bearer ' + token)	
 				.send({password: true})
 				.end(function(err, res){
 					if(err) return done(err);
@@ -729,8 +831,8 @@ describe("API /password", function(){
 			
 			it('should fail when given invalid encoding for password', function(done){
 				server
-				.put('/api/users/'+idAuthToken+'/passwords/ ' +  PUT_password.id)
-				.set('Authorization', 'Bearer ' + authToken)	
+				.put('/api/users/'+users[0].id+'/passwords/ ' +  passwords[0].id)
+				.set('Authorization', 'Bearer ' + token)	
 				.send({password: 'this is clearly not base64'})
 				.end(function(err, res){
 					if(err) return done(err);
@@ -746,8 +848,8 @@ describe("API /password", function(){
 
 			it('should fail when given invalid input for parent', function(done){
 				server
-				.put('/api/users/'+idAuthToken+'/passwords/ ' +  PUT_password.id)
-				.set('Authorization', 'Bearer ' + authToken)	
+				.put('/api/users/'+users[0].id+'/passwords/ ' +  passwords[0].id)
+				.set('Authorization', 'Bearer ' + token)	
 				.send({parent: 'test'})
 				.end(function(err, res){
 					if(err) return done(err);
@@ -763,8 +865,8 @@ describe("API /password", function(){
 
 			it('should fail when given invalid input for note', function(done){
 				server
-				.put('/api/users/'+idAuthToken+'/passwords/ ' +  PUT_password.id)
-				.set('Authorization', 'Bearer ' + authToken)	
+				.put('/api/users/'+users[0].id+'/passwords/ ' +  passwords[0].id)
+				.set('Authorization', 'Bearer ' + token)	
 				.send({note: true})
 				.end(function(err, res){
 					if(err) return done(err);
@@ -780,84 +882,94 @@ describe("API /password", function(){
 		});
 
 		after(function(){
-			return knex('audit')
-			.del()
+			return knex('audit').del()
+			.then(function(){
+				return knex('passwords').del();
+			})
+			.then(function(){
+				return knex('users').del();
+			})
 			.then();
-		});
-
-		after(function(){
-			return knex('passwords')
-			.where('id', PUT_password.id)
-			.del()
-			.then(function(rows){
-
-			});
-		});
+		})
 	});
 
 	describe('DEL', function(){
 
-		/*
-			User IDs:
-			1 : Admin
-			2 : Non Admin
-		*/
+		{
+			var users = [
+				generateTemplateUser('PUT-User001'),
+				generateTemplateUser('PUT-User002'),
+			]
+			users[0].isAdmin = true;
+			users[1].isAdmin = false;
 
-		var testData = [
-			{
-				owner: 1,
-				parent: null,
-				title: 'DELTestTitle1',
-				username:'DELTestUsername1',
-				password: base64.encode('DELTestPassword2'),
-			},
-			{
-				owner: 2,
-				parent: null,
-				title: 'DELTestTitle2',
-				username:'DELTestUsername2',
-				password: base64.encode('DELTestPassword2'),
-			},
-			{
-				owner: 2,
-				parent: null,
-				title: 'DELTestTitle3',
-				username:'DELTestUsername3',
-				password: base64.encode('DELTestPassword3'),
-			}
-		]
 
-		before(function(){
-			return knex('passwords')
-			.insert(testData[0])
-			.then(function(rows){
-				testData[0].id = rows[0];
+			var passwords = [
+				generateTemplatePassword('PUT-Password001'),
+				generateTemplatePassword('PUT-Password002'),
+				generateTemplatePassword('PUT-Password003'),
+				generateTemplatePassword('PUT-Password004'),
+			]
+
+			before(function(){
+				return knex('users')
+				.insert(users)
+				.then(function(){
+					return knex('users').select();
+				})
+				.then(function(_users){
+					users = _users;
+
+					passwords[0].owner = users[0].id;
+					passwords[1].owner = users[0].id;
+
+					passwords[2].owner = users[1].id;
+					passwords[3].owner = users[1].id;
+					
+					return knex('passwords').insert(passwords);
+				})
+				.then(function(){
+					return knex('passwords').select();
+				})
+				.then(function(_passwords){
+					passwords = _passwords;
+				})
+			});	
+
+			var tokens = [ undefined, undefined ];
+			before(function(done){
+			// Obtain auth token -- admin
+				server
+				.post('/api/auth/login')
+				.field('username', users[0].username)
+				.field('password', 'password')
+				.expect(200)
+				.end(function(err, res){
+					if(err) return done(err);
+					tokens[0] = res.body.token;
+					return done();
+				});
 			});
-		});
-
-		before(function(){
-			return knex('passwords')
-			.insert(testData[1])
-			.then(function(rows){
-				testData[1].id = rows[0];
+			before(function(done){
+			// Obtain auth token -- admin
+				server
+				.post('/api/auth/login')
+				.field('username', users[1].username)
+				.field('password', 'password')
+				.expect(200)
+				.end(function(err, res){
+					if(err) return done(err);
+					tokens[1] = res.body.token;
+					return done();
+				});
 			});
-		});
-			
-		before(function(){
-			return knex('passwords')
-			.insert(testData[2])
-			.then(function(rows){
-				testData[2].id = rows[0];
-			});
-		});
-			
-
+		}
 
 
 		it('should fail on deleting non-existant password', function(done){
 			server
-			.del('/api/users/'+idAuthToken+'/passwords/1337')
-			.set('Authorization', 'Bearer ' + authToken)
+			.del('/api/users/'+users[0].id+'/passwords/1337')
+			.set('Authorization', 'Bearer ' + tokens[0])
 			.expect(404)
 			.end(function(err,res){
 				if(err) return done(err);
@@ -867,13 +979,12 @@ describe("API /password", function(){
 
 				return done();
 			});
-
 		});
 
 		it('should fail when passed id is of the wrong type', function(done){
 			server
-			.del('/api/users/'+idAuthToken+'/passwords/true')
-			.set('Authorization', 'Bearer ' + authToken)
+			.del('/api/users/'+users[0].id+'/passwords/true')
+			.set('Authorization', 'Bearer ' + tokens[0])
 			.expect(400)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -889,8 +1000,8 @@ describe("API /password", function(){
 
 		it('should not allow non-admin to delete admins password', function(done){
 			server
-			.del('/api/users/'+idAuthToken+'/passwords/1')
-			.set('Authorization', 'Bearer ' + otherAuthToken)
+			.del('/api/users/'+users[0].id+'/passwords/'+passwords[0].id)
+			.set('Authorization', 'Bearer ' + tokens[1])
 			.expect(403)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -904,25 +1015,12 @@ describe("API /password", function(){
 
 		it('should allow admin to delete his own password', function(done){
 			server
-			.del('/api/users/'+idAuthToken+'/passwords/' + testData[0].id)
-			.set('Authorization', 'Bearer ' + authToken)
+			.del('/api/users/'+users[0].id+'/passwords/' + passwords[1].id)
+			.set('Authorization', 'Bearer ' + tokens[0])
 			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
 
-				assert.equal(res.body, 'OK');
-
-				return done();
-			});	
-		});
-
-		it('should allow user to delete his own password', function(done){
-			server
-			.del('/api/users/'+idOtherAuthToken+'/passwords/' + testData[1].id)
-			.set('Authorization', 'Bearer ' + otherAuthToken)
-			.expect(200)
-			.end(function(err, res){
-				if(err) return done(err);
 				assert.equal(res.body, 'OK');
 
 				return done();
@@ -931,8 +1029,8 @@ describe("API /password", function(){
 
 		it('should not allow admin to delete users password', function(done){
 			server
-			.del('/api/users/'+idOtherAuthToken+'/passwords/' + testData[2].id)
-			.set('Authorization', 'Bearer ' + authToken)
+			.del('/api/users/'+users[1].id+'/passwords/' + passwords[2].id)
+			.set('Authorization', 'Bearer ' + tokens[0])
 			.expect(403)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -944,20 +1042,30 @@ describe("API /password", function(){
 			});
 		});
 
+		it('should allow user to delete his own password', function(done){
+			server
+			.del('/api/users/'+users[1].id+'/passwords/' + passwords[3].id)
+			.set('Authorization', 'Bearer ' + tokens[1])
+			.expect(200)
+			.end(function(err, res){
+				if(err) return done(err);
+				assert.equal(res.body, 'OK');
+
+				return done();
+			});	
+		});
+
 		after(function(){
 			return knex('audit')
 			.del()
+			.then(function(){
+				return knex('passwords').del();
+			})
+			.then(function(){
+				return knex('users').del();
+			})
 			.then();
-		});
-		
-		after(function(){
-			return knex('passwords')
-			.where('id', testData[0].id)
-			.orWhere('id', testData[1].id)
-			.orWhere('id', testData[2].id)
-			.del()
-			.then(function(){});
-		})
+		});	
 
 	});
 });
