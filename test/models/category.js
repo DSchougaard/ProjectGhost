@@ -15,39 +15,73 @@ const SqlError 				= require(__base + 'errors/SqlError.js');
 const CategoryDoesNotExistError = require(__base + 'errors/CategoryDoesNotExistError.js');
 const UnauthorizedError 		= require(__base + 'errors/UnauthorizedError.js');
 
-const unittestData = require(__base + 'misc/unitTestData.js');
-
 var knex = require(__base + 'database.js');
 
 // Models
 var Category = require(__base + 'models/category.js');
 var User = require(__base + 'models/user.js');
 
+function generateTemplateUser(username){
+	return {
+		username 	: 'Models#Categories#' + username,
+		isAdmin 	: false,
+		salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+		password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+		privatekey 	: 'cGFzc3dvcmQ=',
+		iv 			: 'cGFzc3dvcmQ=',
+		pk_salt 	: 'cGFzc3dvcmQ=',
+		publickey 	: 'cGFzc3dvcmQ='
+	};
+}
+
+function generateTemplateCategory(title){
+	return {
+		owner 		: undefined,
+		parent 		: null,
+		title 		: 'Models#Categories#'+title
+	};
+}
+
+function generateTemplatePassword(title){
+	return { 
+		owner 		: null,
+		parent 		: null,
+		title 		: 'Models#Categories#'+title,
+		username 	: 'Models#Categories#'+title+'-User',
+		password 	: 'cGFzc3dvcmQ=',
+		note 		: 'This is clearly a note!',
+		url 		: null
+	};
+}
 
 describe('Category', function(){
 
 	describe('#find', function(){
-		var cat = {
-			title: 'FIND-TestCat0001',
-			owner: 1,
-			parent: null
-		}
+		
+		var user 		= generateTemplateUser('Find-User001');
+		var category 	= generateTemplateCategory('Find-Category001');
 
 		before(function(){
-			return knex('categories')
-			.insert(cat)
+			return knex('users')
+			.insert(user)
 			.then(function(ids){
-				cat.id = ids[0];
-			});
+				user.id = ids[0];
+				category.owner = ids[0];
+				return knex('categories')
+				.insert(category);
+			})
+			.then(function(ids){
+				category.id = ids[0];
+			})
 		});
 
 		it('should successfully find existing category', function(){
-			return Category.find(cat.id)
+			return Category.find(category.id)
 			.then(function(category){
-				assert.equal(category.id, cat.id);
-				assert.equal(category.owner, cat.owner);
-				assert.equal(category.parent, cat.parent);
-				assert.equal(category.title, cat.title);
+				assert.equal(category.id, 		category.id);
+				assert.equal(category.owner, 	category.owner);
+				assert.equal(category.parent, 	category.parent);
+				assert.equal(category.title, 	category.title);
 			});
 		});
 
@@ -64,9 +98,15 @@ describe('Category', function(){
 
 		after(function(){
 			return knex('categories')
-			.where('id', cat.id)
-			.del();
+			.del()
+			.then();
 		});
+
+		after(function(){
+			return knex('users')
+			.del()
+			.then();
+		})
 	});
 
 	describe('#findAll', function(){
@@ -139,10 +179,19 @@ describe('Category', function(){
 			return knex('users').insert(users[0])
 			.then(function(ids){
 				users[0].id = ids[0];
+
+				categories[0].owner = users[0].id;
+				categories[1].owner = users[0].id;
+				categories[2].owner = users[0].id;
+
 				return knex('users').insert(users[1]);
 			})
 			.then(function(ids){
 				users[1].id = ids[0];
+
+				categories[3].owner = users[0].id;
+				categories[4].owner = users[0].id;
+
 				return knex('users').insert(users[2]);
 			})
 			.then(function(ids){
@@ -249,6 +298,23 @@ describe('Category', function(){
 	});
 
 	describe('#create', function(){
+
+		var users = [ generateTemplateUser('Create-User001'), generateTemplateUser('Create-User002') ];
+		before(function(){
+			return knex('users')
+			.insert(users)
+			.then(function(){
+				return knex('users')
+				.select();
+			})
+			.then(function(_users){
+				users = _users;
+
+				cat.owner = users[0].id;
+				otherCat.owner = users[1].id;
+			})
+		})
+
 		var cat = {
 			title: 'CREATE-TestCat0001',
 			owner: 1,
@@ -393,55 +459,57 @@ describe('Category', function(){
 			});
 		});
 		
-		after(function(){
-			return knex('categories')
-			.where('id', cat.id)
-			.orWhere('id', otherCat.id)
-			.del()
-			.then(function(){ })
-		});
+		{
+			after(function(){
+				return knex('categories')
+				.del()
+				.then();
+			});
+
+			after(function(){
+				return knex('users')
+				.del()
+				.then();
+			})
+		}
 	});
 
 	describe('#update', function(){
+
+		var users = [
+			generateTemplateUser('Update-User001'),
+			generateTemplateUser('Update-User002')
+		];
+
+
+		before(function(){
+			return knex('users').insert(users)
+			.then(function(){
+				return knex('users').select()
+			})
+			.then(function(_users){
+				users = _users;
+
+				categories[0].owner = users[0].id;
+				categories[1].owner = users[0].id;
+
+				categories[2].owner = users[1].id;
+			});
+		});
+
 		var categories = [
-			{
-				title: 'UPDATE-TestCat0001',
-				owner: 1,
-				parent: null
-			},
-			{
-				title: 'UPDATE-TestParentCat0001',
-				owner: 1,
-				parent: null
-			},
-			{
-				title: 'UPDATE-TestParentCat0002',
-				owner: 2,
-				parent: null
-			},
-		]
-
+			generateTemplateCategory('Update-User001-Category001'),
+			generateTemplateCategory('Update-User001-Category002'),
+			generateTemplateCategory('Update-User002-Category001')
+		];
+		
 		before(function(){
-			return knex('categories')
-			.insert(categories[0])
-			.then(function(ids){
-				categories[0].id = ids[0];
-			});
-		});
-
-		before(function(){
-			return knex('categories')
-			.insert(categories[1])
-			.then(function(ids){
-				categories[1].id = ids[0];
-			});
-		});
-
-		before(function(){
-			return knex('categories')
-			.insert(categories[2])
-			.then(function(ids){
-				categories[2].id = ids[0];
+			return knex('categories').insert(categories)
+			.then(function(){
+				return knex('categories').select()
+			})
+			.then(function(_categories){
+				categories = _categories;
 			});
 		});
 
@@ -613,42 +681,93 @@ describe('Category', function(){
 
 
 
+		{
+			after(function(){
+				return knex('categories')
+				.del()
+				.then();
+			});
 
-		after(function(){
-			return knex('categories').where('id', categories[0].id).del()
-			.then(function(rows){ return knex('categories').where('id', categories[1].id).del() })
-			.then(function(rows){ return knex('categories').where('id', categories[2].id).del() })
-			.then(function(ids){
+			after(function(){
+				return knex('users')
+				.del()
+				.then();
 			})
-		});
+		}
 	});
 
 	describe('#delete', function(){
+
+		var users = [
+			generateTemplateUser('Delete-User0001'),
+			generateTemplateUser('Delete-User0002')
+		];
+
+		before(function(){
+			return knex('users')
+			.insert(users)
+			.then(function(){
+				return knex('users').select();
+			})
+			.then(function(_users){
+				users = _users;
+
+				categories[0].owner = users[0].id;
+				categories[1].owner = users[0].id;
+				categories[2].owner = users[0].id;
+
+				children[0].owner 	= users[0].id;
+				children[1].owner 	= users[1].id;
+
+				passwords[0].owner = users[0].id;
+				passwords[1].owner = users[0].id;
+			})
+		})
+
 		var categories = [
-			{
-				title: 'DELETE-TestCat0001',
-				owner: 1,
-				parent: null
-			},
-			{
-				title: 'DELETE-TestChild0001',
-				owner: 1,
-			},
-			{
-				title: 'DELETE-TestChild0002',
-				owner: 2,
-			},
-			{
-				title: 'DELETE-TestCat0002',
-				owner: 1,
-				parent: null
-			},
-			{
-				title: 'DELETE-TestCat0003',
-				owner: 1,
-				parent: null
-			}
-		]
+			generateTemplateCategory('Delete-TestCat001'),
+			generateTemplateCategory('Delete-TestCat002'),
+			generateTemplateCategory('Delete-TestCat003'),
+		];
+
+		before(function(){
+			return knex('categories')
+			.insert(categories)
+			.then(function(){
+				return knex('categories').select();
+			})
+			.then(function(_categories){
+				categories = _categories;
+
+				children[0].parent = categories[0].id;
+				children[1].parent = categories[0].id;
+
+				passwords[0].parent = categories[1].id;
+				passwords[1].parent = categories[1].id;
+			})
+		});
+
+		before(function(){
+			return knex('categories')
+			.insert(children)
+			.then();
+		});
+		
+		before(function(){
+			return knex('passwords')
+			.insert(passwords)
+			.then();
+		});
+
+		var children = [
+			generateTemplateCategory('Delete-TestCat001-Child001'),
+			generateTemplateCategory('Delete-TestCat001-Child002'),
+		];
+
+		var passwords = [
+			generateTemplatePassword('Delete-PasswordChild001'),
+			generateTemplatePassword('Delete-PasswordChild002'),
+		];
 
 		var passwords = [
 			{
@@ -670,41 +789,6 @@ describe('Category', function(){
 			}
 		]
 
-		before(function(){
-			return knex('categories').insert(categories[0])
-			.then(function(ids){
-				categories[0].id 	 = ids[0];
-				categories[1].parent = ids[0];
-				categories[2].parent = ids[0];
-				return knex('categories').insert(categories[1]);
-			})
-			.then(function(ids){
-				categories[1].id = ids[0];
-				return knex('categories').insert(categories[2]);
-			})
-			.then(function(ids){
-				categories[2].id = ids[0];
-				return knex('categories').insert(categories[3]);
-			})
-			.then(function(ids){
-				categories[3].id = ids[0];
-				passwords[0].parent = ids[0];
-				passwords[1].parent = ids[0];
-
-				return knex('categories').insert(categories[4]);
-			})
-			.then(function(ids){
-				categories[4].id = ids[0];
-				return knex('passwords').insert(passwords[0]);
-			})
-			.then(function(ids){
-				passwords[0].id = ids[0];
-				return knex('passwords').insert(passwords[1]);
-			})
-			.then(function(ids){
-				passwords[1].id = ids[0];
-			});
-		});
 
 		it('should fail to delete category, with children categories attached', function(){
 			Category.find(categories[0].id)
@@ -721,7 +805,7 @@ describe('Category', function(){
 		});
 
 		it('should fail to delete category, with children passwords attached', function(){
-			Category.find(categories[3].id)
+			Category.find(categories[1].id)
 			.then(function(category){
 				return category.del();
 			})
@@ -752,41 +836,32 @@ describe('Category', function(){
 		});
 
 		it('should successfully delete a category', function(){
-			Category.find(categories[4].id)
+			Category.find(categories[2].id)
 			.then(function(category){
 				return category.del();
 			})
 		});
-	
-
-
-
 		
-		after(function(){
-			return knex('passwords').where('id', passwords[0].id).del()
-			.then(function(){
-				return knex('passwords').where('id', passwords[1].id).del();
+		{
+
+			after(function(){
+				return knex('passwords')
+				.del()
+				.then();
+			});
+
+			after(function(){
+				return knex('categories')
+				.del()
+				.then();
+			});
+
+			after(function(){
+				return knex('users')
+				.del()
+				.then();
 			})
-			.then(function(){
-				// Should be deleted by Test later
-				return knex('categories').where('id', categories[4].id).del();
-			})
-			.then(function(){
-				return knex('categories').where('id', categories[3].id).del();
-			})
-			.then(function(){
-				return knex('categories').where('id', categories[2].id).del();
-			})
-			.then(function(){
-				return knex('categories').where('id', categories[1].id).del();
-			})
-			.then(function(){
-				return knex('categories').where('id', categories[0].id).del();
-			})
-			.then(function(){});
-		});
+		}
 	});
-
-
 
 });
