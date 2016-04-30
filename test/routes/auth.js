@@ -6,6 +6,7 @@ var should 	= require('should');
 var sinon 	= require('sinon');
 
 var knex 				= require(__base + 'database.js');
+const certs 				= require(__base + 'test/certs.js');
 
 var fs 		= require('fs');
 var base64 	= require(__base + 'helpers/base64.js');
@@ -16,18 +17,17 @@ const speakeasy		 			= require("speakeasy");
 // SuperTest Connection
 var server 	= request(require(__base + 'app.js').server);
 
-// Test user
-var testUser = {
-	id: 					1,
-	username: 				'User1',
-	password: 				'password',
-	privatekey_raw: 		fs.readFileSync(__base + 'misc/unittest-private.key'),
-	privatekey: 			fs.readFileSync(__base + 'misc/unittest-private.key').toString('utf8'),
-	publickey: 				fs.readFileSync(__base + 'misc/unittest-public.crt').toString('utf8'),
-	
-};
-testUser.base64 = {
-							publickey: base64.encode(testUser.publickey)
+
+function generateTemplateUser(username){
+	return {
+		username 	: 'API#Auth#' + username,
+		salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
+		password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+		privatekey 	: 'cGFzc3dvcmQ=',
+		iv 			: 'cGFzc3dvcmQ=',
+		pk_salt 	: 'cGFzc3dvcmQ=',
+		publickey 	: 'cGFzc3dvcmQ='
+	};
 }
 
 // Private and Public Key for Signing JWTs
@@ -35,13 +35,21 @@ const privateKey 		= fs.readFileSync(__base + '/crypto/jwt/ghost-jwt.key');
 const publicKey 		= fs.readFileSync(__base + '/crypto/jwt/ghost-jwt.crt');
 
 
-describe('API /auth', function(){
+describe.only('API /auth', function(){
 	describe('AuthToken without 2FA', function(){
+		
+		var user = generateTemplateUser('Without2FA-User001');
+		before(function(){
+			return knex('users')
+			.insert(user)
+			.then();
+		});
+
 		it('returns an auth token for a user that exists', function(done){
 			server
 			.post('/api/auth/login')
-			.field('username', testUser.username)
-			.field('password', testUser.password)
+			.field('username', user.username)
+			.field('password', 'password')
 			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -78,7 +86,7 @@ describe('API /auth', function(){
 		it('it fails when given a wrong password', function(done){
 			server
 			.post('/api/auth/login')
-			.field('username', testUser.username)
+			.field('username', user.username)
 			.field('password', 'ThisIsNotThePasswordYouAreLookingFor')
 			.expect(401)
 			.end(function(err, res){
@@ -93,7 +101,7 @@ describe('API /auth', function(){
 		it('responds accordingly when request is empty', function(done){
 			server
 			.post('/api/auth/login')
-			.field('password', testUser.password)
+			.field('password', user.password)
 			.expect(400)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -107,7 +115,7 @@ describe('API /auth', function(){
 		it('responds accordingly when username is missing', function(done){
 			server
 			.post('/api/auth/login')
-			.field('password', testUser.password)
+			.field('password', user.password)
 			.expect(400)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -121,7 +129,7 @@ describe('API /auth', function(){
 		it('responds accordingly when password is missing', function(done){
 			server
 			.post('/api/auth/login')
-			.field('username', testUser.username)
+			.field('username', user.username)
 			.expect(400)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -137,6 +145,12 @@ describe('API /auth', function(){
 			.del()
 			.then();
 		});
+
+		after(function(){
+			return knex('users')
+			.del()
+			.then();
+		})
 	});
 
 	describe('AuthToken with 2FA', function(){
@@ -291,13 +305,22 @@ describe('API /auth', function(){
 	});
 	
 	describe('Access to restricted areas', function(){
+		
+		var user = generateTemplateUser('AccessToRestrictedAreas-User001');
+		before(function(){
+			return knex('users')
+			.insert(user)
+			.then(function(ids){
+				user.id = ids[0];
+			});
+		});
 
 		it('should grant access when a valid token is supplied', function(done){
 			// Obtain valid token
 			server
 			.post('/api/auth/login')
-			.field('username', testUser.username)
-			.field('password', testUser.password)
+			.field('username', user.username)
+			.field('password', 'password')
 			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
@@ -333,11 +356,11 @@ describe('API /auth', function(){
 
 		it('should fail when a wrong token is supplied', function(done){			
 			var payload = {
-				uid: testUser.id,
+				uid: user.id,
 				iat: moment().unix(),
 				exp: moment().add(14, 'days').unix()
 			};
-			var badToken = jwt.sign(payload, testUser.privatekey_raw, {algorithm: 'RS256'});
+			var badToken = jwt.sign(payload, certs.privateKey.raw, {algorithm: 'RS256'});
 
 			server
 			.get('/api/auth/ping')
@@ -355,7 +378,7 @@ describe('API /auth', function(){
 
 		it('should fail when an expired token is supplied', function(done){
 			var payload = {
-				uid: testUser.id,
+				uid: user.id,
 				iat: 0,
 				exp: 20000
 			};
