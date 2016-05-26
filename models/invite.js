@@ -110,7 +110,65 @@ module.exports = class Invite{
 		return payload;
 	}
 
+	del(){
+		var self = this;
+
+		return knex('invites')
+		.where('link', self.link)
+		.del()
+		.then(function(rows){
+			if( rows.length < 1 ){
+				// No invite was found
+				return Promise.reject( new InviteDoesNotExistError('Invite does not exist') );
+			}
+
+			return;
+		})
+		.catch(function(err){
+			console.error(err);
+		});
+	}
+
 	use(user){
+		var self = this;
+
+		return knex.transaction(function(trx){
+			return trx
+			.select()
+			.from('invites')
+			.where('link', self.link)
+			.then(function(rows){
+
+				if( rows.length < 1 ){
+					// No invite was found
+					return Promise.reject( new InviteDoesNotExistError('Invite does not exist') );
+				}
+
+				// if now is after expires
+				if( moment().isBefore( moment.unix(rows[0].expires) ) ){
+					return User.create(user, trx);
+				}else{
+					return Promise.reject( new InvalidInviteError('Invite is expired') );
+				}
+
+			})
+			.then(function(user){
+				return Promise.all([
+					Promise.resolve(user),
+					trx
+					.from('invites')
+					.where('link', self.link)
+					.del()
+				]);		
+			})
+			.then(function(resolved){
+				return Promise.resolve(resolved[0]);
+			});
+
+		})
+	}
+
+	use_(user){
 		var self = this;
 
 		return knex.transaction(function(trx){

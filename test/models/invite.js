@@ -233,21 +233,9 @@ describe('Invite', function(){
 
 			})
 			.catch(function(err){
+                console.dir(err);
                 assert.fail(undefined,undefined, 'Method failed, when it should have succeeded');
 			})
-		});
-
-		it('should fail when trying to re-use an invite', function(){
-			return Invite.find(createdInvite.link)
-			.then(function(invite){
-				return invite.use(users[1]);
-			})
-			.then(function(){
-    	        assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
-			})
-			.catch(InvalidInviteError, function(err){
-				assert.equal(err.message, 'Invite already used');
-			});
 		});
 
 		it('fails at creating user, using spoofed invite', function(){
@@ -263,7 +251,7 @@ describe('Invite', function(){
                 assert.fail(undefined,undefined, 'Method succeeded, when it should have failed');
 			})
 			.catch(InviteDoesNotExistError, function(err){
-				assert.equal(err.message, invite.link);
+				assert.equal(err.message, 'Invite does not exist');
 			});
 		});
 
@@ -285,8 +273,8 @@ describe('Invite', function(){
 			.then(function(re){
 				console.dir(re);
 			})
-			.catch(InvalidInviteError, function(err){
-				assert.equal(err.message, 'Invite already used');
+			.catch(InviteDoesNotExistError, function(err){
+				assert.equal(err.message, 'Invite does not exist');
 			});
 		});
 

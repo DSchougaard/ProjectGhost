@@ -81,7 +81,12 @@ module.exports = function(server, log){
 			return next( new ValidationRestError('Validation error', err.errors));
 		})
 		.catch(InvalidInviteError, function(err){
+			if(err.message === 'Invite is expired'){
+				req.resolved.params.invite.del()
+				.then(function(){});
+			}
 			return next( new restify.errors.GoneError(err.message) );
+			
 		})
 		.catch(InviteDoesNotExistError, function(err){
 			return next( new restify.errors.NotFoundError('Invite was not found') );

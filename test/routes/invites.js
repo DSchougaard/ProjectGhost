@@ -281,6 +281,14 @@ describe('API /invites/:inviteId/accept', function(){
 				iv 			: 'cGFzc3dvcmQ=',
 				pk_salt 	: 'cGFzc3dvcmQ=',
 				publickey 	: 'cGFzc3dvcmQ='
+			},
+			{
+				username 	: 'Routes#Invites/:inviteId/accept#POST#User04',
+				password 	: 'password',
+				privatekey 	: 'cGFzc3dvcmQ=',
+				iv 			: 'cGFzc3dvcmQ=',
+				pk_salt 	: 'cGFzc3dvcmQ=',
+				publickey 	: 'cGFzc3dvcmQ='
 			}
 		];
 
@@ -341,14 +349,22 @@ describe('API /invites/:inviteId/accept', function(){
 			server
 			.post('/api/invites/' + invites[0].link + '/accept')
 			.send(newUsers[1])
-			.expect(410)
+			.expect(200)
 			.end(function(err, res){
 				if(err) return done(err);
 
-				assert.equal(res.body.code, 'GoneError');
-				assert.equal(res.body.message, 'Invite already used');
+				return server
+				.post('/api/invites/' + invites[0].link + '/accept')
+				.send(newUsers[3])
+				.expect(410)
+				.end(function(err, res){
 
-				return done();
+					assert.equal(res.body.code, 'NotFoundError');
+					assert.equal(res.body.message, 'Invite was not found');
+
+					return done();
+				})
+
 			});
 		});
 
@@ -420,6 +436,7 @@ describe('API /invites/:inviteId/accept', function(){
 			.orWhere('username', newUsers[0].username)
 			.orWhere('username', newUsers[1].username)
 			.orWhere('username', newUsers[2].username)
+			.orWhere('username', newUsers[3].username)
 			.del()
 			.then(function(){
 				return knex('invites')
