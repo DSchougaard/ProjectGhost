@@ -50,7 +50,7 @@
 				}else{
 					// Category does not have a parent.
 					structure.push(category);
-				}
+				}  
 			}
 			return $q.resolve(structure);
 		}

@@ -44,6 +44,10 @@ class Action{
 			this.actionId 	= input;
 			this.actionName = actions[input];
 		}
+
+		if(this.actionName === '' ){
+			console.log("\n\n\n KASDSADASSADAD \n\n\n")
+		}
 	}
 
 	text(){

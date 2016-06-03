@@ -14,15 +14,38 @@ const SqlError 				= require(__base + 'errors/SqlError.js');
 var User = require(__base + 'models/user.js')
 var Password = require(__base + 'models/password.js')
 var Category = require(__base + 'models/category.js')
+var SharedPassword = require(__base + 'models/sharedPassword.js')
+
 
 module.exports = function(req, res, next){
 
 	var targetUser  	= req.params.userId;
 	var targetPassword 	= req.params.passwordId;
 	var targetCategory 	= req.params.categoryId;
+	var targetShare		= req.params.shareId;
 
 	// Identify what is requested access to
-	if( targetCategory !== undefined ){
+	if( targetShare !== undefined ){
+		Promise.all([User.find(targetUser), SharedPassword.find(targetShare)])
+		.spread(function(user, share){
+			if( (share.owner === user.id && user.id === req.resolved.user) 
+			|| 	(share.origin_owner === user.id && user.id == req.resolved.user)){
+				return next();
+			}else{
+				return next(new restify.errors.ForbiddenError('Insufficient privileges'));
+			}
+		})
+		// Well this is a dirty, dirty hack....
+		.catch(UserDoesNotExistError, function(){
+			return next();
+		})
+		.catch(CategoryDoesNotExistError, function(){
+			return next();
+		}).catch(ValidationError, function(){
+			return next();
+		});
+	
+	}else if( targetCategory !== undefined ){
 		Promise.all([User.find(targetUser), Category.find(targetCategory)])
 		.spread(function(user, category){
 			if( category.owner === user.id && user.id === req.resolved.user.id ){

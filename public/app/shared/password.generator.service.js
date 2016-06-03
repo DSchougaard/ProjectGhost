@@ -19,15 +19,12 @@
 			
 			var password = '';
 			for( var i = 0 ; i < length ; i++ ){
-
 				var byte = forge.random.getBytesSync(1);
 				while( byte.charCodeAt(0) >= characters.length ){
 					byte = forge.random.getBytesSync(1);					
 				}
 				password = password + characters[byte.charCodeAt(0)];
-
 			} 
-
 			return password;
 		}	
 
