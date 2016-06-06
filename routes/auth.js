@@ -1,10 +1,11 @@
 'use strict'
 const fs 						= require('fs');
-		
+const Promise 					= require('bluebird');
 const restify 					= require('restify');
 const speakeasy		 			= require("speakeasy");
 const bcrypt 					= require('bcrypt');
-	
+const argon2 					= require('argon2');
+
 const authHelpers 				= require(__base + '/helpers/authHelpers.js');
 
 // Models
@@ -31,8 +32,101 @@ const ValidationRestError 		= require(__base + 'errors/ValidationRestError.js');
 
 var tempSecrets 			= {};
 
+
+
+
 	
+
+var Ajv 			= require('ajv');
+var ajv 			= new Ajv;
+
+var schemas 		= {};
+schemas.login 		= {
+	$async: true,
+	properties: {
+		username:{
+			type: "string"
+		},
+		password:{
+			type:"string"
+		}
+	}
+}
+
+var validate 		= {}
+validate.login 		= ajv.compile(schemas.login);
+
+
 module.exports = function(server, knex, log){
+
+	server.post('/experimental/api/auth/login', function(req, res, next){
+		log.info({ method: 'POST', path: '/api/auth/login', payload: req.body.username });
+		validate.login(req.body)
+		.then(function(){ return knex('users').select().where({'username':req.body.username}) } )
+		.then(function(rows){
+
+			if( rows.length == 0 ){
+				// No user was found with that username.
+				log.debug({ method: 'POST', path: '/api/auth/login', payload: req.body.username, message: 'Wrong Username'});
+				return next(new restify.errors.UnauthorizedError('Wrong login credentials'));
+			}
+			if( rows.length > 1 ){
+				log.error({ method: 'POST', path: '/api/auth/login', payload: req.body.username, message: 'Several user IDs found for same username. Fatal error.'});
+				return next(new restify.errors.InternalServerError('Catastrophic DB error. Multiple users with same ID found.'));
+			}
+
+			// User has chosen to enable two factor, but no secret exists in db
+			if( rows[0].two_factor_enabled && (rows[0].two_factor_secret === undefined || rows[0].two_factor_secret === null) ){
+				return next( new restify.errors.InternalServerError('Misconfiguration of Two Factor authentication. Please generate new secret.'));
+			}
+
+			// User has chosen to enable two factor, but no token was passed in URL.
+			if( rows[0].two_factor_enabled && !req.body.twoFactorToken ){
+				return next(new restify.errors.ForbiddenError('Missing two factor token') );
+			}
+
+			// User has not enabled 2FA but passs token anyway
+			if( !rows[0].two_factor_enabled && req.body.twoFactorToken ){
+				return next( new restify.errors.BadRequestError('User has not enabled two-factor authentication') );
+			}
+
+			return Promise.all([ argon2.verify(rows[0].password, req.body.password), new Promise.resolve(rows) ]);
+			//return argon2.verify(rows[0].password, req.body.password).bind(null, rows);
+		})
+		.then(function(args){
+			var match 	= args[0];
+			var rows 	= args[1];
+
+			if(!match){
+				log.info({ method: 'POST', path: '/api/auth/login', payload: req.body.username, message: 'Login failed'});
+				Audit.report(rows[0], req, 'Authentication (Invalid Credentials)', undefined, 'FAILURE');
+				return next(new restify.errors.UnauthorizedError('Wrong login credentials'));
+			}
+
+			if( rows[0].two_factor_enabled ){
+				var valid = speakeasy.totp.verify({	secret: rows[0].two_factor_secret,
+                                   					encoding: 'base32',
+                                    				token: req.body.twoFactorToken });
+
+				if( !valid ){
+					Audit.report(rows[0], req, 'Authentication (Invalid Token)', undefined, 'FAILURE');
+					return next(new restify.errors.UnauthorizedError('Wrong login credentials'));
+				}
+			}
+
+
+			log.info({ method: 'POST', path: '/api/auth/login', payload: req.body.username, message: 'Login successful'});
+			// Login Succeeded
+			res.send(200, {token: authHelpers.createJWT(rows[0]) });
+			if( rows[0].two_factor_enabled ){
+				Audit.report(rows[0], req, 'Authenticated with Two Factor Authentication', undefined, 'SUCCESS');
+			}else{
+				Audit.report(rows[0], req, 'Authenticated', undefined, 'SUCCESS');
+			}
+			return next();
+		});
+	});
+
 	server.post('/api/auth/login', function(req, res, next){
 		log.info({ method: 'POST', path: '/api/auth/login', payload: req.body.username });
 
@@ -48,7 +142,7 @@ module.exports = function(server, knex, log){
 			return next(new restify.errors.BadRequestError("Incomplete request: Missing password"));
 		}
 
-		knex('users').select().where({'username':req.body.username})
+		return knex('users').select().where({'username':req.body.username})
 		.then(function(rows){
 			if( rows.length == 0 ){
 				// No user was found with that username.
@@ -75,15 +169,8 @@ module.exports = function(server, knex, log){
 				return next( new restify.errors.BadRequestError('User has not enabled two-factor authentication') );
 			}
 
-			bcrypt.hash(req.body.password, rows[0].salt, function(err, hash){
-				if(err){
-					log.error({ method: 'POST', path: '/api/auth/login', payload: req.body.username, message: 'BCrypt error', error: err});
-					return next( new restify.errors.InternalServerError() );
-				}
-				req.body.password = '';
-
-				if( hash !== rows[0].password ){
-					// Login failed
+			return argon2.verify(rows[0].password, req.body.password).then(match => {
+				if (!match) {
 					log.info({ method: 'POST', path: '/api/auth/login', payload: req.body.username, message: 'Login failed'});
 					Audit.report(rows[0], req, 'Authentication (Invalid Credentials)', undefined, 'FAILURE');
 					return next(new restify.errors.UnauthorizedError('Wrong login credentials'));
@@ -112,7 +199,8 @@ module.exports = function(server, knex, log){
 					Audit.report(rows[0], req, 'Authenticated', undefined, 'SUCCESS');
 				}
 
-			});
+				return next();
+			})
 		});
 	});
 

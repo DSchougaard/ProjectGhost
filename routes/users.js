@@ -24,6 +24,14 @@ const PasswordDoesNotExistError 	= require(__base + 'errors/PasswordDoesNotExist
 const ValidationError 				= require(__base + 'errors/ValidationError.js');
 const SqlError 						= require(__base + 'errors/SqlError.js');
 const AlreadyExistError 			= require(__base + 'errors/Internal/AlreadyExistError.js');
+const ThisIsClearlyAPotatoError 	= require(__base + 'errors/ThisIsClearlyAPotatoError.js');
+
+
+//const Promise 			= require('bluebird');
+//Promise.onPossiblyUnhandledRejection(function(error){
+//    throw error;
+//});
+
 
 
 // Models
@@ -75,7 +83,7 @@ module.exports = function(server, log){
 
 	});*/
 
-	server.post('/api/users', authentication, resolve, authorization2({object: 'user', method: 'create'}), function(req, res, next){
+	server.post('/api/users', authentication, authorization2({object: 'user', method: 'create'}), function(req, res, next){
 		log.info({ method: 'POST', path: '/api/user', payload: req.body.username });
 		/*
 			Request Content

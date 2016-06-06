@@ -15,7 +15,7 @@ describe('Passwords', function(){
 			username 	: 'Auditing#Passwords#' + username,
 			isAdmin 	: false,
 			salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
-			password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+			password 	: '$argon2i$v=19$m=4096,t=3,p=1$QxwYZOjg6xedW7ilBkTskA$CP4vv+Du+0r3oYh+aFxH4CQFRv/tY39kgs2KG8+8f/A',
 			privatekey 	: 'cGFzc3dvcmQ=',
 			iv 			: 'cGFzc3dvcmQ=',
 			pk_salt 	: 'cGFzc3dvcmQ=',

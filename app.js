@@ -84,8 +84,11 @@ server.use(restify.bodyParser());
 server.use(restify.queryParser());
 
 //server.on('uncaughtException', function (req, res, route, err) {
+//	console.log("!!!!")
 //    console.log('uncaughtException', err.stack);
 //});
+
+
 
 var knex = require(__base + 'database.js');
 

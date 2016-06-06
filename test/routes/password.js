@@ -24,7 +24,7 @@ function generateTemplateUser(username){
 		username 	: 'Routes#Passwords#' + username,
 		isAdmin 	: false,
 		salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
-		password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+		password 	: '$argon2i$v=19$m=4096,t=3,p=1$QxwYZOjg6xedW7ilBkTskA$CP4vv+Du+0r3oYh+aFxH4CQFRv/tY39kgs2KG8+8f/A',
 		privatekey 	: 'cGFzc3dvcmQ=',
 		iv 			: 'cGFzc3dvcmQ=',
 		pk_salt 	: 'cGFzc3dvcmQ=',
@@ -260,7 +260,7 @@ describe("API /password", function(){
 			{
 				username: 'Routes#Passwords#get-User001',
 				salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
-				password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+				password 	: '$argon2i$v=19$m=4096,t=3,p=1$QxwYZOjg6xedW7ilBkTskA$CP4vv+Du+0r3oYh+aFxH4CQFRv/tY39kgs2KG8+8f/A',
 				isAdmin: false,
 				privatekey: 'cGFzc3dvcmQ=',
 				publickey: 'cGFzc3dvcmQ=',
@@ -270,7 +270,7 @@ describe("API /password", function(){
 			{
 				username: 'Routes#Passwords#get-User002',
 				salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
-				password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+				password 	: '$argon2i$v=19$m=4096,t=3,p=1$QxwYZOjg6xedW7ilBkTskA$CP4vv+Du+0r3oYh+aFxH4CQFRv/tY39kgs2KG8+8f/A',
 				isAdmin: true,
 				privatekey: 'cGFzc3dvcmQ=',
 				publickey: 'cGFzc3dvcmQ=',

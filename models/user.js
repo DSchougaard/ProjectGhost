@@ -1,6 +1,7 @@
 'use strict'
 const Promise 	= require('bluebird');
 const bcrypt 	= require('bcrypt');
+const argon2 					= require('argon2');
 const _ 		= require('underscore');
 
 const genSalt 	= Promise.promisify(bcrypt.genSalt);
@@ -17,6 +18,7 @@ const ValidationError 		= require(__base + 'errors/ValidationError.js');
 const SqlError 				= require(__base + 'errors/SqlError.js');
 const OperationalError 		= Promise.OperationalError;
 const AlreadyExistError 	= require(__base + 'errors/Internal/AlreadyExistError.js');
+const ThisIsClearlyAPotatoError 	= require(__base + 'errors/ThisIsClearlyAPotatoError.js');
 
 function SQLErrorHandler(err){
 	// SQLite Username Exists error
@@ -29,6 +31,18 @@ function SQLErrorHandler(err){
 	}
 
 	return new Promise.reject( err );
+}
+
+
+function generateSalt(){
+	return new Promise(function(resolve, reject){
+		argon2.generateSalt().then(salt => {
+			resolve(salt);
+		})
+		.catch(function(e){
+			reject(e);
+		});
+	});
 }
 
 
@@ -68,18 +82,26 @@ module.exports = class User{
 			return new Promise.reject( new ValidationError(validate.errors) );
 		}
 		
-		
 		// Override default isAdmin variable
 		data.isAdmin = data.isAdmin !== undefined ? data.isAdmin : false; 
-	
-		return genSalt()
-		.then(hash.bind(null, data.password))
-		.then(function(hash){
-			data.password = hash;
-			data.salt = hash.substring(0, 29);
-			return new Promise.resolve(data);
+		
+		//return new Promise.resolve(true)
+		//.then(function(){
+		//	return argon2.generateSalt()
+		//})
+		return argon2.generateSalt()
+		.then(function(salt){
+			return argon2.hash(data.password, salt);
 		})
-		.then(db('users').insert.bind( db('users') ))
+		.then(function(hash){
+			data.password 	= hash;
+			// I am... So sorry about this....
+			data.salt 		= 'cGxhY2Vob2xkZXI=';
+			//data.salt = hash.substring(0, 29);
+			//return new Promise.resolve(data);
+			return db('users').insert(data);
+		})
+		//.then(db('users').insert.bind( db('users') ))
 		.then(function(id){
 
 			if( id.length === 0 ){
@@ -97,6 +119,59 @@ module.exports = class User{
 			if( err.errno === 19 && err.code === 'SQLITE_CONSTRAINT' ){
 				//return new Promise.reject( new SqlError('Username already exists') );
 				return new Promise.reject( new AlreadyExistError('Username') );
+
+				//throw new SqlError('Username already exists.')
+			}else if( err.errno === 5 && err.code === 'SQLITE_BUSY'){
+				return new Promise.reject( new SqlError('database temporarily unavailable') );
+			}
+
+			return new Promise.reject( err );
+		});
+	}
+	static _create(input, trx, force){
+		var db = trx === undefined ? knex : trx;
+
+		var data = _.clone(input);
+		
+		var validate = schemagic.userInput.validate(data);
+		if( !validate.valid && !force ){
+			return new Promise.reject( new ValidationError(validate.errors) );
+		}
+		
+		
+		// Override default isAdmin variable
+		data.isAdmin = data.isAdmin !== undefined ? data.isAdmin : false; 
+	
+		//return argon2.generateSalt()
+		//.then(function)
+		//.then(argon2.hash.bind(null, data.password))
+		//.then(function(hash){
+		//	data.password = hash;
+		//	//data.salt = hash.substring(0, 29);
+		//	return new Promise.resolve(data);
+		//})
+		data.password = argon2.hashSync(data.password, argon2.generateSaltSync());
+
+		return db('users').insert(data)
+		.then(function(id){
+
+			if( id.length === 0 ){
+				return new Promise.reject( new SqlError('User was not inserted') );
+			}
+
+			if( id.length > 1 ){
+				return new Promise.reject( new SqlError('Catastrophic database error') );	
+			}
+			data.id = id[0];
+  
+			return new Promise.resolve( new User(data) );
+		}, function(err){
+			// SQLite Username Exists error
+			if( err.errno === 19 && err.code === 'SQLITE_CONSTRAINT' ){
+				console.log("non unique username")
+				//return new Promise.reject( new SqlError('Username already exists') );
+				return new Promise.reject( new AlreadyExistError('Username') );
+
 				//throw new SqlError('Username already exists.')
 			}else if( err.errno === 5 && err.code === 'SQLITE_BUSY'){
 				return new Promise.reject( new SqlError('database temporarily unavailable') );
@@ -199,8 +274,10 @@ module.exports = class User{
 		}
 
 		if( _.has(updated, 'password') ){
-			return genSalt()
-			.then(hash.bind(null, updated.password))
+			return argon2.generateSalt()
+			.then(function(salt){
+				return argon2.hash(updated.password, salt);
+			})
 			.then(function(hash){
 				updated.password 	= hash;
 				updated.salt 		= hash.substring(0, 29);

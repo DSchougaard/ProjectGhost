@@ -369,7 +369,7 @@ describe("API Shared Passwords", function(){
 			{
 				username: 'Routes#SharedPassword#FindSharedToMe-User01',
 				isAdmin: false,
-				password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+				password 	: '$argon2i$v=19$m=4096,t=3,p=1$QxwYZOjg6xedW7ilBkTskA$CP4vv+Du+0r3oYh+aFxH4CQFRv/tY39kgs2KG8+8f/A',
 				salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
 				privatekey: 'cGFzc3dvcmQ=',
 				iv: 'cGFzc3dvcmQ=',
@@ -379,7 +379,7 @@ describe("API Shared Passwords", function(){
 			{
 				username: 'Routes#SharedPassword#FindSharedToMe-User02',
 				isAdmin: false,
-				password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+				password 	: '$argon2i$v=19$m=4096,t=3,p=1$QxwYZOjg6xedW7ilBkTskA$CP4vv+Du+0r3oYh+aFxH4CQFRv/tY39kgs2KG8+8f/A',
 				salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
 				privatekey: 'cGFzc3dvcmQ=',
 				iv: 'cGFzc3dvcmQ=',
@@ -707,7 +707,7 @@ describe("API Shared Passwords", function(){
 				{
 					username 	: 'Routes#SharedPassword#Create-User01',
 					isAdmin 	: false,
-					password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+					password 	: '$argon2i$v=19$m=4096,t=3,p=1$QxwYZOjg6xedW7ilBkTskA$CP4vv+Du+0r3oYh+aFxH4CQFRv/tY39kgs2KG8+8f/A',
 					salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
 					privatekey 	: 'cGFzc3dvcmQ=',
 					iv 			: 'cGFzc3dvcmQ=',
@@ -717,7 +717,7 @@ describe("API Shared Passwords", function(){
 				{
 					username 	: 'Routes#SharedPassword#Create-User02',
 					isAdmin 	: false,
-					password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+					password 	: '$argon2i$v=19$m=4096,t=3,p=1$QxwYZOjg6xedW7ilBkTskA$CP4vv+Du+0r3oYh+aFxH4CQFRv/tY39kgs2KG8+8f/A',
 					salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
 					privatekey 	: 'cGFzc3dvcmQ=',
 					iv 			: 'cGFzc3dvcmQ=',
@@ -727,7 +727,7 @@ describe("API Shared Passwords", function(){
 				{
 					username 	: 'Routes#SharedPassword#Create-User03',
 					isAdmin 	: false,
-					password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+					password 	: '$argon2i$v=19$m=4096,t=3,p=1$QxwYZOjg6xedW7ilBkTskA$CP4vv+Du+0r3oYh+aFxH4CQFRv/tY39kgs2KG8+8f/A',
 					salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
 					privatekey 	: 'cGFzc3dvcmQ=',
 					iv 			: 'cGFzc3dvcmQ=',
@@ -1151,7 +1151,7 @@ describe("API Shared Passwords", function(){
 				{
 					username: 'Routes#SharedPassword#Delete-User01',
 					isAdmin: false,
-					password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+					password 	: '$argon2i$v=19$m=4096,t=3,p=1$QxwYZOjg6xedW7ilBkTskA$CP4vv+Du+0r3oYh+aFxH4CQFRv/tY39kgs2KG8+8f/A',
 					salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
 					privatekey: 'cGFzc3dvcmQ=',
 					iv: 'cGFzc3dvcmQ=',
@@ -1161,7 +1161,7 @@ describe("API Shared Passwords", function(){
 				{
 					username: 'Routes#SharedPassword#Delete-User02',
 					isAdmin: false,
-					password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+					password 	: '$argon2i$v=19$m=4096,t=3,p=1$QxwYZOjg6xedW7ilBkTskA$CP4vv+Du+0r3oYh+aFxH4CQFRv/tY39kgs2KG8+8f/A',
 					salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
 					privatekey: 'cGFzc3dvcmQ=',
 					iv: 'cGFzc3dvcmQ=',
@@ -1502,7 +1502,7 @@ describe("API Shared Passwords", function(){
 				{
 					username: 'Routes#SharedPassword#Delete-User01',
 					isAdmin: false,
-					password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+					password 	: '$argon2i$v=19$m=4096,t=3,p=1$QxwYZOjg6xedW7ilBkTskA$CP4vv+Du+0r3oYh+aFxH4CQFRv/tY39kgs2KG8+8f/A',
 					salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
 					privatekey: 'cGFzc3dvcmQ=',
 					iv: 'cGFzc3dvcmQ=',
@@ -1512,7 +1512,7 @@ describe("API Shared Passwords", function(){
 				{
 					username: 'Routes#SharedPassword#Delete-User02',
 					isAdmin: false,
-					password 	: '$2a$10$n9ecPHPXJC3UWkMLBBihNOJ/OIX8P5s3g0QU8FjDTJkjFrHqdptEe',
+					password 	: '$argon2i$v=19$m=4096,t=3,p=1$QxwYZOjg6xedW7ilBkTskA$CP4vv+Du+0r3oYh+aFxH4CQFRv/tY39kgs2KG8+8f/A',
 					salt 		: '$2a$10$n9ecPHPXJC3UWkMLBBihNO',
 					privatekey: 'cGFzc3dvcmQ=',
 					iv: 'cGFzc3dvcmQ=',

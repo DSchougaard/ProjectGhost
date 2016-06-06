@@ -4,6 +4,7 @@ var assert 				= require('assert');
 var request 			= require('supertest');  
 var should 				= require('should');
 var sinon 				= require('sinon');
+const argon2 			= require('argon2');
 
 var fs 					= require('fs');
 var fse 				= require('fs-extra');
@@ -42,7 +43,7 @@ describe('API /users', function(){
 		return {
 			username 	: 'Api#Users#' + username,
 			salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
-			password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+			password 	: '$argon2i$v=19$m=4096,t=3,p=1$QxwYZOjg6xedW7ilBkTskA$CP4vv+Du+0r3oYh+aFxH4CQFRv/tY39kgs2KG8+8f/A',
 			privatekey 	: 'cGFzc3dvcmQ=',
 			iv 			: 'cGFzc3dvcmQ=',
 			pk_salt 	: 'cGFzc3dvcmQ=',
@@ -144,7 +145,7 @@ describe("API /user", function(){
 		return {
 			username 	: 'Api#User#' + username,
 			salt 		: '$2a$10$823g2vH0BRk90.Moj9e5Fu',
-			password 	: '$2a$10$823g2vH0BRk90.Moj9e5Fu.gVB0X5nuZWT1REbTRHpdeH4vwLAYVC',
+			password 	: '$argon2i$v=19$m=4096,t=3,p=1$QxwYZOjg6xedW7ilBkTskA$CP4vv+Du+0r3oYh+aFxH4CQFRv/tY39kgs2KG8+8f/A',
 			privatekey 	: 'cGFzc3dvcmQ=',
 			iv 			: 'cGFzc3dvcmQ=',
 			pk_salt 	: 'cGFzc3dvcmQ=',
@@ -329,18 +330,15 @@ describe("API /user", function(){
 		it("Should fail at creating a user that already exists", function(done){
 
 			var t = _.omit(generateTemplateUser('User001-Admin'), 'password', 'salt');
-			t.password = 'password'
+			t.password = 'password';
 
 			server
 			.post('/api/users')
 			.set('Authorization', 'Bearer ' + authToken)
 			.send(t)
-			.expect(400)
-			.end(function(err, res){
-				if(err){
-					return done(err);	
-				} 
-				
+			.end(function(err,res){
+				if(err) return done(err);
+
 				assert.equal(res.body.code, 'BadRequestError');
 				assert.equal(res.body.message, 'Username already exists');
 				return done();
@@ -389,18 +387,18 @@ describe("API /user", function(){
 			});
 		});
 
-		after(function(){
-			return knex('audit')
-			.del()
-			.then();
-		});
-
-
-		after(function(){
-			return knex('users')
-			.del()
-			.then();
-		});
+		//after(function(){
+		//	return knex('audit')
+		//	.del()
+		//	.then();
+		//});
+//
+//
+//		//after(function(){
+//		//	return knex('users')
+//		//	.del()
+//		//	.then();
+		//});
 	});
 	
 
@@ -492,7 +490,7 @@ describe("API /user", function(){
 				assert.equal(user[0].id, 			users[0].id);
 				assert.equal(user[0].privatekey, 	users[0].privatekey)
 				assert.equal(user[0].publickey, 	users[0].publickey)
-				assert.equal(user[0].isAdmin, 		false);	
+				assert.equal(user[0].isAdmin, 		1);	
 			});
 		});
 
@@ -516,8 +514,7 @@ describe("API /user", function(){
 			.then(function(user){
 				assert.equal(user.length, 1);
 
-				var expectedPassword = bcrypt.hashSync('totallysecure', user[0].salt);
-				assert.equal(user[0].password, expectedPassword);
+				assert.equal(argon2.verifySync(user[0].password, 'totallysecure'), true);
 
 				assert.equal(user[0].username, 		users[1].username);
 				assert.equal(user[0].id, 			users[1].id);
