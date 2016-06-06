@@ -7,8 +7,6 @@ const _								= require('underscore');
 
 
 const base64 						= require(__base + 'helpers/base64.js');
-const authHelpers					= require(__base + 'helpers/authHelpers.js');
-const authorized 					= require(__base + 'helpers/authorization.js');
 
 // Middleware
 const authentication 				= require(__base + 'middlewares/authentication.js');

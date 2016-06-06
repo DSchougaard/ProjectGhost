@@ -3,11 +3,13 @@ NAME = ghost
 DIR=crypto/ssl
 
 install: cert jwt
-	mkdir logs
+	sudo apt-get install build-essential
+	mkdir -p logs
+	npm install -g node-gyp
 	npm install
-	bower install
+	node_modules/bower/bin/bower install
 	cd public/components/forge; npm install; npm run bundle
-	gulp
+	node_modules/gulp/bin/gulp.js
 
 cert:
 	mkdir -p $(DIR)
@@ -32,8 +34,8 @@ test:
 	NODE_ENV=test mocha test/tests
 
 cov: 
+	rm -f logs/*
 	rm -f unittest.sqlite
-	node misc/createUnitTestDB.js
 	@NODE_ENV=test istanbul cover _mocha test/tests.js -- -R spec
 	gnome-open coverage/lcov-report/index.html
 

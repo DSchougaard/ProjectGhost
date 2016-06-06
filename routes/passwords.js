@@ -21,7 +21,9 @@ const AlreadyExistError	 		= require(__base + 'errors/Internal/AlreadyExistError
 // Middleware
 const authentication 	= require(__base + 'middlewares/authentication.js');
 const authorization  	= require(__base + 'middlewares/authorization.js');
+const fast  			= require(__base + 'middlewares/fast.authorization.js');
 const resolve 			= require(__base + 'middlewares/resolve.js');
+
 
 module.exports = function(server, knex, log){
 
@@ -76,7 +78,7 @@ module.exports = function(server, knex, log){
 		});
 	});
 
-	server.get('/api/users/:userId/passwords/:passwordId', authentication, resolve, authorization, function(req, res, next){
+	server.get('/api/users/:userId/passwords/:passwordId', authentication, resolve, fast, function(req, res, next){
 		res.send(200, req.resolved.params.password);
 		Audit.report(req.resolved.user, req, 'Password', req.resolved.params.password.id, 'READ');
 		return next();
