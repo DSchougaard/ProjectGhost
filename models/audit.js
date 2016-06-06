@@ -58,11 +58,18 @@ class Action{
 module.exports = class Audit{
 
 	static report(user, request, targetType, targetId, action){
+
+		var ip;
+
+		try{
+			ip = request.headers['x-forwarded-for'] || 
+			request.connection.remoteAddress || 
+			request.socket.remoteAddress ||
+			request.connection.socket.remoteAddress;
+		}catch(err){
+			ip = "Unknown";
+		}
    
-		var ip = request.headers['x-forwarded-for'] || 
-		request.connection.remoteAddress || 
-		request.socket.remoteAddress ||
-		request.connection.socket.remoteAddress;
 
 		var host = undefined;
 		if(ip === '::1'){
