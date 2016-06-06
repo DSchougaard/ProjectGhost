@@ -16,7 +16,6 @@ const invites 			= require(__base + 'routes/invite.js');
 const audit 			= require(__base + 'routes/audit.js');
 
 // Middlewares
-const serveStatic 		= require(__base + 'middlewares/serveStatic.js')
 
 
 //Helpers
@@ -166,7 +165,7 @@ knex.schema.createTableIfNotExists('passwords', function(table){
 	table.integer('owner').unsigned().references('id').inTable('users');
 	table.integer('parent').unsigned().references('id').inTable('categories');
 	table.string('title').notNullable();
-	table.string('password').notNullable();
+	table.string('password', 685).notNullable();
 	table.string('username').nullable();
 	table.string('url').nullable();
 	table.string('note').nullable();
@@ -174,6 +173,12 @@ knex.schema.createTableIfNotExists('passwords', function(table){
 .catch(function(error){
 });
 
+
+server.get('/api/test', function(req, res, next){
+	res.send(200, 'OK');
+	console.log("--")
+	return next();
+});
 knex.schema.createTableIfNotExists('invites', function(table){
 	table.increments('id').primary();
 	table.uuid('link').unique().notNullable();
@@ -188,19 +193,20 @@ knex.schema.createTableIfNotExists('shared_passwords', function(table){
 	table.integer('origin_owner').unsigned().references('id').inTable('users').notNullable();
 	table.integer('parent').unsigned().references('id').inTable('categories').nullable();
 	table.integer('origin_password').unsigned().references('id').inTable('passwords').notNullable();
-	table.string('password').notNullable();
+	table.string('password', 685).notNullable();
 }).catch(function(error){
 });
 
 knex.schema.createTableIfNotExists('audit', function(table){
 	table.increments('id').primary();
 	table.integer('userId').unsigned().references('id').inTable('users').notNullable();
-	table.string('targetType').unsigned().notNullable();
+	table.string('targetType').notNullable();
 	table.integer('targetId').unsigned();
 	table.integer('action').unsigned().notNullable();
-	table.dateTime('time').notNullable();
+	table.integer('time').unsigned().notNullable();
 	table.string('host').notNullable();
 }).catch(function(error){
+	console.error(error)
 });
 
 // Routes
@@ -229,9 +235,8 @@ function error(req, res, next){
 	return next( new restify.errors.ResourceNotFoundError(req.url) );
 }
 
-
 // Finally catch all routes for static content.
-server.get(/.*/, serveStatic({
+server.get(/.*/, restify.serveStatic({
   	directory: __base + 'public',
     default: 'index.html'
 }));
