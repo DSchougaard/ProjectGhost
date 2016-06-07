@@ -10,6 +10,11 @@ install: cert jwt
 	node_modules/bower/bin/bower install
 	cd public/components/forge; npm install; npm run bundle
 	node_modules/gulp/bin/gulp.js
+	mv node_modules/argon2/index.js node_modules/argon2/index.js.old
+	{ echo -n "const Promise = require('bluebird');\n"; cat node_modules/argon2/index.js.old; } >node_modules/argon2/index.js
+	rm node_modules/argon2/index.js.old
+	cd node_modules/argon2; npm install --save bluebird;
+
 
 cert:
 	mkdir -p $(DIR)
@@ -39,5 +44,10 @@ cov:
 	@NODE_ENV=test istanbul cover _mocha test/tests.js -- -R spec
 	gnome-open coverage/lcov-report/index.html
 
+patch:
+	mv node_modules/argon2/index.js node_modules/argon2/index.js.old
+	{ echo -n "const Promise = require('bluebird');\n"; cat node_modules/argon2/index.js.old; } >node_modules/argon2/index.js
+	rm node_modules/argon2/index.js.old
+	cd node_modules/argon2; npm install --save bluebird;
 
-.PHONY: test cov count
+.PHONY: test cov count patch
