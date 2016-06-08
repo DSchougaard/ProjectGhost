@@ -1,8 +1,11 @@
 'use strict'
 const Promise 	= require('bluebird');
 const bcrypt 	= require('bcrypt');
-const argon2 					= require('argon2');
+const argon2 	= require('argon2');
+argon2.Promise 	= Promise;
 const _ 		= require('underscore');
+const forge 	= require('node-forge');
+
 
 const genSalt 	= Promise.promisify(bcrypt.genSalt);
 const hash 		= Promise.promisify(bcrypt.hash);
@@ -44,6 +47,32 @@ function generateSalt(){
 		});
 	});
 }
+
+
+var BCrypt	= {
+	salt  	: Promise.promisify(bcrypt.genSalt),
+	hash 	: Promise.promisify(bcrypt.hash)
+}
+
+
+var PBKDF2 	= {
+	salt 	: Promise.promisify(forge.random.getBytes),
+	hash 	: Promise.promisify(forge.pkcs5.pbkdf2),
+}
+
+var wrap  	= {};
+wrap.salt = function(){
+	return PBKDF2.salt(256);
+}
+wrap.hash = function(password, salt){
+	return PBKDF2.hash(password, salt, 10000, 32);
+}
+
+//PBKDF2.salt()
+//.then(PBKDF2.hash.bind(null, password))
+//.then(function(hash){
+//
+//})
 
 
 
@@ -93,6 +122,10 @@ module.exports = class User{
 		.then(function(salt){
 			return argon2.hash(data.password, salt);
 		})
+		//return wrap.salt()
+		//.then(function(salt){
+		//	return wrap.hash(data.password, salt);
+		//})
 		.then(function(hash){
 			data.password 	= hash;
 			// I am... So sorry about this....
@@ -274,6 +307,10 @@ module.exports = class User{
 		}
 
 		if( _.has(updated, 'password') ){
+			//return wrap.salt()
+			//.then(function(salt){
+			//	return wrap.hash(updated.password, salt);
+			//})
 			return argon2.generateSalt()
 			.then(function(salt){
 				return argon2.hash(updated.password, salt);

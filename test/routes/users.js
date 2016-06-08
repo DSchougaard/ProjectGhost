@@ -1,10 +1,12 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
+const Promise 	= require('bluebird');
 var assert 				= require('assert');
 var request 			= require('supertest');  
 var should 				= require('should');
 var sinon 				= require('sinon');
 const argon2 			= require('argon2');
+argon2.Promise 			= Promise;
 
 var fs 					= require('fs');
 var fse 				= require('fs-extra');
@@ -514,13 +516,17 @@ describe("API /user", function(){
 			.then(function(user){
 				assert.equal(user.length, 1);
 
-				assert.equal(argon2.verifySync(user[0].password, 'totallysecure'), true);
-
 				assert.equal(user[0].username, 		users[1].username);
 				assert.equal(user[0].id, 			users[1].id);
 				assert.equal(user[0].privatekey, 	users[1].privatekey)
 				assert.equal(user[0].publickey, 	users[1].publickey)
 				assert.equal(user[0].isAdmin, 		false);	
+
+				return argon2.verify(user[0].password, 'totallysecure')
+				.then(function(match){
+					assert.equal(match, true);
+				})
+
 			});
 		});
 

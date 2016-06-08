@@ -244,6 +244,10 @@ server.get(/.*/, restify.serveStatic({
     default: 'index.html'
 }));
 
+//var tls = require('tls');
+//var ciphers = tls.getCiphers();
+//console.log(ciphers); // ['AES128-SHA', 'AES256-SHA', ...]
+
 if( process.env.NODE_ENV === 'test' ){
 	module.exports = server;
 }else{

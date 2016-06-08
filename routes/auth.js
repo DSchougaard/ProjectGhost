@@ -5,6 +5,7 @@ const restify 					= require('restify');
 const speakeasy		 			= require("speakeasy");
 const bcrypt 					= require('bcrypt');
 const argon2 					= require('argon2');
+//argon2.Promise 					= Promise;
 
 const authHelpers 				= require(__base + '/helpers/authHelpers.js');
 
@@ -204,7 +205,7 @@ module.exports = function(server, knex, log){
 		});
 	});
 
-	server.get('/api/auth/ping', authHelpers.ensureAuthenticated, function(req, res, next){
+	server.get('/api/auth/ping', authentication, function(req, res, next){
 		res.send(200, 'OK');
 		return next();
 	});

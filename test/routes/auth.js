@@ -387,7 +387,16 @@ describe('API /auth', function(){
 			};
 
 			//var badToken = jwt.sign(payload, privateKey, {algorithm: 'RS256'});
-			var badToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1aWQiOjEsImlhdCI6MTQ1Mjg2NTI4MSwiZXhwIjoyMDAwMH0.HUFZrEVRcICjfmPhRY-s2IZ6daRiGvZzr3_9MkuAmeU2AxhMYBPSvuGth81T7ELluBlXGp0fjuuKHTB-j2geKlI0R9X7gZ98ftE1oRmWadmLNsQy-Mvw9R0_MoLuBj7BOJzXGBjLVCtg0IQV9rKJOYdVe5dXo0z0BLMSoIJ3R2PkCrWUMmcePSvJq_aCORirPf4qQRX6CrTxUdauaNJ-FBFrLjkq5z9qatwOkE4H1lVZGeVxBbUwWudxAObh3YMR5eTX7pxUPI5EZQHYVIqKa3Vl7UKJAMHs-IL62PGYKKWcDeXhr1yMD-bOwRgLKOeD4q-8KPdyN46vMWSPs4Xnb72a6Orq6y9ngOFdDifTEPeYaUjQWU67Jy3YbdRs86O7LuT9E3Vv8aIHswVBiBiqqPiTt3MaxDlwkuCw-iXFwoB6pBFgnzJlGnyMRuY3mto4_g-i2MuPZ5_6V4jJT7m_iYpw0djbTkupdFHKpB96IxHgNhdQe9hTnvCBRzc_WvZW15Aty-8MD3-yeHDU-WTWF2lvs5lm50BTlMGroC4Sx3LGVBmVqQMmAhcj84uKsZT9mCKbLaKOsmprtr8fPsl8RcgbEipd3zYKT8v4bL4uDpZUufHeDx1VRBHCPqkWdPE0tsbjs78_RSzm7vtIg5BWetJ0VbcfdahpdceZwOi-_sY';
+			//var badToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1aWQiOjEsImlhdCI6MTQ1Mjg2NTI4MSwiZXhwIjoyMDAwMH0.HUFZrEVRcICjfmPhRY-s2IZ6daRiGvZzr3_9MkuAmeU2AxhMYBPSvuGth81T7ELluBlXGp0fjuuKHTB-j2geKlI0R9X7gZ98ftE1oRmWadmLNsQy-Mvw9R0_MoLuBj7BOJzXGBjLVCtg0IQV9rKJOYdVe5dXo0z0BLMSoIJ3R2PkCrWUMmcePSvJq_aCORirPf4qQRX6CrTxUdauaNJ-FBFrLjkq5z9qatwOkE4H1lVZGeVxBbUwWudxAObh3YMR5eTX7pxUPI5EZQHYVIqKa3Vl7UKJAMHs-IL62PGYKKWcDeXhr1yMD-bOwRgLKOeD4q-8KPdyN46vMWSPs4Xnb72a6Orq6y9ngOFdDifTEPeYaUjQWU67Jy3YbdRs86O7LuT9E3Vv8aIHswVBiBiqqPiTt3MaxDlwkuCw-iXFwoB6pBFgnzJlGnyMRuY3mto4_g-i2MuPZ5_6V4jJT7m_iYpw0djbTkupdFHKpB96IxHgNhdQe9hTnvCBRzc_WvZW15Aty-8MD3-yeHDU-WTWF2lvs5lm50BTlMGroC4Sx3LGVBmVqQMmAhcj84uKsZT9mCKbLaKOsmprtr8fPsl8RcgbEipd3zYKT8v4bL4uDpZUufHeDx1VRBHCPqkWdPE0tsbjs78_RSzm7vtIg5BWetJ0VbcfdahpdceZwOi-_sY';
+			var payload = {
+				uid: user.id,
+				iat: moment().unix(),
+				exp: moment().subtract(14, 'days').unix(),
+				lvl: 0	
+			};
+
+			const privateKey = fs.readFileSync(__base + '/crypto/jwt/ghost-jwt.key');
+			var badToken = jwt.sign(payload, privateKey, {algorithm: 'RS256'});
 
 			server
 			.get('/api/auth/ping')
