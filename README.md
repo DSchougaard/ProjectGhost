@@ -20,6 +20,8 @@ In order to install Ghost, npm and bower needs to be installed.
 
 
 ```
+sudo apt-get install gcc clang make
+sudo npm install -g node-gyp
 make install
 ```
 

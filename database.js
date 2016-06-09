@@ -9,6 +9,8 @@ if( config.database === 'sqlite' ){
 	opts.connection = config.sqlite_connection;
 }else if( config.database === 'mysql' ){
 	opts.connection = config.mysql_connection;
+}else if( config.database === 'postgres' ){
+	opts.connection = config.postgres_connection;
 }
 
 // Unittest DB Override

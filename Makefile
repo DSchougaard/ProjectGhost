@@ -3,17 +3,12 @@ NAME = ghost
 DIR=crypto/ssl
 
 install: cert jwt
-	sudo apt-get install build-essential
 	mkdir -p logs
-	npm install -g node-gyp
 	npm install
 	node_modules/bower/bin/bower install
 	cd public/components/forge; npm install; npm run bundle
 	node_modules/gulp/bin/gulp.js
-	mv node_modules/argon2/index.js node_modules/argon2/index.js.old
-	{ echo -n "const Promise = require('bluebird');\n"; cat node_modules/argon2/index.js.old; } >node_modules/argon2/index.js
-	rm node_modules/argon2/index.js.old
-	cd node_modules/argon2; npm install --save bluebird;
+	
 
 
 cert:

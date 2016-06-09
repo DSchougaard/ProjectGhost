@@ -1,6 +1,6 @@
 {
 	"name" 			: "Project Ghost",
-	"database"		: "sqlite",
+	"database"		: "postgres",
 	"sqlite_connection": {
 		"filename": 	"./ghost.sqlite"
 	},
@@ -9,6 +9,14 @@
 		"user"     : "ghost",
 		"password" : "ghostpassword",
 		"database" : "ghostdb"
+	},
+	"postgres_connection":{
+      "user": "ghostuser",
+      "database": "ghostdb",
+      "port": 5432,
+      "host": "127.0.01",
+      "password": "postgrespassword"
+
 	},
 	"port"			: 8081,
 	"ssl_key"		: "crypto/ssl/ghost.key",
