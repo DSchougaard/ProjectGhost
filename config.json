@@ -1,6 +1,6 @@
 {
 	"name" 			: "Project Ghost",
-	"database"		: "postgres",
+	"database"		: "sqlite",
 	"sqlite_connection": {
 		"filename": 	"./ghost.sqlite"
 	},

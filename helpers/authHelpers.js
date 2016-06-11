@@ -19,7 +19,8 @@ exports.createJWT = function(user) {
 	var payload = {
 		uid: user.id,
 		iat: moment().unix(),
-		exp: moment().add(14, 'days').unix(),
+		//exp: moment().add(14, 'days').unix(),
+		exp: moment().add(24, 'hours').unix(),
 		lvl: 0
 	};
 
