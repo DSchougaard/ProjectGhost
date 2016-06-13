@@ -16,7 +16,7 @@ const invites 			= require(__base + 'routes/invite.js');
 const audit 			= require(__base + 'routes/audit.js');
 
 // Middlewares
-
+const serveStatic 		= require(__base + 'middlewares/serveStatic.js')		
 
 //Helpers
 const authHelpers 		= require(__base + 'helpers/authHelpers.js');
@@ -239,7 +239,8 @@ function error(req, res, next){
 }
 
 // Finally catch all routes for static content.
-server.get(/.*/, restify.serveStatic({
+//server.get(/.*/, restify.serveStatic({
+server.get(/.*/, serveStatic({
   	directory: __base + 'public',
     default: 'index.html'
 }));
