@@ -119,7 +119,8 @@
 				}
 			}
 			
-			if( self.passwordDecrypted ){
+			//if( self.passwordDecrypted ){
+			if( self.password.password !== self.passwordClone.password ){
 				payload.password = self.password.password;
 			}
 
@@ -134,6 +135,7 @@
 
 			var promises = [];
 			if( _.values(payload).length > 0 ){
+				payload.id = self.password.id;
 				promises.push( PasswordService.update(payload) );	
 			}
 
@@ -147,7 +149,6 @@
 
 			$q.allSettled(promises)
 			.then(function(res){
-				console.log("done")
 				$state.transitionTo('home');
 			})
 			.catch(function(err){
