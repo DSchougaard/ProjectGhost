@@ -30,7 +30,7 @@ module.exports = function(permObject){
 				return next();
 			}
 
-			return next(new restify.errors.ForbiddenError('Insufficient privileges'));
+			return deny(next);
 
 		}
 
