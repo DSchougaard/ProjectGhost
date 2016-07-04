@@ -34,13 +34,13 @@
 		self.dom 			= {};
 		self.dom.config 	= {
 			locked: {
-				title		: true,
-				username	: true,
-				password	: true,
-				url			: true,
-				note		: true,
-				category	: true,
-				shared		: true
+				title		: false,
+				username	: false,
+				password	: false,
+				url			: false,
+				note		: false,
+				category	: false,
+				shared		: false
 			},
 			visible: {
 				title		: true,
