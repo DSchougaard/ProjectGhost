@@ -19,7 +19,29 @@
 		self.categories = [];
 		self.sharedWith = [];
 		self.users 		= [];
-
+		
+		// DOM config
+		self.dom 			= {};
+		self.dom.config 	= {
+			locked: {
+				title		: true,
+				username	: true,
+				password	: true,
+				url			: true,
+				note		: true,
+				category	: true,
+				shared		: true
+			},
+			visible: {
+				title		: true,
+				username	: true,
+				password	: true,
+				url			: true,
+				note		: true,
+				category	: true,
+				shared		: true
+			}
+		}
 		// Field for the Tree-Menu to properly select the parent, when editting.
 		self.selection 	= {};
 

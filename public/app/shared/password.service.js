@@ -114,6 +114,7 @@
 			.ariaLabel('Confirm delete')
 			.ok('Delete Password!')
 			.cancel('Do not delete password');
+			
 			$mdDialog.show(confirm).then(function(){
 				// User chose to delete Password
 				return $http({
@@ -145,7 +146,7 @@
 			var filter = [];
 			if(password.origin_owner){
 				url = '/api/users/' + $auth.getPayload().uid + '/passwords/shares/' + password.id
-				filter = ['parent', 'password'];
+				filter = ['parent'];
 			}else{
 				url = '/api/users/' + $auth.getPayload().uid + '/passwords/' + password.id
 				filter = ['title', 'username', 'password', 'url', 'note', 'parent'];

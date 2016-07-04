@@ -123,6 +123,25 @@
 	    		password: undefined
 	    	}
 	    })
+	   	.state('edit/shared', {
+	    	url: '/edit/shared',
+	    	authenticate: true,
+	    	views: {
+	    		'content': {
+			    	templateUrl: 'app/password-form/password-form.template.html',
+	    			controller: 'EditSharedPasswordController',
+	    			controllerAs: 'vm',
+	    		},
+				'toolbar':{
+			        templateUrl: 'app/toolbar/toolbar.template.html',
+       				controller: 'ToolBarController',
+	        		controllerAs: 'vm',
+				}
+	    	},
+	    	params: {
+	    		password: undefined
+	    	}
+	    })
 	    .state('user', {
 	    	url: '/user',
 	    	authenticate: true,

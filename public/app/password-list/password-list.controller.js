@@ -65,14 +65,17 @@
 				);
 		}
 
-		function del(id){
-			var password = _.findWhere(self.entries, {id: id});
+		function del(password){
 			PasswordService.del(password);
 			self.selectedIndex = undefined;
 		}
 
-		function edit(id){
-			$state.go('edit', { password: _.findWhere(self.entries, {id: id}) } );
+		function edit(password){
+			if( password.origin_password === undefined ){
+				$state.go('edit', {password: password} );
+			}else{
+				$state.go('edit/shared', {password: password} );	
+			}
 		}
 
 		// List controls

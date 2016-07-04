@@ -2,18 +2,16 @@
 
 	angular
 		.module('ghost')
-		.controller('EditPasswordController', EditPasswordController);
+		.controller('EditSharedPasswordController', EditSharedPasswordController);
 		
-	function EditPasswordController($q, CategoryService, PasswordService, $http, $auth, $state, $stateParams, EncryptionService,$mdMedia, $mdDialog) {
+	function EditSharedPasswordController($q, CategoryService, PasswordService, $http, $auth, $state, $stateParams, EncryptionService,$mdMedia, $mdDialog) {
 		var self = this;
+
 		// Quick Fix for no Passed Parameters
 		if( !$stateParams.password ){
-					console.log(".. %j", $stateParams.password)
-
 			$state.transitionTo('home');
 			return;
 		}
-		console.log("PW2= %j", $stateParams.password)
 
 		// Text Strings
 		self.text = {
@@ -23,13 +21,14 @@
 		}
 
 		// Literals
-		self.password 		= {};
-		self.passwordClone 	= {};
+		self.password 		= $stateParams.password;
+		console.log("Title= %j", self.password)
+		self.passwordClone 	= _.clone($stateParams.password);
 		self.submit 		= submit;
 		self.title 			= "";
 		self.decryptEnabled = true;
 		self.passwordDecrypted = false;
-		
+
 		// DOM config
 		self.dom 			= {};
 		self.dom.config 	= {
@@ -39,7 +38,7 @@
 				password	: true,
 				url			: true,
 				note		: true,
-				category	: true,
+				category	: false,
 				shared		: true
 			},
 			visible: {
@@ -49,9 +48,11 @@
 				url			: true,
 				note		: true,
 				category	: true,
-				shared		: true
+				shared		: false
 			}
 		}
+
+
 		// Lists for managing sharing
 		self.users 			= [];
 		self.oldSharedWith 	= [];
@@ -60,6 +61,7 @@
 		// Field for the Tree-Menu to properly select the parent, when editting.
 		self.selection 		= {};
 		self.categories 	= [];
+		self.selection.id 	= self.password.parent;
 
 		// Interface
 		self.treeSelect 	= treeSelect;
@@ -67,37 +69,7 @@
 		self.querySearch 	= querySearch;
 		self.generatePassword = generatePassword;
 
-		$http({
-			method: 'GET',
-			url: '/api/users/'+$auth.getPayload().uid+'/passwords/'+$stateParams.password.id
-		})
-		.then(function(res){
-			// We're editing a password
-			self.password 		= res.data;
-			self.passwordClone 	= _.clone(self.password);
-			self.selection.id 	= self.password.parent;
-		})
-
-		$http({
-			method: 'GET',
-			url: '/api/users'
-		})
-		.then(function(res){
-			self.users = res.data;
-
-			return $http({
-				method: 'GET',
-				url: '/api/users/'+$auth.getPayload().uid+'/passwords/'+$stateParams.password.id+'/shares'
-			});
-		})
-		.then(function(res){
-			self.oldSharedWith 	= _.clone(res.data);
-			self.sharedWith  	= res.data;
-		})
-		.catch(function(err){
-			console.error(err);
-		})	
-
+	
 		/*
 			Begin Shamelessly stolen from https://material.angularjs.org/latest/demo/chips
 		*/
@@ -136,48 +108,21 @@
 
 			var payload = {};
 
-			var keys = _.keys(_.omit(self.password, 'password'));
-			for( var i = 0 ; i < keys.length ; i++ ){
-				if( self.passwordClone[keys[i]] !== self.password[keys[i]] ){
-					payload[keys[i]] = self.password[keys[i]];
-				}
-			}
-			
-			//if( self.passwordDecrypted ){
-			if( self.password.password !== self.passwordClone.password ){
-				payload.password = self.password.password;
+			if( self.password.parent === self.passwordClone.parent ){
+				$state.transitionTo('home');
 			}
 
-			// Determines which users should have password sharead with them, and which should
-			// have a share removed
-			// Intersection is the users commen between the shares from db and selected shares on submit
-			var intersection 	= _.intersection(self.sharedWith, self.oldSharedWith);
-			// The difference between the current selection and the intersection yields the newly added users
-			var share  			= _.difference(self.sharedWith, intersection);
-			// The difference between the db selection and the intersection, yields users that have been removed from sharing
-			var unshare 		= _.difference(self.oldSharedWith, intersection);
-
-			var promises = [];
-			if( _.values(payload).length > 0 ){
-				payload.id = self.password.id;
-				promises.push( PasswordService.update(payload) );	
-			}
-
-			// Set the ID
-			payload.id = self.password.id;
-
-			if( share.length > 0 )
-				promises.push( PasswordService.sharePassword(self.password, share) );
-			if( unshare.length > 0 )
-				promises.push( PasswordService.unsharePassword(self.password, unshare) );
-
-			$q.allSettled(promises)
-			.then(function(res){
+			payload = _.pick(self.password, ['origin_owner', 'origin_password', 'id', 'parent']);
+			console.log("%j", payload)
+			PasswordService.update(payload)
+			.then(function(){
 				$state.transitionTo('home');
 			})
 			.catch(function(err){
 				console.error("%j", err);
 			});
+
+
 		}
 
 		function display(){
