@@ -117,14 +117,27 @@
 			
 			$mdDialog.show(confirm).then(function(){
 				// User chose to delete Password
-				return $http({
+				var own ={
 					method: 'DELETE',
 					url: '/api/users/' + $auth.getPayload().uid + '/passwords/' + password.id
-				})
+				};
+
+				var shared = { 
+					method: 'DELETE',
+					url: 'api/users/'+$auth.getPayload().uid + '/passwords/shares/' + password.id
+				};
+
+				var request = own;
+				if( password.origin_password ){
+					request = shared;
+				}
+				
+				return $http(request)
 				.then(function(res){
 					self.fetch();
 				})
 				.catch(function(err){
+					console.error(err);
 				    $mdDialog.show(
 				        $mdDialog.alert()
 			            .parent(angular.element(document.querySelector('#popupContainer')))
